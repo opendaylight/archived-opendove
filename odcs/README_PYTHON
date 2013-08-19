@@ -1,0 +1,14 @@
+'python-config' utility is needed to find out what compilation flags to use.
+Depending on the linux distribution the correct package needs to be installed. 
+    Fedora machine: installing 'python-devel' also installed python-config.
+    Ubuntu machine: installing 'python-dev' also installed python-config
+
+Once python-config is installed run the following commands to find out the 
+compilation flags to be used in the Makefile.
+
+python-config --includes
+python-config --libs
+python-config --cflags
+python-config --ldflags
+
+Without the correct flags compilation will FAIL.

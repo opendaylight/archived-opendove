@@ -1,0 +1,30 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1374606602396
+Build-Jdk: 1.7.0
+Built-By: rmoats
+Bundle-ManifestVersion: 2
+Bundle-Name: opendove.northbound
+Bundle-SymbolicName: org.opendaylight.controller.opendove.northbound
+Bundle-Version: 0.4.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.opendaylight.controller.opendove.northbound;uses:="j
+ avax.ws.rs,javax.ws.rs.core,javax.xml.bind.annotation";version="0.4.0.S
+ NAPSHOT"
+Ignore-Package: org.codehaus.enunciate.jaxrs
+Import-Package: com.sun.jersey.spi.container.servlet;version="[1.17,2)",
+ javax.ws.rs;version="[1.1,2)",javax.ws.rs.core;version="[1.1,2)",javax.
+ xml.bind,javax.xml.bind.annotation,org.apache.commons.logging;version="
+ [1.1,2)",org.opendaylight.controller.containermanager;version="[0.4,1)"
+ ,org.opendaylight.controller.hosttracker;version="[0.4,1)",org.opendayl
+ ight.controller.hosttracker.hostAware;version="[0.4,1)",org.opendayligh
+ t.controller.northbound.commons;version="[0.4,1)",org.opendaylight.cont
+ roller.northbound.commons.exception;version="[0.4,1)",org.opendaylight.
+ controller.northbound.commons.utils;version="[0.4,1)",org.opendaylight.
+ controller.sal.authorization;version="[0.5,1)",org.opendaylight.control
+ ler.sal.core;version="[0.5,1)",org.opendaylight.controller.sal.utils;ve
+ rsion="[0.5,1)",org.opendaylight.controller.switchmanager;version="[0.4
+ ,1)",org.opendaylight.controller.usermanager;version="[0.4,1)",org.slf4
+ j;version="[1.7,2)"
+Originally-Created-By: Apache Maven Bundle Plugin
+Tool: Bnd-1.50.0
+Web-ContextPath: /opendove/nb

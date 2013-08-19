@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1376883756290
+Build-Jdk: 1.7.0_25
+Built-By: aashaikh
+Bundle-Activator: org.opendaylight.controller.odmc.internal.Activator
+Bundle-ManifestVersion: 2
+Bundle-Name: odmc
+Bundle-SymbolicName: org.opendaylight.controller.odmc
+Bundle-Version: 0.4.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.opendaylight.controller.odmc;uses:="javax.xml.bind.a
+ nnotation,org.apache.commons.net.util";version="0.4.0.SNAPSHOT"
+Import-Package: javax.xml.bind.annotation,org.apache.commons.net.util;ve
+ rsion="[3.0,4)",org.apache.felix.dm;version="[3.0,4)",org.opendaylight.
+ controller.clustering.services;version="[0.4,1)",org.opendaylight.contr
+ oller.sal.core;version="[0.5,1)",org.osgi.service.component;version="[1
+ .2,2)",org.slf4j;version="[1.7,2)"
+Tool: Bnd-1.50.0

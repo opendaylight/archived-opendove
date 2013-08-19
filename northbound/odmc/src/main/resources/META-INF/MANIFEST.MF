@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1376883799730
+Build-Jdk: 1.7.0_25
+Built-By: aashaikh
+Bundle-ManifestVersion: 2
+Bundle-Name: odmc.northbound
+Bundle-SymbolicName: org.opendaylight.controller.odmc.northbound
+Bundle-Version: 0.4.0.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin
+Export-Package: org.opendaylight.controller.odmc.northbound;uses:="javax
+ .ws.rs,org.opendaylight.controller.northbound.commons.exception,org.ope
+ ndaylight.controller.odmc,org.opendaylight.controller.northbound.common
+ s,javax.ws.rs.core,org.opendaylight.controller.containermanager,org.ope
+ ndaylight.controller.sal.utils,javax.xml.bind.annotation";version="0.4.
+ 0.SNAPSHOT"
+Ignore-Package: org.codehaus.enunciate.jaxrs
+Import-Package: javax.ws.rs;version="[1.1,2)",javax.ws.rs.core;version="
+ [1.1,2)",javax.xml.bind,javax.xml.bind.annotation,org.eclipse.persisten
+ ce.jaxb.rs;version="[2.5,3)",org.opendaylight.controller.containermanag
+ er;version="[0.4,1)",org.opendaylight.controller.northbound.commons;ver
+ sion="[0.4,1)",org.opendaylight.controller.northbound.commons.exception
+ ;version="[0.4,1)",org.opendaylight.controller.northbound.commons.utils
+ ;version="[0.4,1)",org.opendaylight.controller.odmc;version="[0.4,1)",o
+ rg.opendaylight.controller.sal.utils;version="[0.5,1)",org.slf4j;versio
+ n="[1.7,2)"
+Originally-Created-By: Apache Maven Bundle Plugin
+Tool: Bnd-1.50.0
+Web-ContextPath: /v2.0

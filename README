@@ -1,0 +1,49 @@
+Open DOVE
+---------
+
+DOVE (distributed overlay virtual Ethernet) is a network
+virtualization platform that provides isolated multi-tenant networks
+on any IP network in a virtualized data center. DOVE provides each
+tenant with a virtual network abstraction providing layer-2 or layer-3
+connectivity and the ability to control communication using access
+control policies. Address dissemination and pol icy enforcement in
+DOVE is provided by a clustered directory service. It also includes a
+gateway function to enable virtual machines on a virtual network to
+communicate with hosts outside the virtual network domain.
+
+More information on Open DOVE is available on the OpenDaylight project
+wiki:
+
+https://wiki.opendaylight.org/view/Open_DOVE:Main
+
+
+CODE STRUCTURE
+--------------
+
+Open DOVE requires several components to provide the full control
+plane and data plane solution.  Each subdirectory contains one of the
+Open DOVE components:
+
+./odmc -- Open DOVE Management Console (OSGi bundle that runs in the
+OpenDaylight controller)
+
+./northbound -- REST API implementation for Open DOVE (these follow
+the model of OpenStack Neutron -- see the OpenStack documentation for
+more information)
+
+./odcs -- Open DOVE Connectivity Service
+
+./ovs-agent -- agent for the Open DOVE vswitch (based on Open vSwitch + user-space extension)
+
+./odgw -- Open DOVE Gateway (user space controller for the DOVE
+gateway kernal module)
+
+./third-party -- directory for downloading and building third-party
+dependencies not included in the Open DOVE distribution (e.g., Open vSwitch)
+
+
+BUILDING
+--------
+
+Please see the documentation in each respective directory on how to
+build each component.  They are each a little bit different.

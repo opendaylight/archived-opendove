@@ -1,0 +1,22 @@
+DOVE agent for Open vSwitch:
+---------------------------
+
+The agent needs to be compiled with the openvswitch source code.
+You will need to download the latest openvswitch source code (version
+1.11.0 or higher) and compile it on your system.
+
+You may use the getdeps.sh script in the opendove/third-party
+directory to download and build Open vSwitch.
+
+
+Then do the following:
+
+1. Set the OVS_DIR in the Makefile to the openvswitch source code directory
+
+2. Ensure the the Open DOVE Connectivity Server objects are built (run 'make'
+in the opendove/odcs directory).
+	
+3. Run 'make' in the ovs-agent directory
+
+4. Run dove-controller:
+	sudo ./dove-controller ptcp: -d <dps_ip>

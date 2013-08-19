@@ -1,0 +1,56 @@
+This code implements the DOVE Connectivity Services (DCS).
+The DOVE Connectivity Services is designed as a runtime database that is
+configured from by the ODL/DOVE controller and maintains runtime data
+about location of VMs on various tenants. It supports querying of information
+regarding the location of VMs and in some cases provides updates to its
+clients (DOVE Switches and Gateways) regarding changes in the DOVE environment
+for e.g. Broadcast Lists, Multicast Lists, Policy changes etc.
+
+CODE LANGUAGE
+-------------
+The Code is designed to run as a single process on a DOVE Service Appliance or
+any Linux-based OS system. It's comprised of code written in C and Python. The
+C code is compiled into a dynamically load(able) library that can be invoked
+by the Python scripts. Each component on the DCS is written in either C or
+Python.
+
+The C/Python interaction is implemented using simple Extension and Embedding
+Techniques. The Python libraries and header files needed to compile the DCS 
+is described in the README_PYTHON file.
+
+CODE LAYOUT
+-----------
+Each folder in the code repository implements a specific functionality.
+
+init - Contains the initialization files and files for functionality that 
+       was too simple to have a folder of its own for e.g. logging.
+
+inc - Contains all the header files that are used by all components
+
+fd_process - File descriptor processing routine. Currently implemented using
+             "poll" since the number descriptors are 2-3 but should be
+             converted to "epoll" at some time.
+
+client_server_protocol - The (currently) UDP based communication channel 
+                         between clients (DOVE Switches and Gateways) and 
+                         the DCS.
+
+data_hander - Handles the run-time database of objects stored in the DCS.
+
+
+COMPILING
+---------
+Prerequisites: Compile on any RedHAT type system (Ubuntu or Fedora works just
+               fine though you may need to download some packages depending on
+               your environment, e.g., python-dev, libjansson-dev, libevent-dev, openssl).
+               READ the PYTHON_README file and download the necessary files.
+               The os_distributor_script file must be made executable (chmod +x)
+               make - To build, the executable files and .pyc scripts are in the 
+                      "build" directory.
+               make clean - To delete the compiled files.
+
+RUNNING:
+--------
+After compiling, goto the "build" directory, type "dcs_server.py". 
+"dcs_server.py" is the starting script. The list of parameters will be
+shown if the incorrect number of parameters are entered.

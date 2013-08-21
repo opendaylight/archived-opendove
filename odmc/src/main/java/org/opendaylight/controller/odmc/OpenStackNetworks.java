@@ -31,18 +31,17 @@ public class OpenStackNetworks {
     String networkName;              // name
 
     @XmlElement (defaultValue="true", name="admin_state_up")
-    String adminStateUp;             // admin state up (true/false)
+    Boolean adminStateUp;             // admin state up (true/false)
 
     @XmlElement (defaultValue="false", name="shared")
-    String shared;                   // shared network or not
+    Boolean shared;                   // shared network or not
 
     @XmlElement (name="tenant_id")
     String tenantID;                 // tenant for this network
 
     //TODO: fix this to use the proper namespace
-    //      @XmlElement (defaultValue="false", namespace="router", name="external")
-    @XmlElement (defaultValue="false", name="router_external")
-    String routerExternal;           // network external or not
+    @XmlElement (defaultValue="false", namespace="router", name="external")
+    Boolean routerExternal;           // network external or not
 
     //TODO: fix this to use the proper namespace
     @XmlElement (defaultValue="flat", namespace="provider", name="network_type")
@@ -76,11 +75,11 @@ public class OpenStackNetworks {
         if (this.status == null)
             this.status = "ACTIVE";
         if (this.adminStateUp == null)
-            this.adminStateUp = "true";
+            this.adminStateUp = true;
         if (this.shared == null)
-            this.shared = "false";
+            this.shared = false;
         if (this.routerExternal == null)
-            this.routerExternal = "false";
+            this.routerExternal = false;
         if (this.providerNetworkType == null)
             this.providerNetworkType = "flat";
     }
@@ -104,31 +103,21 @@ public class OpenStackNetworks {
     }
 
     public boolean isAdminStateUp() {
-        if (adminStateUp == null || adminStateUp.equalsIgnoreCase("true"))
-            return true;
-        return false;
+        return adminStateUp;
     }
 
-    public String getAdminStateUp() { return adminStateUp; }
+    public Boolean getAdminStateUp() { return adminStateUp; }
 
-    public void setAdminStateUp(String newValue) {
-        if (newValue.equalsIgnoreCase("true") ||
-                newValue.equalsIgnoreCase("false"))
-            this.adminStateUp = newValue;
+    public void setAdminStateUp(boolean newValue) {
+        this.adminStateUp = newValue;
     }
 
-    public boolean isShared() {
-        if (shared == null || shared.equalsIgnoreCase("true"))
-            return true;
-        return false;
-    }
+    public boolean isShared() { return shared; }
 
-    public String getShared() { return shared; }
+    public Boolean getShared() { return shared; }
 
-    public void setShared(String newValue) {
-        if (newValue.equalsIgnoreCase("true") ||
-                newValue.equalsIgnoreCase("false"))
-            this.shared = newValue;
+    public void setShared(boolean newValue) {
+        this.shared = newValue;
     }
 
     public String getTenantID() {
@@ -139,18 +128,12 @@ public class OpenStackNetworks {
         this.tenantID = tenantID;
     }
 
-    public boolean isRouterExternal() {
-        if (routerExternal == null || routerExternal.equalsIgnoreCase("true"))
-            return true;
-        return false;
-    }
+    public boolean isRouterExternal() { return routerExternal; }
 
-    public String getRouterExternal() { return routerExternal; }
+    public Boolean getRouterExternal() { return routerExternal; }
 
-    public void setRouterExternal(String newValue) {
-        if (newValue.equalsIgnoreCase("true") ||
-                newValue.equalsIgnoreCase("false"))
-            this.routerExternal = newValue;
+    public void setRouterExternal(boolean newValue) {
+        this.routerExternal = newValue;
     }
 
     public String getProviderNetworkType() {

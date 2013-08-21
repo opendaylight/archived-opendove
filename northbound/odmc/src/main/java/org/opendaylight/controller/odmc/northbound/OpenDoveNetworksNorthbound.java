@@ -209,7 +209,7 @@ public class OpenDoveNetworksNorthbound {
                 /*
                  * DOVE requirements on create. TODO: check existance of network name?
                  */
-                if (!test.isAdminStateUp())
+                if (test.getAdminStateUp() != null && !test.isAdminStateUp())
                     return Response.status(400).build();
                 testMap.put(test.getID(),test);
             }

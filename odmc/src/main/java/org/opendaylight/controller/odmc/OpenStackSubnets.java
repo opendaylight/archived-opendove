@@ -36,7 +36,7 @@ public class OpenStackSubnets {
     String name;
 
     @XmlElement (defaultValue="4", name="ip_version")
-    String ipVersion;
+    Integer ipVersion;
 
     @XmlElement (name="cidr")
     String cidr;
@@ -54,7 +54,7 @@ public class OpenStackSubnets {
     List<OpenStackHostRoute> hostRoutes;
 
     @XmlElement (defaultValue="true", name="enable_dhcp")
-    String enableDHCP;
+    Boolean enableDHCP;
 
     @XmlElement (name="tenant_id")
     String tenantID;
@@ -94,11 +94,11 @@ public class OpenStackSubnets {
         this.name = name;
     }
 
-    public String getIpVersion() {
+    public Integer getIpVersion() {
         return ipVersion;
     }
 
-    public void setIpVersion(String ipVersion) {
+    public void setIpVersion(Integer ipVersion) {
         this.ipVersion = ipVersion;
     }
 
@@ -143,16 +143,14 @@ public class OpenStackSubnets {
     }
 
     public boolean isEnableDHCP() {
-        if (enableDHCP == null || enableDHCP.equalsIgnoreCase("true"))
+        if (enableDHCP == null)
             return true;
-        return false;
+        return enableDHCP;
     }
 
-    public String getEnableDHCP() { return enableDHCP; }
+    public Boolean getEnableDHCP() { return enableDHCP; }
 
-    public void setEnableDHCP(String newValue) {
-        if (newValue.equalsIgnoreCase("true") ||
-                newValue.equalsIgnoreCase("false"))
+    public void setEnableDHCP(Boolean newValue) {
             this.enableDHCP = newValue;
     }
 

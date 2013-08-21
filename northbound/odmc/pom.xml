@@ -2,18 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-        <groupId>org.opendaylight.controller</groupId>
-        <properties>
-    <enunciate.version>1.26.2</enunciate.version>
-    <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
-        </properties>
+
+
+    <groupId>org.opendaylight.controller</groupId>
+    <properties>
+        <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
+        <enunciate.version>1.26.2</enunciate.version>
+    </properties>
 
     <repositories>
-    <repository>
-      <id>opendaylight-snapshot</id>
-      <name>opendaylight-snapshot</name>
-      <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
-    </repository>
+        <repository>
+            <id>opendaylight-snapshot</id>
+            <name>opendaylight-snapshot</name>
+            <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
+        </repository>
         <repository>
             <id>oss.sonatype.org</id>
             <name>OSS Sonatype Staging</name>
@@ -45,6 +47,7 @@
                             org.opendaylight.controller.northbound.commons.utils,
                             org.opendaylight.controller.odmc,
                             org.eclipse.persistence.jaxb.rs,
+                            com.sun.jersey.spi.container.servlet,
                             javax.ws.rs,
                             javax.ws.rs.core,
                             javax.xml.bind.annotation,
@@ -60,6 +63,11 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.opendaylight.controller.thirdparty</groupId>
+            <artifactId>com.sun.jersey.jersey-servlet</artifactId>
+            <version>1.17-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>containermanager</artifactId>
@@ -96,5 +104,4 @@
             <version>2.5.0</version>
         </dependency>
     </dependencies>
-  </project>
-
+</project>

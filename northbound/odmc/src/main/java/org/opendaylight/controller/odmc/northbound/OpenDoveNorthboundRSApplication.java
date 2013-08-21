@@ -8,9 +8,15 @@
 
 package org.opendaylight.controller.odmc.northbound;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.core.Application;
+import javax.xml.bind.*;
+
+import org.eclipse.persistence.jaxb.rs.MOXyJsonProvider;
+
 
 /**
  * This class is an instance of javax.ws.rs.core.Application and is used to return the classes
@@ -28,5 +34,26 @@ public class OpenDoveNorthboundRSApplication extends Application {
         classes.add(OpenDoveRoutersNorthbound.class);
         classes.add(OpenDoveFloatingIPsNorthbound.class);
         return classes;
+    }
+
+    @Override
+    public Set<Object> getSingletons() {
+        MOXyJsonProvider moxyJsonProvider = new MOXyJsonProvider();
+
+        moxyJsonProvider.setAttributePrefix("@");
+        moxyJsonProvider.setFormattedOutput(true);
+        moxyJsonProvider.setIncludeRoot(false);
+        moxyJsonProvider.setMarshalEmptyCollections(true);
+        moxyJsonProvider.setValueWrapper("$");
+
+        Map<String, String> namespacePrefixMapper = new HashMap<String, String>(1);
+        namespacePrefixMapper.put("router", "router");        // FIXME: fill in with XSD
+        namespacePrefixMapper.put("provider", "provider");    // FIXME: fill in with XSD
+        moxyJsonProvider.setNamespacePrefixMapper(namespacePrefixMapper);
+        moxyJsonProvider.setNamespaceSeparator(':');
+
+        HashSet<Object> set = new HashSet<Object>(1);
+        set.add(moxyJsonProvider);
+        return set;
     }
 }

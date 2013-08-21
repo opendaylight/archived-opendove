@@ -29,7 +29,7 @@ public class OpenStackRouters {
     String name;
 
     @XmlElement (defaultValue="true", name="admin_state_up")
-    String adminStateUp;
+    Boolean adminStateUp;
 
     @XmlElement (name="status")
     String status;
@@ -68,17 +68,15 @@ public class OpenStackRouters {
     }
 
     public boolean isAdminStateUp() {
-        if (adminStateUp == null || adminStateUp.equalsIgnoreCase("true"))
+        if (adminStateUp == null)
             return true;
-        return false;
+        return adminStateUp;
     }
 
-    public String getAdminStateUp() { return adminStateUp; }
+    public Boolean getAdminStateUp() { return adminStateUp; }
 
-    public void setAdminStateUp(String newValue) {
-        if (newValue.equalsIgnoreCase("true") ||
-                newValue.equalsIgnoreCase("false"))
-            this.adminStateUp = newValue;
+    public void setAdminStateUp(Boolean newValue) {
+        this.adminStateUp = newValue;
     }
 
     public String getStatus() {
@@ -150,6 +148,6 @@ public class OpenStackRouters {
     }
 
     public void initDefaults() {
-        adminStateUp = "true";
+        adminStateUp = true;
     }
 }

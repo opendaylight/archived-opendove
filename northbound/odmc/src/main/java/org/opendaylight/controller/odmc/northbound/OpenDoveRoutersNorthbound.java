@@ -266,6 +266,10 @@ public class OpenDoveRoutersNorthbound {
         if (singleton.getAdminStateUp() != null)
             return Response.status(403).build();
 
+        /* FIXME: if the external gateway info is being changed,
+         * block with 403 if there is a router interface using it
+         * (DOVE restriction)
+         */
         /*
          * if the external gateway info is being changed, verify that the new network
          * exists and has been designated as an external network

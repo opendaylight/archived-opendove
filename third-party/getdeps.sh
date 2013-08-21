@@ -8,15 +8,23 @@
 # distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
 #
 
-## Open vSwitch -- download and build latest snapshot
+##################################################
+## dependency: Open vSwitch -- download and build
+#################################################
 
-
-OVS_URL="http://openvswitch.org/releases/openvswitch-1.10.0.tar.gz"
+OVS_URL_STABLE="http://openvswitch.org/releases/openvswitch-1.10.0.tar.gz"
 OVS_URL_LATEST="http://openvswitch.org/cgi-bin/gitweb.cgi?p=openvswitch;a=snapshot;sf=tgz;h=HEAD"
 OVS_DISTFILE=./openvswitch.tar.gz
 OVS_DIR=./openvswitch
 
-wget $OVS_URL -O $OVS_DISTFILE
+## clean up any existing files
+for ovsfile in openvswitch*
+do
+    rm -rf $ovsfile
+done
+
+## fetch the distro 
+wget $OVS_URL_STABLE -O $OVS_DISTFILE
 if [ -e openvswitch.tar.gz ]
 then
     tar xfz $OVS_DISTFILE
@@ -27,7 +35,7 @@ then
     ./boot.sh
     ./configure;make
 else
-    return 1
+    exit 1
 fi
 
-return 0
+exit 0

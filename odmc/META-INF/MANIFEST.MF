@@ -1,15 +1,15 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1376883756290
-Build-Jdk: 1.7.0_25
-Built-By: aashaikh
-Bundle-Activator: org.opendaylight.controller.odmc.internal.Activator
+Bnd-LastModified: 1377183048876
+Build-Jdk: 1.7.0
+Built-By: rmoats
+Bundle-Activator: org.opendaylight.opendove.odmc.internal.Activator
 Bundle-ManifestVersion: 2
 Bundle-Name: odmc
-Bundle-SymbolicName: org.opendaylight.controller.odmc
+Bundle-SymbolicName: org.opendaylight.opendove.odmc
 Bundle-Version: 0.4.0.SNAPSHOT
 Created-By: Apache Maven Bundle Plugin
-Export-Package: org.opendaylight.controller.odmc;uses:="javax.xml.bind.a
- nnotation,org.apache.commons.net.util";version="0.4.0.SNAPSHOT"
+Export-Package: org.opendaylight.opendove.odmc;uses:="javax.xml.bind.ann
+ otation,org.apache.commons.net.util";version="0.4.0.SNAPSHOT"
 Import-Package: javax.xml.bind.annotation,org.apache.commons.net.util;ve
  rsion="[3.0,4)",org.apache.felix.dm;version="[3.0,4)",org.opendaylight.
  controller.clustering.services;version="[0.4,1)",org.opendaylight.contr

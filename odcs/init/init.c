@@ -205,7 +205,7 @@ static dove_status set_local_ip()
  *
  * \brief - Called by the polling thread that gets an indication that the local
  *          IP address has changed. The function sets the Local IP Address in 
- *          the dps_local_ip variable
+ *          the dps_local_ip variable. 
  *
  * \param[in] socket - The socket on which the information arrived
  * \param[in] context - NULL
@@ -400,7 +400,8 @@ PyMODINIT_FUNC initdcslib(void)
  ******************************************************************************
  * dcs_set_service_role --                                                *//**
  *
- * \brief This routine starts or stops the DCS service role
+ * \brief This routine starts or stops the DCS service role. The service role
+ *        can be DCS or DGW
  *
  * \param action 1:Activate/Set Local Node, 0:Reset Local Node
  *

@@ -88,9 +88,22 @@
 #include "dps_pkt.h"
 #include "dps_pkt_svr.h"
 #include "python_interface.h"
+#include "statistics.h"
 #include "client_protocol_interface.h"
 #include "controller_interface.h"
-
+#include "retransmit_interface.h"
+#include "rest_api.h"
+#include "cluster_api.h"
+#include "uuid_api.h"
+#include "rest_client_dove_controller.h"
+#include "rest_client_cluster_leader.h"
+#include "heartbeat.h"
+#include "rest_sync.h"
+#include "cluster_rest_client.h"
+#include "controller_rest_api.h"
+//#include "controller_rest_api.h"
+#include "debug_interface.h"
+//#include "dps_get_dmc_info.h"
 #define dps_offsetof(_type, _member) ((size_t) &((_type *)0)->_member)
 
 /**

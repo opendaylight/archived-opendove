@@ -7135,7 +7135,7 @@ static void dump_client_info(dps_client_data_t *buff)
 		}
 		break;
 	}
-	case DPS_UNSOLICITED_INVALIDATE_VM:
+	case DPS_UNSOLICITED_VM_LOC_INFO:
 	{	
 	    uint32_t i;
 

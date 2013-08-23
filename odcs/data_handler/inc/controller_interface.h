@@ -12,6 +12,7 @@
  * Created on Feb 25, 2012, 12:32 PM
  */
 
+
 #include "include.h"
 
 /**
@@ -191,7 +192,7 @@ typedef enum {
  *\brief DO NOT CHANGE THIS STRUCTURE without taking into account the
  *       following PYTHON files:
  *       1. cli/python/dps_cli/data_objects.py (policy_add)
- *       2. data_handler/python/dcs_objects/Policy.py
+ *       2. data_handler/python/dps_objects/Policy.py
  */
 typedef struct dps_object_policy_action_s{
 	/*
@@ -594,6 +595,14 @@ typedef struct dps_controller_data_op_s{
 		 * \note IPv4 and IPv6 Address MUST be in network byte order
 		 */
 		ip_addr_t controller_location;
+		/**
+		 * \brief Get load balancing for a specified domain
+		 */
+		dps_object_load_balancing_t load_balancing;
+		/**
+		 * \brief Get general statistics for a specified domain
+		 */
+		dps_object_general_statistics_t general_statistics;
 		/**
 		 * \brief Adding a IP subnet
 		 */

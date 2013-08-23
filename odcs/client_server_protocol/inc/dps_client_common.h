@@ -128,7 +128,7 @@ typedef enum {
 	DPS_UNSOLICITED_VNID_DEL_REQ = 38,	    // VNID is being deleted, block ports in VNID
 	DPS_CTRL_PLANE_HB = 39,                 // Heart Beat sent from the DCS node to Dove Switches
 	DPS_GET_DCS_NODE = 40,                  // Used to request a new DCS node ip address. Never seen on the wire. 
-	DPS_UNSOLICITED_INVALIDATE_VM = 41,    // Invalidate the VM.This msg is sent by DCS in response to a VM migration
+	DPS_UNSOLICITED_VM_LOC_INFO = 41,       // Invalidate the VM.This msg is sent by DCS in response to a VM migration
 	DPS_MAX_MSG_TYPE                       // This MUST be the Final Message Type
 } dps_client_req_type;
 

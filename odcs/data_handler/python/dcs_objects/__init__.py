@@ -31,7 +31,7 @@ class dcs_object(object):
     @classmethod
     def add_class(cls):
         """
-        Adds a (sub)class of dps_object. This 
+        Adds a (sub)class of dcs_object. This 
         """
         cls.type_set[cls.type_name] = cls
 

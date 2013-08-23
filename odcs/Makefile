@@ -39,6 +39,8 @@ endif
 
 MODULE_INIT                    = init
 MODULE_FD_PROCESS              = fd_process
+MODULE_CLUSTER_PROTOCOL        = cluster_protocol
+MODULE_CONTROLLER_PROTOCOL     = controller_protocol
 MODULE_DPS_PROTOCOL            = client_server_protocol
 MODULE_DATA_HANDLER            = data_handler
 MODULE_TIMER                   = timer
@@ -47,9 +49,12 @@ INCLUDE_FOLDER                 = inc
 DPS_PROTOCOL_INCLUDE           = $(MODULE_DPS_PROTOCOL)/inc
 DATA_HANDLER_INCLUDE           = $(MODULE_DATA_HANDLER)/inc
 TIMER_INCLUDE                  = $(MODULE_TIMER)/inc
+CLUSTER_INCLUDE				   = $(MODULE_CLUSTER_PROTOCOL)/inc
+CONTROLLER_INCLUDE             = $(MODULE_CONTROLLER_PROTOCOL)/inc
 INCLUDE_LIBEV                  = /opt/libev/include
 INCLUDE_JANSSON                = /opt/jansson/include
 INCLUDE_LIBEVENT2              = /opt/libevent/include
+INCLUDE_FDPROCESS              = $(MODULE_FD_PROCESS)
 
 #PYTHON FOLDERS
 MODULE_DATA_HANDLER_PY         = $(MODULE_DATA_HANDLER)/python
@@ -61,9 +66,26 @@ ALL_SOURCES += $(MODULE_FD_PROCESS)/fd_process.c
 ALL_SOURCES += $(MODULE_TIMER)/src/raw_proto_timer.c
 ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/client_protocol_interface.c
 ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/controller_interface.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/cluster_database.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/uuid.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/statistics.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/heartbeat.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/retransmit_interface.c
+ALL_SOURCES += $(MODULE_DATA_HANDLER)/src/debug_interface.c
 ALL_SOURCES += $(MODULE_DPS_PROTOCOL)/src/dps_svr_ctrl.c 
 ALL_SOURCES += $(MODULE_DPS_PROTOCOL)/src/dps_pkt_process.c
 ALL_SOURCES += $(MODULE_DPS_PROTOCOL)/src/dps_log.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_main.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_api.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/evhttp_helper.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_req_handler.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/dove_rest_client.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_forward.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_client_dove_controller.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_client_cluster_leader.c
+ALL_SOURCES += $(MODULE_CONTROLLER_PROTOCOL)/src/rest_sync.c
+ALL_SOURCES += $(MODULE_CLUSTER_PROTOCOL)/src/cluster_rest_client.c
+ALL_SOURCES += $(MODULE_CLUSTER_PROTOCOL)/src/cluster_rest_req_handler.c
 
 CLIENT_SOURCES = $(MODULE_DPS_PROTOCOL)/src/dps_svr_ctrl.c 
 CLIENT_SOURCES += $(MODULE_DPS_PROTOCOL)/src/dps_pkt_process.c
@@ -94,9 +116,12 @@ INCFLAGS = $(PYINC)                        \
            -I$(DPS_PROTOCOL_INCLUDE)       \
            -I$(DATA_HANDLER_INCLUDE)       \
            -I$(TIMER_INCLUDE)              \
+           -I$(CONTROLLER_INCLUDE)         \
+		   -I$(CLUSTER_INCLUDE)            \
            -I$(INCLUDE_FOLDER)             \
            -I$(INCLUDE_LIBEV)              \
            -I$(INCLUDE_JANSSON)            \
+	       -I$(INCLUDE_FDPROCESS)          \
            -I$(INCLUDE_LIBEVENT2)
 
 $(LIB_SHARED): $(LIB_OBJECTS_C)
@@ -129,5 +154,7 @@ clean:
 	rm -rf $(MODULE_FD_PROCESS)/*.o
 	rm -rf $(MODULE_DPS_PROTOCOL)/src/*.o
 	rm -rf $(MODULE_DATA_HANDLER)/src/*.o
+	rm -rf $(MODULE_CONTROLLER_PROTOCOL)/src/*.o
+	rm -rf $(MODULE_CLUSTER_PROTOCOL)/src/*.o
 	rm -rf $(MODULE_INIT)/*.o
 	rm -rf $(BUILD_DIR)

@@ -32,6 +32,153 @@ class DOVEGatewayTypes:
     GATEWAY_TYPE_VLAN = 2
     GATEWAY_TYPE_IMPLICIT = 3
 
+class policy_update_worker_thread(Thread):
+    """
+    This is the thread that can be run in the background to the send
+    new policy updates to DPS Clients in that Domain.
+    """
+    def __init__(self, queue):
+        """
+        @param queue: The queue that will contain all the items to be
+                      worked on.
+        @type queue: Queue
+        """
+        Thread.__init__(self)
+        self.queue = queue
+        self.setDaemon(True)
+
+    def run(self):
+        """
+        This is the worker thread that sends policy updates to all DPS Clients
+        in the Domain.
+        """
+        while True:
+            dvg, traffic_type = self.queue.get()
+            try:
+                dvg.send_policy_update(traffic_type)
+            except (Exception, MemoryError):
+                pass
+            self.queue.task_done()
+        log.warning('policy_update_thread: Exiting...!\r')
+
+class vm_migration_worker_thread(Thread):
+    """
+    This is the thread that can be run in the background to the send
+    vm migration updates to DPS Clients in that Domain.
+    """
+    def __init__(self, queue):
+        """
+        @param queue: The queue that will contain all the items to be
+                      worked on.
+        @type queue: Queue
+        """
+        Thread.__init__(self)
+        self.queue = queue
+        self.setDaemon(True)
+
+    def run(self):
+        """
+        This is the worker thread that sends vm migration updates to all DPS Clients
+        in the Domain.
+        """
+        while True:
+            endpoint_obj, domain_obj, vnid = self.queue.get()
+            try:
+                domain_obj.send_vm_migration_update(endpoint_obj,vnid)
+            except (Exception, MemoryError):
+                pass
+            self.queue.task_done()
+        log.warning('vm_migration_worker_thread: Exiting...!\r')
+
+class gateway_update_worker_thread(Thread):
+    """
+    This is the thread that can be run in the background to the send
+    new gateway updates to DPS Clients in that Domain.
+    """
+    def __init__(self, queue):
+        """
+        @param queue: The queue that will contain all the items to be
+                      worked on.
+        @type queue: Queue
+        """
+        Thread.__init__(self)
+        self.queue = queue
+        self.setDaemon(True)
+
+    def run(self):
+        """
+        This is the worker thread that sends policy updates to all DPS Clients
+        in the Domain.
+        """
+        while True:
+            dvg, gateway_type = self.queue.get()
+            try:
+                dvg.gateway_list_modified(gateway_type)
+            except (Exception, MemoryError):
+                pass
+            self.queue.task_done()
+        log.warning('gateway_update_worker_thread: Exiting...!\r')
+
+class address_resolution_worker_thread(Thread):
+    """
+    This is the thread that can be run in the background to the send
+    new gateway updates to DPS Clients in that Domain.
+    """
+
+    def __init__(self, queue):
+        """
+        @param queue: The queue that will contain all the items to be
+                      worked on.
+        @type queue: Queue
+        """
+        Thread.__init__(self)
+        self.queue = queue
+        self.setDaemon(True)
+
+    def run(self):
+        """
+        This is the worker thread that sends performs address resolution
+        operations.
+        """
+        while True:
+            function, param = self.queue.get()
+            try:
+                function(param)
+            except (Exception, MemoryError):
+                pass
+            self.queue.task_done()
+        log.warning('address_resolution_worker_thread: Exiting...!\r')
+
+class cluster_heartbeat_request_worker_thread(Thread):
+    """
+    This is the thread that can be run in the background to the send
+    new DPS Cluster Heartbeat Request messages to non-leader nodes
+    """
+
+    def __init__(self, queue):
+        """
+        @param queue: The queue that will contain all the items to be
+                      worked on.
+        @type queue: Queue
+        """
+        Thread.__init__(self)
+        self.queue = queue
+        self.setDaemon(True)
+
+    def run(self):
+        """
+        This is the worker thread that sends performs address resolution
+        operations.
+        """
+        while True:
+            cluster = self.queue.get()
+            try:
+                cluster.leader_send_hearbeat_request()
+            except (Exception, MemoryError):
+                pass
+            self.queue.task_done()
+        log.warning('cluster_heartbeat_request_worker_thread: Exiting...!\r')
+
 def mac_bytes(mac_string):
     '''
     Returns the byte array representing a MAC String.
@@ -103,6 +250,26 @@ class DpsCollection(object):
     Endpoints_Count_Max = 400000
     Endpoints_vIP_Max = 8
     policy_all_max_per_datagram = 1000
+    #A queue for sending Policy Updates in a Domain
+    policy_update_queue = Queue.Queue()
+    policy_update_thread = policy_update_worker_thread(policy_update_queue)
+    policy_update_thread.start()
+    #A queue to send Implicit Gateway Updates in a Domain
+    gateway_update_queue = Queue.Queue()
+    gateway_update_thread = gateway_update_worker_thread(gateway_update_queue)
+    gateway_update_thread.start()
+    #A queue for Address Resolution
+    address_resolution_queue = Queue.Queue()
+    address_resolution_thread = address_resolution_worker_thread(address_resolution_queue)
+    address_resolution_thread.start()
+    #A queue for Heartbeat Requests
+    heartbeat_request_queue = Queue.Queue()
+    heartbeat_request_thread = cluster_heartbeat_request_worker_thread(heartbeat_request_queue)
+    heartbeat_request_thread.start()
+    #A queue for sending VM Migration Updates in a Domain
+    vm_migration_update_queue = Queue.Queue()
+    vm_migration_update_thread = vm_migration_worker_thread(vm_migration_update_queue)
+    vm_migration_update_thread.start()
     #Collection of Broadcast Update Request. This contains the list of DVGs
     #for which updates must be sent to every DOVE Switch in that DVGs.
     VNID_Broadcast_Updates = {}

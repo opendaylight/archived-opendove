@@ -115,8 +115,6 @@ public class OpenDovePortsNorthbound {
             }
         }
         //TODO: apply pagination to results
-        //TODO: how to return proper empty set result: { "ports": [] }
-        //TODO: how to return proper set with one element result: { "ports": [{}] }
         return Response.status(200).entity(
                 new OpenStackPortRequest(ans)).build();
     }

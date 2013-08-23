@@ -113,8 +113,6 @@ public class OpenDoveRoutersNorthbound {
             }
         }
         //TODO: apply pagination to results
-        //TODO: how to return proper empty set result: { "routers": [] }
-        //TODO: how to return proper set with one element result: { "routers": [{}] }
         return Response.status(200).entity(
                 new OpenStackRouterRequest(ans)).build();
     }

@@ -39,15 +39,12 @@ public class OpenStackNetworks {
     @XmlElement (name="tenant_id")
     String tenantID;                 // tenant for this network
 
-    //TODO: fix this to use the proper namespace
     @XmlElement (defaultValue="false", namespace="router", name="external")
     Boolean routerExternal;           // network external or not
 
-    //TODO: fix this to use the proper namespace
     @XmlElement (defaultValue="flat", namespace="provider", name="network_type")
     String providerNetworkType;      // provider network type (flat or vlan)
 
-    //TODO: fix this to use the proper namespace
     @XmlElement (namespace="provider", name="physical_network")
     String providerPhysicalNetwork;  // provider physical network (name)
 

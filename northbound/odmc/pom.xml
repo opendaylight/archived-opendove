@@ -74,7 +74,7 @@
                             org.slf4j,
                             !org.codehaus.enunciate.jaxrs
                         </Import-Package>
-                        <Web-ContextPath>/v2.0</Web-ContextPath>
+                        <Web-ContextPath>/controller/v2/opendove/odmc/nb</Web-ContextPath>
                     </instructions>
                     <manifestLocation>${project.basedir}/src/main/resources/META-INF</manifestLocation>
                 </configuration>

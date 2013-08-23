@@ -38,7 +38,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
  *
  */
 
-//TODO: fill in when doing mapping
+
 @Path("/system")
 public class OpenDoveSystemNorthbound {
     /**

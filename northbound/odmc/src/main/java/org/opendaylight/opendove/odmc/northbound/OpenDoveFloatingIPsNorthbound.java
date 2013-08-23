@@ -111,8 +111,6 @@ public class OpenDoveFloatingIPsNorthbound {
             }
         }
         //TODO: apply pagination to results
-        //TODO: how to return proper empty set result: { "floatingips": [] }
-        //TODO: how to return proper set with one element result: { "floatingips": [{}] }
         return Response.status(200).entity(
                 new OpenStackFloatingIPRequest(ans)).build();
     }

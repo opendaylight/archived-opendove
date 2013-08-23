@@ -111,8 +111,6 @@ public class OpenDoveSubnetsNorthbound {
             }
         }
         //TODO: apply pagination to results
-        //TODO: how to return proper empty set result: { "subnets": [] }
-        //TODO: how to return proper set with one element result: { "subnets": [{}] }
         return Response.status(200).entity(
                 new OpenStackSubnetRequest(ans)).build();
     }

@@ -76,9 +76,7 @@ public class OpenDoveNetworksNorthbound {
             @QueryParam("status") String queryStatus,
             @QueryParam("shared") String queryShared,
             @QueryParam("tenant_id") String queryTenantID,
-            // TODO: fix decoration for router extension
             @QueryParam("router_external") String queryRouterExternal,
-            // TODO: fix decorations for provider extension
             @QueryParam("provider_network_type") String queryProviderNetworkType,
             @QueryParam("provider_physical_network") String queryProviderPhysicalNetwork,
             @QueryParam("provider_segmentation_id") String queryProviderSegmentationID,
@@ -98,18 +96,22 @@ public class OpenDoveNetworksNorthbound {
         Iterator<OpenStackNetworks> i = allNetworks.iterator();
         while (i.hasNext()) {
             OpenStackNetworks oSN = i.next();
-            //match filters: TODO provider extension and router extension
+            //match filters: TODO provider extension
             Boolean bAdminStateUp = null;
             Boolean bShared = null;
+            Boolean bRouterExternal = null;
             if (queryAdminStateUp != null)
                 bAdminStateUp = new Boolean(queryAdminStateUp);
             if (queryShared != null)
                 bShared = new Boolean(queryShared);
+            if (queryRouterExternal != null)
+            	bRouterExternal = new Boolean(queryRouterExternal);
             if ((queryID == null || queryID.equals(oSN.getID())) &&
                     (queryName == null || queryName.equals(oSN.getNetworkName())) &&
                     (bAdminStateUp == null || bAdminStateUp.booleanValue() == oSN.isAdminStateUp()) &&
                     (queryStatus == null || queryStatus.equals(oSN.getStatus())) &&
                     (bShared == null || bShared.booleanValue() == oSN.isShared()) &&
+                    (bRouterExternal == null || bRouterExternal.booleanValue() == oSN.isRouterExternal()) &&
                     (queryTenantID == null || queryTenantID.equals(oSN.getTenantID()))) {
                 if (fields.size() > 0)
                     ans.add(extractFields(oSN,fields));
@@ -118,8 +120,6 @@ public class OpenDoveNetworksNorthbound {
             }
         }
         //TODO: apply pagination to results
-        //TODO: how to return proper empty set result: { "networks": [] }
-        //TODO: how to return proper set with one element result: { "networks": [{}] }
         return Response.status(200).entity(
                 new OpenStackNetworkRequest(ans)).build();
     }
@@ -181,9 +181,6 @@ public class OpenDoveNetworksNorthbound {
             if (networkInterface.networkExists(singleton.getID()))
                 return Response.status(400).build();
 
-            /*
-             * DOVE requirements on create. TODO: check existance of network name?
-             */
             if (!singleton.isAdminStateUp())
                 return Response.status(400).build();
 
@@ -206,9 +203,6 @@ public class OpenDoveNetworksNorthbound {
                 if (testMap.containsKey(test.getID()))
                     return Response.status(400).build();
 
-                /*
-                 * DOVE requirements on create. TODO: check existance of network name?
-                 */
                 if (test.getAdminStateUp() != null && !test.isAdminStateUp())
                     return Response.status(400).build();
                 testMap.put(test.getID(),test);

@@ -51,7 +51,7 @@ import org.opendaylight.opendove.odmc.OpenStackSubnets;
  *
  */
 
-@Path("/subnets")
+@Path("/nb/subnets")
 public class OpenDoveSubnetsNorthbound {
 
     private OpenStackSubnets extractFields(OpenStackSubnets o, List<String> fields) {

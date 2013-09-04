@@ -57,7 +57,7 @@ import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailab
  *
  */
 
-@Path("/routers")
+@Path("/nb/routers")
 public class OpenDoveRoutersNorthbound {
 
     private OpenStackRouters extractFields(OpenStackRouters o, List<String> fields) {

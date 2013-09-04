@@ -55,7 +55,7 @@ import org.opendaylight.opendove.odmc.OpenStackSubnets;
  *
  */
 
-@Path("/floatingips")
+@Path("/nb/floatingips")
 public class OpenDoveFloatingIPsNorthbound {
 
     private OpenStackFloatingIPs extractFields(OpenStackFloatingIPs o, List<String> fields) {

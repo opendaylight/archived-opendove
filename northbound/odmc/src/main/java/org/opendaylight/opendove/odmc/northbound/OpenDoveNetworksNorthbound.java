@@ -50,7 +50,7 @@ import org.opendaylight.opendove.odmc.OpenStackNetworks;
  *
  */
 
-@Path("/networks")
+@Path("/nb/networks")
 public class OpenDoveNetworksNorthbound {
 
     private OpenStackNetworks extractFields(OpenStackNetworks o, List<String> fields) {

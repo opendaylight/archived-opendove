@@ -53,7 +53,7 @@ import org.opendaylight.opendove.odmc.OpenStackSubnets;
  *
  */
 
-@Path("/ports")
+@Path("/nb/ports")
 public class OpenDovePortsNorthbound {
 
     private OpenStackPorts extractFields(OpenStackPorts o, List<String> fields) {

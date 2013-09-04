@@ -13,12 +13,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
+import org.opendaylight.opendove.odmc.IfNBSystemRU;
+import org.opendaylight.opendove.odmc.OpenDoveNeutronControlBlock;
 
 /**
  * Open DOVE Northbound REST APIs.<br>
@@ -39,7 +42,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
  */
 
 
-@Path("/system")
+@Path("/nb/system")
 public class OpenDoveSystemNorthbound {
     /**
      * Returns the system control block */
@@ -53,11 +56,17 @@ public class OpenDoveSystemNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
     public Response showSubnet() {
-        return Response.status(501).build();
+        IfNBSystemRU systemInterface = OpenDoveNBInterfaces.getIfNBSystemRU("default", this);
+        if (systemInterface == null) {
+            throw new ServiceUnavailableException("System RU Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        return Response.status(200).entity(
+                systemInterface.getSystemBlock()).build();
     }
 
     /**
-     * Updates a Subnet */
+     * Updates the control block */
 
     @Path("/")
     @PUT
@@ -69,10 +78,16 @@ public class OpenDoveSystemNorthbound {
             @ResponseCode(code = 400, condition = "Bad Request"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
-    public Response updateSubnet(
-            @QueryParam("preserve_domain_separation") String preserveDomainSeparation,
-            @QueryParam("snat_pool_size") String sNATPoolSize
-            ) {
-        return Response.status(501).build();
+    public Response updateSubnet(final OpenDoveNeutronControlBlock input) {
+        IfNBSystemRU systemInterface = OpenDoveNBInterfaces.getIfNBSystemRU("default", this);
+        if (systemInterface == null) {
+            throw new ServiceUnavailableException("System RU Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+
+        // update network object and return the modified object
+        systemInterface.updateControlBlock(input);
+        return Response.status(200).entity(
+                systemInterface.getSystemBlock()).build();
     }
 }

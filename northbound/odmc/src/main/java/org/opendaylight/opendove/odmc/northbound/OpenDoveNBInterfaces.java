@@ -11,6 +11,7 @@ import org.opendaylight.opendove.odmc.IfNBNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfNBPortCRUD;
 import org.opendaylight.opendove.odmc.IfNBRouterCRUD;
 import org.opendaylight.opendove.odmc.IfNBSubnetCRUD;
+import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.controller.sal.utils.ServiceHelper;
 
 public class OpenDoveNBInterfaces {
@@ -171,6 +172,38 @@ public class OpenDoveNBInterfaces {
 
         IfNBFloatingIPCRUD answer = (IfNBFloatingIPCRUD) ServiceHelper.getInstance(
                 IfNBFloatingIPCRUD.class, containerName, o);
+
+        if (answer == null) {
+            throw new ServiceUnavailableException("Network CRUD Service "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+
+        return answer;
+    }
+
+    public static IfNBSystemRU getIfNBSystemRU(String containerName, Object o) {
+        IContainerManager containerManager = (IContainerManager) ServiceHelper
+        .getGlobalInstance(IContainerManager.class, o);
+        if (containerManager == null) {
+            throw new ServiceUnavailableException("Container "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+
+        boolean found = false;
+        List<String> containerNames = containerManager.getContainerNames();
+        for (String cName : containerNames) {
+            if (cName.trim().equalsIgnoreCase(containerName.trim())) {
+                found = true;
+            }
+        }
+
+        if (found == false) {
+            throw new ResourceNotFoundException(containerName + " "
+                    + RestMessages.NOCONTAINER.toString());
+        }
+
+        IfNBSystemRU answer = (IfNBSystemRU) ServiceHelper.getInstance(
+                IfNBSystemRU.class, containerName, o);
 
         if (answer == null) {
             throw new ServiceUnavailableException("Network CRUD Service "

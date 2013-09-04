@@ -29,10 +29,10 @@ import org.opendaylight.controller.clustering.services.IClusterServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRUD,
-         IfNBPortCRUD, IfNBRouterCRUD, IfNBFloatingIPCRUD {
+public class OpenDoveNeutronNBInterfaces implements IfNBNetworkCRUD, IfNBSubnetCRUD,
+IfNBPortCRUD, IfNBRouterCRUD, IfNBFloatingIPCRUD, IfNBSystemRU {
     private static final Logger logger = LoggerFactory
-            .getLogger(OpenDoveManagementConsole.class);
+    .getLogger(OpenDoveNeutronNBInterfaces.class);
     private String containerName = null;
 
     private IClusterContainerServices clusterContainerService = null;
@@ -41,6 +41,7 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
     private ConcurrentMap<String, OpenStackPorts> portDB;
     private ConcurrentMap<String, OpenStackRouters> routerDB;
     private ConcurrentMap<String, OpenStackFloatingIPs> floatingIPDB;
+    private ConcurrentMap<String, OpenDoveNeutronControlBlock> systemDB;
 
     // methods needed for creating caches
 
@@ -75,6 +76,8 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
                     EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
             this.clusterContainerService.createCache("openDoveNeutronFloatingIPs",
                     EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
+            this.clusterContainerService.createCache("openDoveNeutronSystem",
+                    EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
             logger.error("Cache couldn't be created for OpenDOVE -  check cache mode");
         } catch (CacheExistException cce) {
@@ -91,50 +94,63 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         }
         logger.debug("Retrieving cache for openDoveNeutronNetworks");
         networkDB = (ConcurrentMap<String, OpenStackNetworks>) this.clusterContainerService
-                .getCache("openDoveNeutronNetworks");
+        .getCache("openDoveNeutronNetworks");
         if (networkDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronNetworks");
         }
         logger.debug("Cache was successfully retrieved for openDOVENeutronNetworks");
         logger.debug("Retrieving cache for openDoveNeutronSubnets");
         subnetDB = (ConcurrentMap<String, OpenStackSubnets>) this.clusterContainerService
-                .getCache("openDoveNeutronSubnets");
+        .getCache("openDoveNeutronSubnets");
         if (subnetDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronSubnets");
         }
         logger.debug("Cache was successfully retrieved for openDOVENeutronSubnets");
         logger.debug("Retrieving cache for openDoveNeutronPorts");
         portDB = (ConcurrentMap<String, OpenStackPorts>) this.clusterContainerService
-                .getCache("openDoveNeutronPorts");
+        .getCache("openDoveNeutronPorts");
         if (portDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronPorts");
         }
         logger.debug("Cache was successfully retrieved for openDOVENeutronPorts");
         logger.debug("Retrieving cache for openDoveNeutronRouters");
         routerDB = (ConcurrentMap<String, OpenStackRouters>) this.clusterContainerService
-                .getCache("openDoveNeutronRouters");
+        .getCache("openDoveNeutronRouters");
         if (routerDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronRouters");
         }
         logger.debug("Cache was successfully retrieved for openDOVENeutronRouters");
+
         logger.debug("Retrieving cache for openDoveNeutronFloatingIPs");
         floatingIPDB = (ConcurrentMap<String, OpenStackFloatingIPs>) this.clusterContainerService
-                .getCache("openDoveNeutronFloatingIPs");
+        .getCache("openDoveNeutronFloatingIPs");
         if (floatingIPDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronFloatingIPs");
         }
         logger.debug("Cache was successfully retrieved for openDOVENeutronFloatingIPs");
+
+        logger.debug("Retrieving cache for openDoveNeutronSystem");
+        floatingIPDB = (ConcurrentMap<String, OpenStackFloatingIPs>) this.clusterContainerService
+        .getCache("openDoveNeutronSystem");
+        if (floatingIPDB == null) {
+            logger.error("Cache couldn't be retrieved for openDOVENeutronSystem");
+        }
+        logger.debug("Cache was successfully retrieved for openDOVENeutronSystem");
     }
 
+    @SuppressWarnings("deprecation")
     private void destroyCache() {
-/*        if (this.clusterContainerService == null) {
+        if (this.clusterContainerService == null) {
             logger.error("un-initialized clusterMger, can't destroy cache");
             return;
         }
         logger.debug("Destroying Cache for HostTracker");
-        this.clusterContainerService.destroyCache("hostTrackerAH");
-        this.clusterContainerService.destroyCache("hostTrackerIH");
-        nonClusterObjectCreate(); */
+        this.clusterContainerService.destroyCache("openDoveNeutronNetworks");
+        this.clusterContainerService.destroyCache("openDoveNeutronSubnets");
+        this.clusterContainerService.destroyCache("openDoveNeutronPorts");
+        this.clusterContainerService.destroyCache("openDoveNeutronRouters");
+        this.clusterContainerService.destroyCache("openDoveNeutronFloatingIPs");
+        this.clusterContainerService.destroyCache("openDoveNeutronSystem");
     }
 
     private void startUp() {
@@ -215,19 +231,16 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
 
     // IfNBFloatingIPCRUD interface methods
 
-    @Override
     public boolean floatingIPExists(String uuid) {
         return floatingIPDB.containsKey(uuid);
     }
 
-    @Override
     public OpenStackFloatingIPs getFloatingIP(String uuid) {
         if (!floatingIPExists(uuid))
             return null;
         return floatingIPDB.get(uuid);
     }
 
-    @Override
     public List<OpenStackFloatingIPs> getAllFloatingIPs() {
         Set<OpenStackFloatingIPs> allIPs = new HashSet<OpenStackFloatingIPs>();
         for (Entry<String, OpenStackFloatingIPs> entry : floatingIPDB.entrySet()) {
@@ -240,7 +253,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return ans;
     }
 
-    @Override
     public boolean addFloatingIP(OpenStackFloatingIPs input) {
         if (floatingIPExists(input.getID()))
             return false;
@@ -260,7 +272,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean removeFloatingIP(String uuid) {
         if (!floatingIPExists(uuid))
             return false;
@@ -276,7 +287,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean updateFloatingIP(String uuid, OpenStackFloatingIPs delta) {
         if (!floatingIPExists(uuid))
             return false;
@@ -299,19 +309,16 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
 
     // IfNBRouterCRUD Interface methods
 
-    @Override
     public boolean routerExists(String uuid) {
         return routerDB.containsKey(uuid);
     }
 
-    @Override
     public OpenStackRouters getRouter(String uuid) {
         if (!routerExists(uuid))
             return null;
         return routerDB.get(uuid);
     }
 
-    @Override
     public List<OpenStackRouters> getAllRouters() {
         Set<OpenStackRouters> allRouters = new HashSet<OpenStackRouters>();
         for (Entry<String, OpenStackRouters> entry : routerDB.entrySet()) {
@@ -324,7 +331,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return ans;
     }
 
-    @Override
     public boolean addRouter(OpenStackRouters input) {
         if (routerExists(input.getID()))
             return false;
@@ -332,7 +338,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean removeRouter(String uuid) {
         if (!routerExists(uuid))
             return false;
@@ -340,7 +345,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean updateRouter(String uuid, OpenStackRouters delta) {
         if (!routerExists(uuid))
             return false;
@@ -348,7 +352,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return overwrite(target, delta);
     }
 
-    @Override
     public boolean routerInUse(String routerUUID) {
         if (!routerExists(routerUUID))
             return true;
@@ -358,19 +361,16 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
 
     // IfNBPortCRUD methods
 
-    @Override
     public boolean portExists(String uuid) {
         return portDB.containsKey(uuid);
     }
 
-    @Override
     public OpenStackPorts getPort(String uuid) {
         if (!portExists(uuid))
             return null;
         return portDB.get(uuid);
     }
 
-    @Override
     public List<OpenStackPorts> getAllPorts() {
         Set<OpenStackPorts> allPorts = new HashSet<OpenStackPorts>();
         for (Entry<String, OpenStackPorts> entry : portDB.entrySet()) {
@@ -383,7 +383,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return ans;
     }
 
-    @Override
     public boolean addPort(OpenStackPorts input) {
         if (portExists(input.getID()))
             return false;
@@ -412,7 +411,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean removePort(String uuid) {
         if (!portExists(uuid))
             return false;
@@ -430,7 +428,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean updatePort(String uuid, OpenStackPorts delta) {
         if (!portExists(uuid))
             return false;
@@ -456,7 +453,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return overwrite(target, delta);
     }
 
-    @Override
     public boolean macInUse(String macAddress) {
         List<OpenStackPorts> ports = getAllPorts();
         Iterator<OpenStackPorts> portIterator = ports.iterator();
@@ -468,7 +464,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return false;
     }
 
-    @Override
     public OpenStackPorts getGatewayPort(String subnetUUID) {
         OpenStackSubnets subnet = getSubnet(subnetUUID);
         Iterator<OpenStackPorts> portIterator = getAllPorts().iterator();
@@ -485,19 +480,16 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
 
     // IfNBSubnetCRUD methods
 
-    @Override
     public boolean subnetExists(String uuid) {
         return subnetDB.containsKey(uuid);
     }
 
-    @Override
     public OpenStackSubnets getSubnet(String uuid) {
         if (!subnetExists(uuid))
             return null;
         return subnetDB.get(uuid);
     }
 
-    @Override
     public List<OpenStackSubnets> getAllSubnets() {
         Set<OpenStackSubnets> allSubnets = new HashSet<OpenStackSubnets>();
         for (Entry<String, OpenStackSubnets> entry : subnetDB.entrySet()) {
@@ -510,7 +502,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return ans;
     }
 
-    @Override
     public boolean addSubnet(OpenStackSubnets input) {
         String id = input.getID();
         if (subnetExists(id))
@@ -521,7 +512,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean removeSubnet(String uuid) {
         if (!subnetExists(uuid))
             return false;
@@ -532,7 +522,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean updateSubnet(String uuid, OpenStackSubnets delta) {
         if (!subnetExists(uuid))
             return false;
@@ -540,7 +529,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return overwrite(target, delta);
     }
 
-    @Override
     public boolean subnetInUse(String subnetUUID) {
         if (!subnetExists(subnetUUID))
             return true;
@@ -550,19 +538,16 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
 
     // IfNBNetworkCRUD methods
 
-    @Override
     public boolean networkExists(String uuid) {
         return networkDB.containsKey(uuid);
     }
 
-    @Override
     public OpenStackNetworks getNetwork(String uuid) {
         if (!networkExists(uuid))
             return null;
         return networkDB.get(uuid);
     }
 
-    @Override
     public List<OpenStackNetworks> getAllNetworks() {
         Set<OpenStackNetworks> allNetworks = new HashSet<OpenStackNetworks>();
         for (Entry<String, OpenStackNetworks> entry : networkDB.entrySet()) {
@@ -575,7 +560,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return ans;
     }
 
-    @Override
     public boolean addNetwork(OpenStackNetworks input) {
         if (networkExists(input.getID()))
             return false;
@@ -583,7 +567,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean removeNetwork(String uuid) {
         if (!networkExists(uuid))
             return false;
@@ -591,7 +574,6 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return true;
     }
 
-    @Override
     public boolean updateNetwork(String uuid, OpenStackNetworks delta) {
         if (!networkExists(uuid))
             return false;
@@ -599,11 +581,19 @@ public class OpenDoveManagementConsole implements IfNBNetworkCRUD, IfNBSubnetCRU
         return overwrite(target, delta);
     }
 
-    @Override
     public boolean networkInUse(String netUUID) {
         if (!networkExists(netUUID))
             return true;
         OpenStackNetworks target = networkDB.get(netUUID);
         return (target.getPortsOnNetwork().size() > 0);
+    }
+
+    public OpenDoveNeutronControlBlock getSystemBlock() {
+        return systemDB.get("default");
+    }
+
+    public boolean updateControlBlock(OpenDoveNeutronControlBlock input) {
+        OpenDoveNeutronControlBlock target = systemDB.get("default");
+        return overwrite(target, input);
     }
 }

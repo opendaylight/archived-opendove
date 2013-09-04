@@ -21,6 +21,7 @@ import org.opendaylight.opendove.odmc.IfNBNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfNBPortCRUD;
 import org.opendaylight.opendove.odmc.IfNBRouterCRUD;
 import org.opendaylight.opendove.odmc.IfNBSubnetCRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveSouthbound;
 
 public class Activator extends ComponentActivatorAbstractBase {
     protected static final Logger logger = LoggerFactory
@@ -55,7 +56,8 @@ public class Activator extends ComponentActivatorAbstractBase {
      * Object
      */
     public Object[] getImplementations() {
-        Object[] res = { OpenDoveManagementConsole.class };
+        Object[] res = { OpenDoveNeutronNBInterfaces.class,
+        		OpenDoveSBInterfaces.class };
         return res;
     }
 
@@ -73,7 +75,7 @@ public class Activator extends ComponentActivatorAbstractBase {
      * should not be the case though.
      */
     public void configureInstance(Component c, Object imp, String containerName) {
-        if (imp.equals(OpenDoveManagementConsole.class)) {
+        if (imp.equals(OpenDoveNeutronNBInterfaces.class)) {
             // export the service
             c.setInterface(
                     new String[] { IfNBNetworkCRUD.class.getName(),
@@ -81,6 +83,16 @@ public class Activator extends ComponentActivatorAbstractBase {
                             IfNBPortCRUD.class.getName(),
                             IfNBRouterCRUD.class.getName(),
                             IfNBFloatingIPCRUD.class.getName() }, null);
+            Dictionary<String, String> props = new Hashtable<String, String>();
+            props.put("salListenerName", "opendove");
+            c.add(createContainerServiceDependency(containerName)
+                    .setService(IClusterContainerServices.class)
+                    .setCallbacks("setClusterContainerService",
+                    "unsetClusterContainerService").setRequired(true));
+        }
+        if (imp.equals(OpenDoveSBInterfaces.class)) {
+            c.setInterface(
+                    new String[] { IfOpenDoveSouthbound.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)

@@ -21,7 +21,9 @@ import org.opendaylight.opendove.odmc.IfNBNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfNBPortCRUD;
 import org.opendaylight.opendove.odmc.IfNBRouterCRUD;
 import org.opendaylight.opendove.odmc.IfNBSubnetCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveSouthbound;
+import org.opendaylight.opendove.odmc.IfNBSystemRU;
+import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 
 public class Activator extends ComponentActivatorAbstractBase {
     protected static final Logger logger = LoggerFactory
@@ -57,7 +59,8 @@ public class Activator extends ComponentActivatorAbstractBase {
      */
     public Object[] getImplementations() {
         Object[] res = { OpenDoveNeutronNBInterfaces.class,
-        		OpenDoveSBInterfaces.class };
+                OpenDoveNeutronNetworkInterface.class,
+                OpenDoveSBInterfaces.class };
         return res;
     }
 
@@ -78,11 +81,22 @@ public class Activator extends ComponentActivatorAbstractBase {
         if (imp.equals(OpenDoveNeutronNBInterfaces.class)) {
             // export the service
             c.setInterface(
-                    new String[] { IfNBNetworkCRUD.class.getName(),
-                            IfNBSubnetCRUD.class.getName(),
+                    new String[] { IfNBSubnetCRUD.class.getName(),
                             IfNBPortCRUD.class.getName(),
                             IfNBRouterCRUD.class.getName(),
-                            IfNBFloatingIPCRUD.class.getName() }, null);
+                            IfNBFloatingIPCRUD.class.getName(),
+                            IfNBSystemRU.class.getName() }, null);
+            Dictionary<String, String> props = new Hashtable<String, String>();
+            props.put("salListenerName", "opendove");
+            c.add(createContainerServiceDependency(containerName)
+                    .setService(IClusterContainerServices.class)
+                    .setCallbacks("setClusterContainerService",
+                    "unsetClusterContainerService").setRequired(true));
+        }
+        if (imp.equals(OpenDoveNeutronNetworkInterface.class)) {
+            // export the service
+            c.setInterface(
+                    new String[] { IfNBNetworkCRUD.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)
@@ -92,7 +106,8 @@ public class Activator extends ComponentActivatorAbstractBase {
         }
         if (imp.equals(OpenDoveSBInterfaces.class)) {
             c.setInterface(
-                    new String[] { IfOpenDoveSouthbound.class.getName() }, null);
+                    new String[] { IfSBDoveDomainCRU.class.getName(),
+                            IfSBDoveNetworkCRU.class.getName()}, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)

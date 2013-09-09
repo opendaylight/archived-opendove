@@ -17,18 +17,21 @@ import org.opendaylight.controller.clustering.services.CacheConfigException;
 import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
-import org.opendaylight.opendove.odmc.IfOpenDoveSouthbound;
+import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
+import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveSBInterfaces implements IfOpenDoveSouthbound {
+public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkCRU {
     private static final Logger logger = LoggerFactory
             .getLogger(OpenDoveNeutronNBInterfaces.class);
     private String containerName = null;
 
     private IClusterContainerServices clusterContainerService = null;
     private ConcurrentMap<String, OpenDoveDomain> domainDB;
+    private ConcurrentMap<String, OpenDoveNetwork> networkDB;
 
     // methods needed for creating caches
 
@@ -55,6 +58,8 @@ public class OpenDoveSBInterfaces implements IfOpenDoveSouthbound {
             // DOVE caches
             this.clusterContainerService.createCache("openDoveDomains",
                     EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
+            this.clusterContainerService.createCache("openDoveNetworks",
+                    EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
             logger.error("Southbound Caches couldn't be created for OpenDOVE -  check cache mode");
         } catch (CacheExistException cce) {
@@ -76,6 +81,14 @@ public class OpenDoveSBInterfaces implements IfOpenDoveSouthbound {
             logger.error("Cache couldn't be retrieved for openDoveDomains");
         }
         logger.debug("Cache was successfully retrieved for openDoveDomains");
+
+        logger.debug("Retrieving cache for openDoveNetworks");
+        networkDB = (ConcurrentMap<String, OpenDoveNetwork>) this.clusterContainerService
+                .getCache("openDoveNetworks");
+        if (networkDB == null) {
+            logger.error("Cache couldn't be retrieved for openDoveDomains");
+        }
+        logger.debug("Cache was successfully retrieved for openDoveDomains");
     }
 
     @SuppressWarnings("deprecation")
@@ -84,8 +97,9 @@ public class OpenDoveSBInterfaces implements IfOpenDoveSouthbound {
             logger.error("un-initialized clusterMger, can't destroy cache");
             return;
         }
-        logger.debug("Destroying Cache for HostTracker");
+        logger.debug("Destroying Caches for OpenDove");
         this.clusterContainerService.destroyCache("openDoveDomains");
+        this.clusterContainerService.destroyCache("openDoveNetworks");
     }
 
     private void startUp() {
@@ -136,15 +150,40 @@ public class OpenDoveSBInterfaces implements IfOpenDoveSouthbound {
      */
     void stop() {
     }
+
+    // code to support SB domain interfaces (including URI)
+
+    public boolean domainExists(String domainUUID) {
+        return(domainDB.containsKey(domainUUID));
+    }
+
+    public OpenDoveDomain getDomain(String domainUUID) {
+        return(domainDB.get(domainUUID));
+    }
+
+    public void addDomain(String domainUUID, OpenDoveDomain domain) {
+        domainDB.putIfAbsent(domainUUID, domain);
+    }
     
-    // code to support SB domain URI
+    public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network) {
+    	if (domainExists(domainUUID)) {
+    		OpenDoveDomain domain = domainDB.get(domainUUID);
+    		domain.addNetwork(network);
+    	}
+    }
 
-	public boolean domainExists(String domainUUID) {
-		return(domainDB.containsKey(domainUUID));
-	}
+    // code to support SB network interfaces (including URI)
+    
+    public boolean networkExists(String networkUUID) {
+        return(networkDB.containsKey(networkUUID));
+    }
 
-	public OpenDoveDomain getDomain(String domainUUID) {
-		return(domainDB.get(domainUUID));
-	}
+    public OpenDoveNetwork getNetwork(String networkUUID) {
+        return(networkDB.get(networkUUID));
+    }
 
+    public void addNetwork(String networkUUID, OpenDoveNetwork network) {
+        networkDB.putIfAbsent(networkUUID, network);
+        addNetworkToDomain(network.getDomain_uuid(), network);
+    }
 }

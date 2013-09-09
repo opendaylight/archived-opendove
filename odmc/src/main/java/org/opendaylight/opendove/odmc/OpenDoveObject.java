@@ -8,9 +8,12 @@
 
 package org.opendaylight.opendove.odmc;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 /*
  * This class provides a container for the ChangeVersion object to track
  * OpenDove objects and not just POJOs.
  */
 
-public abstract class OpenDoveObject {}
+@XmlTransient
+public abstract class OpenDoveObject { }

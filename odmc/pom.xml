@@ -51,6 +51,7 @@
                         <Import-Package>
                             org.opendaylight.controller.clustering.services,
                             org.opendaylight.controller.sal.core,
+                            org.opendaylight.controller.sal.utils,
                             org.apache.felix.dm,
                             org.apache.commons.net.util,
                             org.osgi.service.component,

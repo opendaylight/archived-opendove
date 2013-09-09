@@ -19,7 +19,8 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveSouthbound;
+import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
  * Open DOVE Southbound REST APIs for Domains.<br>
@@ -53,7 +54,7 @@ public class OpenDoveDomainSouthbound {
     public Response showDomain(
             @PathParam("domainUUID") String domainUUID
             ) {
-        IfOpenDoveSouthbound sbInterface = OpenDoveSBInterfaces.getSBInterface("default", this);
+        IfSBDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

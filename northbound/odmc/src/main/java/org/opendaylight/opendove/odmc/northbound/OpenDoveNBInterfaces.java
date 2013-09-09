@@ -12,13 +12,14 @@ import org.opendaylight.opendove.odmc.IfNBPortCRUD;
 import org.opendaylight.opendove.odmc.IfNBRouterCRUD;
 import org.opendaylight.opendove.odmc.IfNBSubnetCRUD;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
+import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.controller.sal.utils.ServiceHelper;
 
 public class OpenDoveNBInterfaces {
 
     // return a class that implements the IfNBNetworkCRUD interface
     static IfNBNetworkCRUD getIfNBNetworkCRUD(String containerName, Object o) {
-        IContainerManager containerManager = (IContainerManager) ServiceHelper
+ /*       IContainerManager containerManager = (IContainerManager) ServiceHelper
                 .getGlobalInstance(IContainerManager.class, o);
         if (containerManager == null) {
             throw new ServiceUnavailableException("Container "
@@ -36,10 +37,12 @@ public class OpenDoveNBInterfaces {
         if (found == false) {
             throw new ResourceNotFoundException(containerName + " "
                     + RestMessages.NOCONTAINER.toString());
-        }
+        } 
 
         IfNBNetworkCRUD answer = (IfNBNetworkCRUD) ServiceHelper.getInstance(
-                IfNBNetworkCRUD.class, containerName, o);
+                IfNBNetworkCRUD.class, containerName, o); */
+    	
+    	IfNBNetworkCRUD answer = OpenDoveCRUDInterfaces.getIfNBNetworkCRUD(o);
 
         if (answer == null) {
             throw new ServiceUnavailableException("Network CRUD Service "

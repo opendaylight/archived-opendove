@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,9 +16,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.NONE)
 
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement
 public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedObject {
     @XmlElement (name="id")
     String uuid;
@@ -40,6 +41,14 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
     List<OpenDoveNetwork> scopedNetworks;
 
     public OpenDoveDomain() {
+    }
+    
+    public OpenDoveDomain(String uuid, String name) {
+    	this.uuid = uuid;
+    	this.name = name;
+    	this.tombstoneFlag = false;
+    	this.replicationFactor = 2;
+    	this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
     }
 
     public String getUuid() {
@@ -93,4 +102,8 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
     public boolean isTrackedByDSA() {
         return true;
     }
+
+	public void addNetwork(OpenDoveNetwork network) {
+		scopedNetworks.add(network);		
+	}
 }

@@ -23,7 +23,7 @@ public class OpenDoveNeutronControlBlock {
 	@XmlElement(name="snat_pool_size")
 	Integer snatPoolSize;
 	
-	OpenDoveNeutronControlBlock() {
+	public OpenDoveNeutronControlBlock() {
 		domainSeparation = false;
 		snatPoolSize = new Integer(1);
 	}

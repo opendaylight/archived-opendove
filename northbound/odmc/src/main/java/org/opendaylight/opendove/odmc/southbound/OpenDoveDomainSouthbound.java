@@ -42,7 +42,7 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 @Path("/sb/domains")
 public class OpenDoveDomainSouthbound {
 
-    @Path("{domainUUID}")
+    @Path("/{domainUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -61,7 +61,24 @@ public class OpenDoveDomainSouthbound {
         }
         if (!sbInterface.domainExists(domainUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(
-                sbInterface.getDomain(domainUUID)).build();
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(domainUUID))).build();
+    }
+
+    @Path("/")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response listDomains() {
+        IfSBDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomains())).build();
     }
 }
+

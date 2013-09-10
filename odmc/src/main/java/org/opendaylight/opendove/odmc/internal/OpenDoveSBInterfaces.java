@@ -8,8 +8,11 @@
 
 package org.opendaylight.opendove.odmc.internal;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.felix.dm.Component;
@@ -157,23 +160,49 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         return(domainDB.containsKey(domainUUID));
     }
 
+    public boolean domainExistsByName(String name) {
+        Iterator<OpenDoveDomain> i = domainDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveDomain d = i.next();
+            if (d.getName().compareTo(name) == 0)
+                return true;
+        }
+        return false;
+    }
+
     public OpenDoveDomain getDomain(String domainUUID) {
         return(domainDB.get(domainUUID));
+    }
+
+    public OpenDoveDomain getDomainByName(String name) {
+        Iterator<OpenDoveDomain> i = domainDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveDomain d = i.next();
+            if (d.getName().compareTo(name) == 0)
+                return d;
+        }
+        return null;
     }
 
     public void addDomain(String domainUUID, OpenDoveDomain domain) {
         domainDB.putIfAbsent(domainUUID, domain);
     }
-    
+
     public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network) {
-    	if (domainExists(domainUUID)) {
-    		OpenDoveDomain domain = domainDB.get(domainUUID);
-    		domain.addNetwork(network);
-    	}
+        if (domainExists(domainUUID)) {
+            OpenDoveDomain domain = domainDB.get(domainUUID);
+            domain.addNetwork(network);
+        }
+    }
+
+    public List<OpenDoveDomain> getDomains() {
+        List<OpenDoveDomain> answer = new ArrayList<OpenDoveDomain>();
+        answer.addAll(domainDB.values());
+        return answer;
     }
 
     // code to support SB network interfaces (including URI)
-    
+
     public boolean networkExists(String networkUUID) {
         return(networkDB.containsKey(networkUUID));
     }
@@ -186,4 +215,5 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         networkDB.putIfAbsent(networkUUID, network);
         addNetworkToDomain(network.getDomain_uuid(), network);
     }
+
 }

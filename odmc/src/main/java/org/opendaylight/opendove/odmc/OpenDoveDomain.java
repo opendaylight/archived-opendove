@@ -42,13 +42,13 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
 
     public OpenDoveDomain() {
     }
-    
-    public OpenDoveDomain(String uuid, String name) {
-    	this.uuid = uuid;
-    	this.name = name;
-    	this.tombstoneFlag = false;
-    	this.replicationFactor = 2;
-    	this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
+
+    public OpenDoveDomain(String name) {
+        this.uuid = java.util.UUID.randomUUID().toString();
+        this.name = name;
+        this.tombstoneFlag = false;
+        this.replicationFactor = 2;
+        this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
     }
 
     public String getUuid() {
@@ -103,7 +103,7 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
         return true;
     }
 
-	public void addNetwork(OpenDoveNetwork network) {
-		scopedNetworks.add(network);		
-	}
+    public void addNetwork(OpenDoveNetwork network) {
+        scopedNetworks.add(network);
+    }
 }

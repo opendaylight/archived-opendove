@@ -202,18 +202,18 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
             if (input.isShared()) {                    // map shared network
                 OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
                 if (!controlBlock.getDomainSeparation()) { //if domain separation not supported, map to shared domain
-                    if (!domainDB.domainExists("SharedDomain")) {// look up shared domain
-                        OpenDoveDomain sharedDomain = new OpenDoveDomain("SharedDomain", "SharedDomain"); // if doesn't exist, create
-                        domainDB.addDomain("SharedDomain", sharedDomain); 
+                    if (!domainDB.domainExistsByName("SharedDomain")) {// look up shared domain
+                        OpenDoveDomain sharedDomain = new OpenDoveDomain("SharedDomain"); // if doesn't exist, create
+                        domainDB.addDomain(sharedDomain.getUuid(), sharedDomain);
                     }
                       // create DOVE network
                 }
             } else {                                // map dedicated network
-            	String domainUUID = input.getTenantID();
-            	if (!domainDB.domainExists(domainUUID)) { // look up domain
-            		OpenDoveDomain domain = new OpenDoveDomain(domainUUID, "Neutron "+domainUUID); // if doesn't exist, create
-            		domainDB.addDomain(domainUUID, domain);
-            	}
+                String domainName = "Neutron "+input.getTenantID();
+                if (!domainDB.domainExistsByName(domainName)) { // look up domain
+                    OpenDoveDomain domain = new OpenDoveDomain(domainName); // if doesn't exist, create
+                    domainDB.addDomain(domain.getUuid(), domain);
+                }
                 // create DOVE network
             }
         }

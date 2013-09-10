@@ -9,6 +9,8 @@ public interface IfSBDoveDomainCRU {
 
     public OpenDoveDomain getDomain(String domainUUID);
 
+    public OpenDoveDomain getDomainByName(String name);
+
     public void addDomain(String domainUUID, OpenDoveDomain domain);
 
     public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network);

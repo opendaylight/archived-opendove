@@ -17,6 +17,7 @@ import javax.xml.bind.*;
 
 import org.eclipse.persistence.jaxb.rs.MOXyJsonProvider;
 import org.opendaylight.opendove.odmc.southbound.OpenDoveDomainSouthbound;
+import org.opendaylight.opendove.odmc.southbound.OpenDoveNetworkSouthbound;
 
 
 /**
@@ -38,6 +39,7 @@ public class OpenDoveNorthboundRSApplication extends Application {
         classes.add(OpenDoveSystemNorthbound.class);
 // southbound URIs
         classes.add(OpenDoveDomainSouthbound.class);
+        classes.add(OpenDoveNetworkSouthbound.class);
         return classes;
     }
 

@@ -21,6 +21,7 @@ import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
+import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveNeutronControlBlock;
 import org.opendaylight.opendove.odmc.OpenStackNetworks;
 import org.slf4j.Logger;
@@ -202,19 +203,39 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
             if (input.isShared()) {                    // map shared network
                 OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
                 if (!controlBlock.getDomainSeparation()) { //if domain separation not supported, map to shared domain
+                    OpenDoveDomain sharedDomain;
                     if (!domainDB.domainExistsByName("SharedDomain")) {// look up shared domain
-                        OpenDoveDomain sharedDomain = new OpenDoveDomain("SharedDomain"); // if doesn't exist, create
+                        sharedDomain = new OpenDoveDomain("SharedDomain"); // if doesn't exist, create
                         domainDB.addDomain(sharedDomain.getUuid(), sharedDomain);
-                    }
-                      // create DOVE network
+                        //create EXT MCAST network
+                        int vnid = doveNetworkDB.allocateVNID();
+                        String networkName = "Ext_MCast_"+vnid;
+                        OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, sharedDomain, 1, input.getID());
+                        doveNetworkDB.addNetwork(extMCastNet.getUuid(), extMCastNet);
+                    } else
+                        sharedDomain = domainDB.getDomainByName("SharedDomain");
+                    int vnid = doveNetworkDB.allocateVNID();
+                    String networkName = "Neutron "+input.getID();
+                    OpenDoveNetwork doveNetwork = new OpenDoveNetwork(networkName, vnid, sharedDomain, 0, input.getID());
+                    doveNetworkDB.addNetwork(doveNetwork.getUuid(), doveNetwork);
                 }
             } else {                                // map dedicated network
                 String domainName = "Neutron "+input.getTenantID();
+                OpenDoveDomain domain;
                 if (!domainDB.domainExistsByName(domainName)) { // look up domain
-                    OpenDoveDomain domain = new OpenDoveDomain(domainName); // if doesn't exist, create
+                    domain = new OpenDoveDomain(domainName); // if doesn't exist, create
                     domainDB.addDomain(domain.getUuid(), domain);
-                }
-                // create DOVE network
+                    //create EXT MCAST network
+                    int vnid = doveNetworkDB.allocateVNID();
+                    String networkName = "Ext_MCast_"+vnid;
+                    OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, domain, 1, input.getID());
+                    doveNetworkDB.addNetwork(extMCastNet.getUuid(), extMCastNet);
+                } else
+                    domain = domainDB.getDomainByName(domainName);
+                int vnid = doveNetworkDB.allocateVNID();
+                String networkName = "Neutron "+input.getID();
+                OpenDoveNetwork doveNetwork = new OpenDoveNetwork(networkName, vnid, domain, 0, input.getID());
+                doveNetworkDB.addNetwork(doveNetwork.getUuid(), doveNetwork);
             }
         }
         return true;

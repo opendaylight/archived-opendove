@@ -13,6 +13,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.opendaylight.controller.sal.utils.ServiceHelper;
+import org.opendaylight.opendove.odmc.internal.OpenDoveSBInterfaces;
+
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class OpenDoveNetwork extends OpenDoveObject implements
@@ -20,27 +23,41 @@ public class OpenDoveNetwork extends OpenDoveObject implements
 
     @XmlElement(name="id")
     String uuid;
-    
+
     @XmlElement(name="network_id")
     Integer vnid;
-    
+
     @XmlElement(name="name")
     String name;
-    
+
     @XmlElement(name="domain_id")
     String domain_uuid;
-    
+
     @XmlElement(name="is_tombstone")
     Boolean tombstoneFlag;
-    
+
     @XmlElement (name="type")
     Integer networkType;
-    
+
     @XmlElement (name="change_version")
     Integer lastChangeVersion;
 
     @XmlElement (name="create_version")
     Integer createVersion;
+
+    String associatedOSNetworkUUID;
+
+    public OpenDoveNetwork() { }
+
+    public OpenDoveNetwork(String name, int vnid, OpenDoveDomain scopingDomain, int type, String oSNetworkUUID) {
+        this.uuid = java.util.UUID.randomUUID().toString();
+        this.vnid = vnid;
+        this.name = name;
+        this.domain_uuid = scopingDomain.getUuid();
+        this.tombstoneFlag = false;
+        this.networkType = type;
+        this.associatedOSNetworkUUID = oSNetworkUUID;
+    }
 
     public String getUuid() {
         return uuid;
@@ -109,5 +126,4 @@ public class OpenDoveNetwork extends OpenDoveObject implements
     public void setCreateVersion(Integer createVersion) {
         this.createVersion = createVersion;
     }
-
 }

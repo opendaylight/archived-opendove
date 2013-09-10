@@ -13,6 +13,7 @@ import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.felix.dm.Component;
@@ -35,6 +36,16 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     private IClusterContainerServices clusterContainerService = null;
     private ConcurrentMap<String, OpenDoveDomain> domainDB;
     private ConcurrentMap<String, OpenDoveNetwork> networkDB;
+
+    private static Random rng;
+
+    private static void initRNG() {
+        rng = new Random();    //TODO: need to seed this better
+    }
+
+    public static long getNext() {
+        return rng.nextLong();
+    }
 
     // methods needed for creating caches
 
@@ -108,6 +119,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     private void startUp() {
         allocateCache();
         retrieveCache();
+        OpenDoveSBInterfaces.initRNG();
     }
 
     /**
@@ -206,6 +218,16 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     public boolean networkExists(String networkUUID) {
         return(networkDB.containsKey(networkUUID));
     }
+    
+    public boolean networkExistsByVnid(int vnid) {
+        Iterator<OpenDoveNetwork> i = networkDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveNetwork n = i.next();
+            if (n.getVnid() == vnid)
+                return true;
+        }
+        return false;
+    }
 
     public OpenDoveNetwork getNetwork(String networkUUID) {
         return(networkDB.get(networkUUID));
@@ -216,4 +238,19 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         addNetworkToDomain(network.getDomain_uuid(), network);
     }
 
+	public int allocateVNID() {
+		boolean done = false;
+		while (!done) {
+			long candidateVNID = OpenDoveSBInterfaces.getNext() & 0x0000000000FFFFFF;
+			if (!networkExistsByVnid((int) candidateVNID))
+				return (int) candidateVNID;
+		}
+		return 0;
+	}
+
+	public List<OpenDoveNetwork> getNetworks() {
+        List<OpenDoveNetwork> answer = new ArrayList<OpenDoveNetwork>();
+        answer.addAll(networkDB.values());
+        return answer;
+	}
 }

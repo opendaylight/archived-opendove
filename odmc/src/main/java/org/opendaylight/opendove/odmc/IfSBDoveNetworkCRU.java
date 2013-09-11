@@ -9,9 +9,12 @@ public interface IfSBDoveNetworkCRU {
 
     public OpenDoveNetwork getNetwork(String networkUUID);
 
+    public OpenDoveNetwork getNetworkByVnid(int parseInt);
+
     public void addNetwork(String networkUUID, OpenDoveNetwork network);
 
     public int allocateVNID();
 
     public List<OpenDoveNetwork> getNetworks();
+
 }

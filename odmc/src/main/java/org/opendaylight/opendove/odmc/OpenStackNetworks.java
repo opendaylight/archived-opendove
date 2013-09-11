@@ -63,9 +63,12 @@ public class OpenStackNetworks {
 
     List<OpenStackPorts> myPorts;
 
+    List<OpenDoveNetwork> mappedNetworks;
+
     public OpenStackNetworks() {
         myPorts = new ArrayList<OpenStackPorts>();
         subnets = new ArrayList<String>();
+        mappedNetworks = new ArrayList<OpenDoveNetwork>();
     }
 
     public void initDefaults() {
@@ -193,6 +196,17 @@ public class OpenStackNetworks {
         myPorts.remove(port);
     }
 
+    public List<OpenDoveNetwork> getMappedNetworks() {
+        return mappedNetworks;
+    }
+
+    public void addNetwork(OpenDoveNetwork network) {
+        mappedNetworks.add(network);
+    }
+
+    public void removeNetwork(OpenDoveNetwork network) {
+        mappedNetworks.remove(network);
+    }
     /**
      * This method copies selected fields from the object and returns them
      * as a new object, suitable for marshaling.

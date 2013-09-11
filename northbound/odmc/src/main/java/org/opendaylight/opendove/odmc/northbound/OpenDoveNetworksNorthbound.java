@@ -105,7 +105,7 @@ public class OpenDoveNetworksNorthbound {
             if (queryShared != null)
                 bShared = new Boolean(queryShared);
             if (queryRouterExternal != null)
-            	bRouterExternal = new Boolean(queryRouterExternal);
+                bRouterExternal = new Boolean(queryRouterExternal);
             if ((queryID == null || queryID.equals(oSN.getID())) &&
                     (queryName == null || queryName.equals(oSN.getNetworkName())) &&
                     (bAdminStateUp == null || bAdminStateUp.booleanValue() == oSN.isAdminStateUp()) &&
@@ -295,6 +295,7 @@ public class OpenDoveNetworksNorthbound {
         if (networkInterface.networkInUse(netUUID))
             return Response.status(409).build();
         networkInterface.removeNetwork(netUUID);
+        //TODO: check tenant for removal
         return Response.status(204).build();
     }
 }

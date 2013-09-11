@@ -37,12 +37,12 @@ public class OpenDoveNBInterfaces {
         if (found == false) {
             throw new ResourceNotFoundException(containerName + " "
                     + RestMessages.NOCONTAINER.toString());
-        } 
+        }
 
         IfNBNetworkCRUD answer = (IfNBNetworkCRUD) ServiceHelper.getInstance(
                 IfNBNetworkCRUD.class, containerName, o); */
-    	
-    	IfNBNetworkCRUD answer = OpenDoveCRUDInterfaces.getIfNBNetworkCRUD(o);
+
+        IfNBNetworkCRUD answer = OpenDoveCRUDInterfaces.getIfNBNetworkCRUD(o);
 
         if (answer == null) {
             throw new ServiceUnavailableException("Network CRUD Service "

@@ -218,7 +218,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     public boolean networkExists(String networkUUID) {
         return(networkDB.containsKey(networkUUID));
     }
-    
+
     public boolean networkExistsByVnid(int vnid) {
         Iterator<OpenDoveNetwork> i = networkDB.values().iterator();
         while (i.hasNext()) {
@@ -233,24 +233,34 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         return(networkDB.get(networkUUID));
     }
 
+    public OpenDoveNetwork getNetworkByVnid(int vnid) {
+        Iterator<OpenDoveNetwork> i = networkDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveNetwork n = i.next();
+            if (n.getVnid() == vnid)
+                return n;
+        }
+        return null;
+    }
+
     public void addNetwork(String networkUUID, OpenDoveNetwork network) {
         networkDB.putIfAbsent(networkUUID, network);
         addNetworkToDomain(network.getDomain_uuid(), network);
     }
 
-	public int allocateVNID() {
-		boolean done = false;
-		while (!done) {
-			long candidateVNID = OpenDoveSBInterfaces.getNext() & 0x0000000000FFFFFF;
-			if (!networkExistsByVnid((int) candidateVNID))
-				return (int) candidateVNID;
-		}
-		return 0;
-	}
+    public int allocateVNID() {
+        boolean done = false;
+        while (!done) {
+            long candidateVNID = OpenDoveSBInterfaces.getNext() & 0x0000000000FFFFFF;
+            if (!networkExistsByVnid((int) candidateVNID))
+                return (int) candidateVNID;
+        }
+        return 0;
+    }
 
-	public List<OpenDoveNetwork> getNetworks() {
+    public List<OpenDoveNetwork> getNetworks() {
         List<OpenDoveNetwork> answer = new ArrayList<OpenDoveNetwork>();
         answer.addAll(networkDB.values());
         return answer;
-	}
+    }
 }

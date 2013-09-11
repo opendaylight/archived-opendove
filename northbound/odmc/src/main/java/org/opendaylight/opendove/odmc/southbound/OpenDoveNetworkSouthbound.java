@@ -19,8 +19,10 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
+import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 
 /**
  * Open DOVE Southbound REST APIs for Networks.<br>
@@ -42,7 +44,7 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 @Path("/sb/networks")
 public class OpenDoveNetworkSouthbound {
 
-    @Path("/{networkUUID}")
+    @Path("{networkUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -64,7 +66,6 @@ public class OpenDoveNetworkSouthbound {
         return Response.status(200).entity(new OpenDoveNetworkRequest(sbInterface.getNetwork(networkUUID))).build();
     }
 
-    @Path("/")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({

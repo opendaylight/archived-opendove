@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -218,6 +219,7 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
                     String networkName = "Neutron "+input.getID();
                     OpenDoveNetwork doveNetwork = new OpenDoveNetwork(networkName, vnid, sharedDomain, 0, input.getID());
                     doveNetworkDB.addNetwork(doveNetwork.getUuid(), doveNetwork);
+                    input.addNetwork(doveNetwork);
                 }
             } else {                                // map dedicated network
                 String domainName = "Neutron "+input.getTenantID();
@@ -236,6 +238,7 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
                 String networkName = "Neutron "+input.getID();
                 OpenDoveNetwork doveNetwork = new OpenDoveNetwork(networkName, vnid, domain, 0, input.getID());
                 doveNetworkDB.addNetwork(doveNetwork.getUuid(), doveNetwork);
+                input.addNetwork(doveNetwork);
             }
         }
         return true;
@@ -244,6 +247,11 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
     public boolean removeNetwork(String uuid) {
         if (!networkExists(uuid))
             return false;
+        // mark open dove networks for deletion
+        Iterator<OpenDoveNetwork> i = networkDB.get(uuid).getMappedNetworks().iterator();
+        while (i.hasNext()) {
+        	i.next().setTombstoneFlag(true);
+        }
         networkDB.remove(uuid);
         return true;
     }
@@ -259,6 +267,14 @@ public class OpenDoveNeutronNetworkInterface implements IfNBNetworkCRUD {
         if (!networkExists(netUUID))
             return true;
         OpenStackNetworks target = networkDB.get(netUUID);
-        return (target.getPortsOnNetwork().size() > 0);
+        if (target.getPortsOnNetwork().size() > 0)
+        	return true;
+        Iterator<OpenDoveNetwork> i = target.getMappedNetworks().iterator();
+        while (i.hasNext()) {
+        	OpenDoveNetwork odn = i.next();
+        	if (odn.getNetworkType() != 0)
+        		return true;
+        }
+        return false;
     }
 }

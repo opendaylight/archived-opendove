@@ -34,6 +34,7 @@ public class OpenDoveSouthboundRSApplication extends Application {
 // southbound URIs
         classes.add(OpenDoveDomainSouthbound.class);
         classes.add(OpenDoveNetworkSouthbound.class);
+        classes.add(OpenDoveNetworkSubnetSouthbound.class);
         classes.add(OpenDoveSubnetSouthbound.class);
         classes.add(OpenDoveChangeVersionSouthbound.class);
         return classes;

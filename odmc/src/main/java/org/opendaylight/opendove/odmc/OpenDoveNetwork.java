@@ -17,7 +17,7 @@ import org.opendaylight.controller.sal.utils.ServiceHelper;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedObject {
+public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedObject, IfOpenDGWTrackedObject {
 
     @XmlElement(name="id")
     String uuid;
@@ -97,7 +97,15 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         return associatedOSNetworkUUID;
     }
 
-	public String getSBDcsUri() {
-		return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
-	}
+    public String getSBDcsUri() {
+        return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
+    }
+
+    public boolean isTrackedByDGW() {
+        return true;
+    }
+
+    public String getSBDgwUri() {
+        return "/controller/sb/v2/opendove/odmc/networks/" + uuid;
+    }
 }

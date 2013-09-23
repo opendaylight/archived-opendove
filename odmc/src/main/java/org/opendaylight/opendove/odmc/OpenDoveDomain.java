@@ -19,28 +19,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
-public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedObject {
+public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedObject {
     @XmlElement (name="id")
     String uuid;
 
     @XmlElement (name="name")
     String name;
 
-    @XmlElement (name="is_tombstone")
-    Boolean tombstoneFlag;
-
     @XmlElement (name="replication_factor")
     Integer replicationFactor;
 
-    @XmlElement (name="change_version")
-    Integer lastChangeVersion;
-
-    @XmlElement (name="create_version")
-    Integer createVersion;
-
     List<OpenDoveNetwork> scopedNetworks;
+    List<OpenDoveSubnet> scopedSubnets;
 
     public OpenDoveDomain() {
+        this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
+        this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
     }
 
     public OpenDoveDomain(String name) {
@@ -49,9 +43,11 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
         this.tombstoneFlag = false;
         this.replicationFactor = 2;
         this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
+        this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
     }
 
-    public String getUuid() {
+	@Override
+    public String getUUID() {
         return uuid;
     }
 
@@ -67,14 +63,6 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
         this.name = name;
     }
 
-    public Boolean getTombstoneFlag() {
-        return tombstoneFlag;
-    }
-
-    public void setTombstoneFlag(Boolean tombstoneFlag) {
-        this.tombstoneFlag = tombstoneFlag;
-    }
-
     public Integer getReplicationFactor() {
         return replicationFactor;
     }
@@ -83,27 +71,24 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDSATrackedOb
         this.replicationFactor = replicationFactor;
     }
 
-    public Integer getLastChangeVersion() {
-        return lastChangeVersion;
-    }
-
-    public void setLastChangeVersion(Integer lastChangeVersion) {
-        this.lastChangeVersion = lastChangeVersion;
-    }
-
-    public Integer getCreateVersion() {
-        return createVersion;
-    }
-
-    public void setCreateVersion(Integer createVersion) {
-        this.createVersion = createVersion;
-    }
-
-    public boolean isTrackedByDSA() {
+    public boolean isTrackedByDCS() {
         return true;
     }
 
     public void addNetwork(OpenDoveNetwork network) {
         scopedNetworks.add(network);
     }
+
+    public void addSubnet(OpenDoveSubnet subnet) {
+        scopedSubnets.add(subnet);
+    }
+    
+    public void removeSubnet(OpenDoveSubnet subnet) {
+    	scopedSubnets.remove(subnet);
+    }
+
+	public String getSBDcsUri() {
+		return "/controller/sb/v2/opendove/odmc/domains/" + uuid;
+	}
+
 }

@@ -14,12 +14,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.opendaylight.controller.sal.utils.ServiceHelper;
-import org.opendaylight.opendove.odmc.internal.OpenDoveSBInterfaces;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class OpenDoveNetwork extends OpenDoveObject implements
-        IfOpenDSATrackedObject {
+public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedObject {
 
     @XmlElement(name="id")
     String uuid;
@@ -33,17 +31,8 @@ public class OpenDoveNetwork extends OpenDoveObject implements
     @XmlElement(name="domain_id")
     String domain_uuid;
 
-    @XmlElement(name="is_tombstone")
-    Boolean tombstoneFlag;
-
     @XmlElement (name="type")
     Integer networkType;
-
-    @XmlElement (name="change_version")
-    Integer lastChangeVersion;
-
-    @XmlElement (name="create_version")
-    Integer createVersion;
 
     String associatedOSNetworkUUID;
 
@@ -53,13 +42,14 @@ public class OpenDoveNetwork extends OpenDoveObject implements
         this.uuid = java.util.UUID.randomUUID().toString();
         this.vnid = vnid;
         this.name = name;
-        this.domain_uuid = scopingDomain.getUuid();
+        this.domain_uuid = scopingDomain.getUUID();
         this.tombstoneFlag = false;
         this.networkType = type;
         this.associatedOSNetworkUUID = oSNetworkUUID;
     }
 
-    public String getUuid() {
+    @Override
+    public String getUUID() {
         return uuid;
     }
 
@@ -91,14 +81,6 @@ public class OpenDoveNetwork extends OpenDoveObject implements
         this.domain_uuid = domain_uuid;
     }
 
-    public Boolean getTombstoneFlag() {
-        return tombstoneFlag;
-    }
-
-    public void setTombstoneFlag(Boolean tombstoneFlag) {
-        this.tombstoneFlag = tombstoneFlag;
-    }
-
     public Integer getNetworkType() {
         return networkType;
     }
@@ -107,23 +89,15 @@ public class OpenDoveNetwork extends OpenDoveObject implements
         this.networkType = networkType;
     }
 
-    public boolean isTrackedByDSA() {
+    public boolean isTrackedByDCS() {
         return true;
     }
 
-    public Integer getLastChangeVersion() {
-        return lastChangeVersion;
+    public String getNeutronNetwork() {
+        return associatedOSNetworkUUID;
     }
 
-    public void setLastChangeVersion(Integer lastChangeVersion) {
-        this.lastChangeVersion = lastChangeVersion;
-    }
-
-    public Integer getCreateVersion() {
-        return createVersion;
-    }
-
-    public void setCreateVersion(Integer createVersion) {
-        this.createVersion = createVersion;
-    }
+	public String getSBDcsUri() {
+		return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
+	}
 }

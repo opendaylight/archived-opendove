@@ -28,7 +28,7 @@ public class OpenDoveChange {
     public OpenDoveChange() {
     }
 
-    public Integer getNextChange() {
+	public Integer getNextChange() {
         return nextChange;
     }
 

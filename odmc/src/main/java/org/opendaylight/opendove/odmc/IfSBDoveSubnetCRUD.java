@@ -8,10 +8,16 @@
 
 package org.opendaylight.opendove.odmc;
 
-public interface IfNBSystemRU {
+import java.util.List;
 
-    OpenDoveNeutronControlBlock getSystemBlock();
+public interface IfSBDoveSubnetCRUD {
+    public boolean subnetExists(String subnetUUID);
 
-    boolean updateControlBlock(OpenDoveNeutronControlBlock input);
+    public OpenDoveSubnet getSubnet(String subnetUUID);
 
+    public void addSubnet(String subnetUUID, OpenDoveSubnet domain);
+
+    public List<OpenDoveSubnet> getSubnets();
+    
+    public void removeSubnet(String subnetUUID);
 }

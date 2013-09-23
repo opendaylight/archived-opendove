@@ -8,10 +8,10 @@
 
 package org.opendaylight.opendove.odmc;
 
-public interface IfNBSystemRU {
+public interface IfSBOpenDoveChangeVersionR {
+    public boolean versionExists(int version);
 
-    OpenDoveNeutronControlBlock getSystemBlock();
-
-    boolean updateControlBlock(OpenDoveNeutronControlBlock input);
-
+    public OpenDoveChange getNextOdcsChange(int version);
+    
+    public OpenDoveChange getNextOdgwChange(int version);
 }

@@ -9,13 +9,7 @@
 package org.opendaylight.opendove.odmc;
 
 public interface IfOpenDGWTrackedObject {
-	boolean isTrackedByDGW();
-	
-    public Integer getLastChangeVersion();
+    boolean isTrackedByDGW();
 
-    public void setLastChangeVersion(Integer lastChangeVersion);
-
-    public Integer getCreateVersion();
-
-    public void setCreateVersion(Integer createVersion);
+	public abstract String getSBDgwUri();
 }

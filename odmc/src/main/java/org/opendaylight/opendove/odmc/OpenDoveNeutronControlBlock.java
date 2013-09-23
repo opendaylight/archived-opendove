@@ -17,30 +17,30 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 
 public class OpenDoveNeutronControlBlock {
-	@XmlElement(name="domain_separation")
-	Boolean domainSeparation;
-	
-	@XmlElement(name="snat_pool_size")
-	Integer snatPoolSize;
-	
-	public OpenDoveNeutronControlBlock() {
-		domainSeparation = false;
-		snatPoolSize = new Integer(1);
-	}
+    @XmlElement(name="domain_separation")
+    Boolean domainSeparation;
 
-	public Boolean getDomainSeparation() {
-		return domainSeparation;
-	}
+    @XmlElement(name="snat_pool_size")
+    Integer snatPoolSize;
 
-	public void setDomainSeparation(Boolean domainSeparation) {
-		this.domainSeparation = domainSeparation;
-	}
+    public OpenDoveNeutronControlBlock() {
+        domainSeparation = false;
+        snatPoolSize = new Integer(1);
+    }
 
-	public Integer getSnatPoolSize() {
-		return snatPoolSize;
-	}
+    public Boolean getDomainSeparation() {
+        return domainSeparation;
+    }
 
-	public void setSnatPoolSize(Integer snatPoolSize) {
-		this.snatPoolSize = snatPoolSize;
-	}
+    public void setDomainSeparation(Boolean domainSeparation) {
+        this.domainSeparation = domainSeparation;
+    }
+
+    public Integer getSnatPoolSize() {
+        return snatPoolSize;
+    }
+
+    public void setSnatPoolSize(Integer snatPoolSize) {
+        this.snatPoolSize = snatPoolSize;
+    }
 }

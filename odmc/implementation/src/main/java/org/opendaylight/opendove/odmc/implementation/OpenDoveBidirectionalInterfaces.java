@@ -1,34 +1,35 @@
-/*
- * Copyright IBM Corporation, 2013.  All rights reserved.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 which accompanies this distribution,
- * and is available at http://www.eclipse.org/legal/epl-v10.html
- */
-
 package org.opendaylight.opendove.odmc.implementation;
 
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.felix.dm.Component;
-import org.opendaylight.opendove.odmc.*;
-
 import org.opendaylight.controller.clustering.services.CacheConfigException;
 import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
+import org.opendaylight.opendove.odmc.OpenDoveDomain;
+import org.opendaylight.opendove.odmc.OpenDoveNetwork;
+import org.opendaylight.opendove.odmc.OpenDoveNetworkSubnetAssociation;
+import org.opendaylight.opendove.odmc.OpenDoveObject;
+import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
+import org.opendaylight.opendove.odmc.OpenDoveSubnet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveNBInterfaces implements IfNBSystemRU {
-    private static final Logger logger = LoggerFactory.getLogger(OpenDoveNBInterfaces.class);
+public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplianceCRU  {
+    private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
 
     private IClusterContainerServices clusterContainerService = null;
-    private ConcurrentMap<String, OpenDoveNeutronControlBlock> systemDB;
+    private ConcurrentMap<String, OpenDoveServiceAppliance> doveServiceApplianceDB;
 
     // methods needed for creating caches
 
@@ -52,15 +53,15 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
         }
         logger.debug("Creating Cache for OpenDOVE");
         try {
-            // neutron caches
-            this.clusterContainerService.createCache("openDoveNeutronSystem",
-                    EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
+            // DOVE caches
+          this.clusterContainerService.createCache("openDoveServiceAppliances",
+       		  EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
-            logger.error("Cache couldn't be created for OpenDOVE -  check cache mode");
+            logger.error("Southbound Caches couldn't be created for OpenDOVE -  check cache mode");
         } catch (CacheExistException cce) {
             logger.error("Cache for OpenDOVE already exists, destroy and recreate");
         }
-        logger.debug("Cache successfully created for OpenDOVE");
+        logger.debug("Southbound Caches successfully created for OpenDOVE");
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
@@ -69,15 +70,14 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
             logger.error("un-initialized clusterContainerService, can't retrieve cache");
             return;
         }
-
-        logger.debug("Retrieving cache for openDoveNeutronSystem");
-        systemDB = (ConcurrentMap<String, OpenDoveNeutronControlBlock>) this.clusterContainerService
-        .getCache("openDoveNeutronSystem");
-        if (systemDB == null) {
-            logger.error("Cache couldn't be retrieved for openDOVENeutronSystem");
+        logger.debug("Retrieving cache for openDoveServiceAppliances");
+        doveServiceApplianceDB = (ConcurrentMap<String, OpenDoveServiceAppliance>) this.clusterContainerService
+               .getCache("openDoveServiceAppliances");
+        if (doveServiceApplianceDB == null) {
+            logger.error("Cache couldn't be retrieved for openDoveServiceAppliances");
         }
-        systemDB.putIfAbsent("default", new OpenDoveNeutronControlBlock());
-        logger.debug("Cache was successfully retrieved for openDOVENeutronSystem");
+        logger.debug("Cache was successfully retrieved for openDoveServiceAppliances");
+
     }
 
     @SuppressWarnings("deprecation")
@@ -86,12 +86,8 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
             logger.error("un-initialized clusterMger, can't destroy cache");
             return;
         }
-        logger.debug("Destroying Cache for HostTracker");
-        this.clusterContainerService.destroyCache("openDoveNeutronSubnets");
-        this.clusterContainerService.destroyCache("openDoveNeutronPorts");
-        this.clusterContainerService.destroyCache("openDoveNeutronRouters");
-        this.clusterContainerService.destroyCache("openDoveNeutronFloatingIPs");
-        this.clusterContainerService.destroyCache("openDoveNeutronSystem");
+        logger.debug("Destroying Caches for OpenDove");
+        this.clusterContainerService.destroyCache("openDoveServiceAppliances");
     }
 
     private void startUp() {
@@ -143,39 +139,34 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
     void stop() {
     }
 
-    // this method uses reflection to update an object from it's delta.
+	/* 
+	 *  Code to Support South Bound DOVE Service Appliance Interfaces.
+	 */
 
-    private boolean overwrite(Object target, Object delta) {
-        Method[] methods = target.getClass().getMethods();
+	public boolean dsaIPExists(String ip) {
+		Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
+		while (i.hasNext()) {
+			OpenDoveServiceAppliance d = i.next();
+			if (d.getIP().compareTo(ip) == 0)
+				return true;
+		}
+		return false;
+	}
 
-        for(Method toMethod: methods){
-            if(toMethod.getDeclaringClass().equals(target.getClass())
-                    && toMethod.getName().startsWith("set")){
+	public OpenDoveServiceAppliance getDoveServiceAppliance(String dsaUUID) {
+		return(doveServiceApplianceDB.get(dsaUUID));
+	}
+	public void addDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance openDoveDSA) {
+		doveServiceApplianceDB.putIfAbsent(dsaUUID, openDoveDSA);
+	}
 
-                String toName = toMethod.getName();
-                String fromName = toName.replace("set", "get");
+	public List<OpenDoveServiceAppliance> getAppliances() {
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        answer.addAll(doveServiceApplianceDB.values());
+        return answer;
+	}
 
-                try {
-                    Method fromMethod = delta.getClass().getMethod(fromName);
-                    Object value = fromMethod.invoke(delta, (Object[])null);
-                    if(value != null){
-                        toMethod.invoke(target, value);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public OpenDoveNeutronControlBlock getSystemBlock() {
-        return systemDB.get("default");
-    }
-
-    public boolean updateControlBlock(OpenDoveNeutronControlBlock input) {
-        OpenDoveNeutronControlBlock target = systemDB.get("default");
-        return overwrite(target, input);
-    }
+	public boolean applianceExists(String saUUID) {
+		return doveServiceApplianceDB.containsKey(saUUID);
+	}
 }

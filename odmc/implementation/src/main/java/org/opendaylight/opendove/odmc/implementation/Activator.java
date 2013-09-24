@@ -22,6 +22,7 @@ import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
 import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 
@@ -60,6 +61,7 @@ public class Activator extends ComponentActivatorAbstractBase {
     public Object[] getImplementations() {
         Object[] res = { OpenDoveNBInterfaces.class,
                 OpenDoveSBInterfaces.class,
+                OpenDoveBidirectionalInterfaces.class,
                 OpenDoveNeutronCallbacks.class };
         return res;
     }
@@ -91,7 +93,17 @@ public class Activator extends ComponentActivatorAbstractBase {
         if (imp.equals(OpenDoveNeutronCallbacks.class)) {
             c.setInterface(
                     new String[] { INeutronNetworkAware.class.getName(),
-                    		INeutronSubnetAware.class.getName() }, null);
+                            INeutronSubnetAware.class.getName() }, null);
+            Dictionary<String, String> props = new Hashtable<String, String>();
+            props.put("salListenerName", "opendove");
+            c.add(createContainerServiceDependency(containerName)
+                    .setService(IClusterContainerServices.class)
+                    .setCallbacks("setClusterContainerService",
+                    "unsetClusterContainerService").setRequired(true));
+        }
+        if (imp.equals(OpenDoveBidirectionalInterfaces.class)) {
+            c.setInterface(
+                    new String[] { IfOpenDoveServiceApplianceCRU.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)
@@ -105,7 +117,8 @@ public class Activator extends ComponentActivatorAbstractBase {
                             IfSBDoveNetworkCRU.class.getName(),
                             IfSBDoveSubnetCRUD.class.getName(),
                             IfSBOpenDoveChangeVersionR.class.getName(),
-                            IfSBDoveNetworkSubnetAssociationCRUD.class.getName() }, null);
+                            IfSBDoveNetworkSubnetAssociationCRUD.class.getName()
+                            }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)

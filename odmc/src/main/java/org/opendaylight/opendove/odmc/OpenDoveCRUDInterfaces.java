@@ -41,4 +41,10 @@ public class OpenDoveCRUDInterfaces {
 		IfSBDoveNetworkSubnetAssociationCRUD answer = (IfSBDoveNetworkSubnetAssociationCRUD) ServiceHelper.getGlobalInstance(IfSBDoveNetworkSubnetAssociationCRUD.class, o);
         return answer;
 	}
+
+	public static IfOpenDoveServiceApplianceCRU getIfDoveServiceApplianceCRU(Object o) {
+        IfOpenDoveServiceApplianceCRU answer = (IfOpenDoveServiceApplianceCRU) ServiceHelper.getGlobalInstance(IfOpenDoveServiceApplianceCRU.class, o);
+        return answer;
+	}
+
 }

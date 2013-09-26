@@ -69,8 +69,8 @@ public class OpenDoveSystemNorthbound {
      * Updates the control block */
 
     @PUT
-    @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-    @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Consumes({ MediaType.APPLICATION_JSON })
     //@TypeHint(OpenStackSystem.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),

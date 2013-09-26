@@ -20,7 +20,6 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
-import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**

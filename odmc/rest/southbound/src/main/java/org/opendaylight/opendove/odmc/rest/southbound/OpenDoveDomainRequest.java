@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.opendaylight.controller.networkconfig.neutron.NeutronNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
 
 @XmlRootElement

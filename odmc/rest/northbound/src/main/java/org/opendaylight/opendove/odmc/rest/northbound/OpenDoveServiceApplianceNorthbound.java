@@ -20,9 +20,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
-import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
-import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 
 /**
  * Open DOVE Southbound REST APIs for Domains.<br>

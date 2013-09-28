@@ -9,7 +9,9 @@
 package org.opendaylight.opendove.odmc.rest.southbound;
 
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -40,7 +42,7 @@ import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
  */
 
 @Path("/odcs")
-public class OpenDoveServiceApplianceSouthbound {
+public class OpenDoveDcsServiceApplianceSouthbound {
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
@@ -49,24 +51,59 @@ public class OpenDoveServiceApplianceSouthbound {
             @ResponseCode(code = 201, condition = "Registration Accepted"),
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response dsaRegistration (OpenDoveServiceAppliance appliance) {
+    public Response processDcsRegistration (OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         String dsaUUID = appliance.getUUID();
-
+        
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-
-        if (sbInterface.dsaIPExists(dsaIP))
+      
+        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
-        sbInterface.addDoveServiceAppliance(dsaUUID, appliance);
+
+        // Set the Timestamp
+        appliance.setTimestamp();
+        sbInterface.addDoveServiceAppliance(dsaUUID, appliance); 
 
         return Response.status(201).entity(appliance).build();
     }
 
+    @Path("/{dsaUUID}")
+    @PUT
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+
+    public Response procesDcsHeartbeat (
+                                 @PathParam("dsaUUID") String dsaUUID,
+                                 OpenDoveServiceAppliance appliance) {
+        String dsaIP   = appliance.getIP();
+        appliance.setUUID(dsaUUID);
+        System.out.println("*********Inside processHeartbeat  \n"); 
+        
+        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+      
+        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
+            return Response.status(409).build();
+        appliance.initDefaults();
+
+        // Set the Timestamp
+        appliance.setTimestamp();
+        sbInterface.addDoveServiceAppliance(dsaUUID, appliance); 
+
+        return Response.status(200).entity(appliance).build();
+    }
 }
 

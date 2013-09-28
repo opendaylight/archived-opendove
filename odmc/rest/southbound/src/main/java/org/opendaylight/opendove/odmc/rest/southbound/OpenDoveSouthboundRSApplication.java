@@ -15,6 +15,12 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.eclipse.persistence.jaxb.rs.MOXyJsonProvider;
+import org.opendaylight.opendove.odmc.rest.southbound.OpenDoveChangeVersionSouthbound;
+import org.opendaylight.opendove.odmc.rest.southbound.OpenDoveDomainSouthbound;
+import org.opendaylight.opendove.odmc.rest.southbound.OpenDoveNetworkSouthbound;
+import org.opendaylight.opendove.odmc.rest.southbound.OpenDoveSubnetSouthbound;
+import org.opendaylight.opendove.odmc.rest.southbound.OpenDoveDcsServiceApplianceSouthbound;
+
 
 /**
  * This class is an instance of javax.ws.rs.core.Application and is used to return the classes
@@ -32,7 +38,7 @@ public class OpenDoveSouthboundRSApplication extends Application {
         classes.add(OpenDoveNetworkSubnetSouthbound.class);
         classes.add(OpenDoveSubnetSouthbound.class);
         classes.add(OpenDoveChangeVersionSouthbound.class);
-        classes.add(OpenDoveServiceApplianceSouthbound.class);
+        classes.add(OpenDoveDcsServiceApplianceSouthbound.class);
         return classes;
     }
 

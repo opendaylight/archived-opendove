@@ -169,4 +169,22 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
 	public boolean applianceExists(String saUUID) {
 		return doveServiceApplianceDB.containsKey(saUUID);
 	}
+	public boolean dsaIPConflict(String ip, String uuid) {
+		Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
+		while (i.hasNext()) {
+			OpenDoveServiceAppliance d = i.next();
+			if (d.getIP().compareTo(ip) == 0)  {
+                              if  (d.getUUID().compareTo(uuid) == 0) {
+                                // No Conflict
+				return false;
+                              } else {
+                                // IP Address Conflict
+				return true;
+                              }
+                        }
+		}
+                // IP Address Conflict
+		return false;
+	}
+
 }

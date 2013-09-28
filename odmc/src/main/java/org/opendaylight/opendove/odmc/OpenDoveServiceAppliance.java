@@ -10,6 +10,10 @@ package org.opendaylight.opendove.odmc;
 
 
 import javax.xml.bind.annotation.XmlElement;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /*
         "uuid"  == PRIMARY KEY in the Cache
@@ -21,7 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
         {"dgw_rest_port",             INT                 },
         {"dcs_raw_service_port",      INT                 },
         {"is_dcs_leader",             INT                 },
-        {"timestamp",                 INT                 },
+        {"timestamp",                 STRING              },
         {"build_version",             STRING              },
         {"dcs_config_version",        INT                 },
         {"dgw_config_version",        INT                 },
@@ -68,7 +72,7 @@ public class OpenDoveServiceAppliance extends OpenDoveObject {
     Integer is_dcs_leader;
 
     @XmlElement (name="timestamp")
-    Integer timestamp;
+    String timestamp;
 
     @XmlElement (name="build_version")
     String build_version;
@@ -108,7 +112,7 @@ public class OpenDoveServiceAppliance extends OpenDoveObject {
         this.dgw_rest_service_port        = 0;
         this.dcs_raw_service_port         = 0;
         this.is_dcs_leader                = 0;
-        this.timestamp                    = 0;
+        this.timestamp                    = "";
         this.build_version                = "";
         this.dcs_config_version           = 0;
         this.dgw_config_version           = 0;
@@ -137,11 +141,20 @@ public class OpenDoveServiceAppliance extends OpenDoveObject {
     public String getIP() {
         return ip;
     }
-
+    
     public String getUUID() {
         return uuid;
     }
+    
+    public String setUUID( String dsaUUID) {
+        return this.uuid = dsaUUID;
+    }
+    
+    public void setTimestamp() {
+       this.timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
+    }
 
     public void initDefaults() {
+		// TODO Auto-generated method stub
     }
 }

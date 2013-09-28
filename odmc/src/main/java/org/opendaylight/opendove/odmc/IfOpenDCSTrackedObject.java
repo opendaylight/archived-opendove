@@ -10,6 +10,6 @@ package org.opendaylight.opendove.odmc;
 
 public interface IfOpenDCSTrackedObject {
     public abstract boolean isTrackedByDCS();
-	
-	public abstract String getSBDcsUri();
+
+    public abstract String getSBDcsUri();
 }

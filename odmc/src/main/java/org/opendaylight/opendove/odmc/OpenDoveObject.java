@@ -17,17 +17,17 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 
 @XmlTransient
-public abstract class OpenDoveObject { 
+public abstract class OpenDoveObject {
     @XmlElement (name="is_tombstone")
     Boolean tombstoneFlag;
-    
+
     @XmlElement (name="change_version")
     Integer lastChangeVersion;
 
     @XmlElement (name="create_version")
     Integer createVersion;
-    
-	public abstract String getUUID();
+
+    public abstract String getUUID();
 
     public Boolean getTombstoneFlag() {
         return tombstoneFlag;

@@ -141,20 +141,20 @@ public class OpenDoveServiceAppliance extends OpenDoveObject {
     public String getIP() {
         return ip;
     }
-    
+
     public String getUUID() {
         return uuid;
     }
-    
+
     public String setUUID( String dsaUUID) {
         return this.uuid = dsaUUID;
     }
-    
+
     public void setTimestamp() {
        this.timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
     }
 
     public void initDefaults() {
-		// TODO Auto-generated method stub
+        // TODO Auto-generated method stub
     }
 }

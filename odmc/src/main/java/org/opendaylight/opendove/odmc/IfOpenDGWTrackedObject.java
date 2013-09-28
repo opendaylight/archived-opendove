@@ -11,5 +11,5 @@ package org.opendaylight.opendove.odmc;
 public interface IfOpenDGWTrackedObject {
     boolean isTrackedByDGW();
 
-	public abstract String getSBDgwUri();
+    public abstract String getSBDgwUri();
 }

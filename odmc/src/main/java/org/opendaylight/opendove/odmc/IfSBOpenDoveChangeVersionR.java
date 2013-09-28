@@ -12,6 +12,6 @@ public interface IfSBOpenDoveChangeVersionR {
     public boolean versionExists(int version);
 
     public OpenDoveChange getNextOdcsChange(int version);
-    
+
     public OpenDoveChange getNextOdgwChange(int version);
 }

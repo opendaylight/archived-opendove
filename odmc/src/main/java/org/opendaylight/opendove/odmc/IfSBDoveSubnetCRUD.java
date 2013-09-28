@@ -18,6 +18,6 @@ public interface IfSBDoveSubnetCRUD {
     public void addSubnet(String subnetUUID, OpenDoveSubnet domain);
 
     public List<OpenDoveSubnet> getSubnets();
-    
+
     public void removeSubnet(String subnetUUID);
 }

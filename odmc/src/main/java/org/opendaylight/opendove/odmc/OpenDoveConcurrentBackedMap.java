@@ -111,17 +111,17 @@ public class OpenDoveConcurrentBackedMap implements IfOpenDoveMap
      * (non-Javadoc)
      * @see org.opendaylight.opendove.odmc.IfOpenDoveMap#values()
      */
-	public Collection<OpenDoveObject> values() {
-		this.updateConcurrentMap();
-		return str2OpenDoveObjectMap.values();
-	}
+    public Collection<OpenDoveObject> values() {
+        this.updateConcurrentMap();
+        return str2OpenDoveObjectMap.values();
+    }
 
-	// needs some more thought - this just removes from the map and doesn't update the concurrent map (which,
-	// while necessary, will break the assumption that the concurrentmap is dense).
-	public OpenDoveObject remove(String key) {
-		this.updateConcurrentMap();
-		return str2OpenDoveObjectMap.remove(key);
-	}
+    // needs some more thought - this just removes from the map and doesn't update the concurrent map (which,
+    // while necessary, will break the assumption that the concurrentmap is dense).
+    public OpenDoveObject remove(String key) {
+        this.updateConcurrentMap();
+        return str2OpenDoveObjectMap.remove(key);
+    }
 }
 
 

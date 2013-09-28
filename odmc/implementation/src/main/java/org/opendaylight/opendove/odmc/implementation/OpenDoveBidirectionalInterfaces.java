@@ -5,7 +5,6 @@ import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.felix.dm.Component;
@@ -14,13 +13,7 @@ import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
-import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
-import org.opendaylight.opendove.odmc.OpenDoveDomain;
-import org.opendaylight.opendove.odmc.OpenDoveNetwork;
-import org.opendaylight.opendove.odmc.OpenDoveNetworkSubnetAssociation;
-import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
-import org.opendaylight.opendove.odmc.OpenDoveSubnet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +48,7 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
         try {
             // DOVE caches
           this.clusterContainerService.createCache("openDoveServiceAppliances",
-       		  EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
+                 EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
             logger.error("Southbound Caches couldn't be created for OpenDOVE -  check cache mode");
         } catch (CacheExistException cce) {
@@ -139,52 +132,52 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
     void stop() {
     }
 
-	/* 
-	 *  Code to Support South Bound DOVE Service Appliance Interfaces.
-	 */
+    /*
+     *  Code to Support South Bound DOVE Service Appliance Interfaces.
+     */
 
-	public boolean dsaIPExists(String ip) {
-		Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
-		while (i.hasNext()) {
-			OpenDoveServiceAppliance d = i.next();
-			if (d.getIP().compareTo(ip) == 0)
-				return true;
-		}
-		return false;
-	}
+    public boolean dsaIPExists(String ip) {
+        Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveServiceAppliance d = i.next();
+            if (d.getIP().compareTo(ip) == 0)
+                return true;
+        }
+        return false;
+    }
 
-	public OpenDoveServiceAppliance getDoveServiceAppliance(String dsaUUID) {
-		return(doveServiceApplianceDB.get(dsaUUID));
-	}
-	public void addDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance openDoveDSA) {
-		doveServiceApplianceDB.putIfAbsent(dsaUUID, openDoveDSA);
-	}
+    public OpenDoveServiceAppliance getDoveServiceAppliance(String dsaUUID) {
+        return(doveServiceApplianceDB.get(dsaUUID));
+    }
+    public void addDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance openDoveDSA) {
+        doveServiceApplianceDB.putIfAbsent(dsaUUID, openDoveDSA);
+    }
 
-	public List<OpenDoveServiceAppliance> getAppliances() {
+    public List<OpenDoveServiceAppliance> getAppliances() {
         List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
         answer.addAll(doveServiceApplianceDB.values());
         return answer;
-	}
+    }
 
-	public boolean applianceExists(String saUUID) {
-		return doveServiceApplianceDB.containsKey(saUUID);
-	}
-	public boolean dsaIPConflict(String ip, String uuid) {
-		Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
-		while (i.hasNext()) {
-			OpenDoveServiceAppliance d = i.next();
-			if (d.getIP().compareTo(ip) == 0)  {
+    public boolean applianceExists(String saUUID) {
+        return doveServiceApplianceDB.containsKey(saUUID);
+    }
+    public boolean dsaIPConflict(String ip, String uuid) {
+        Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveServiceAppliance d = i.next();
+            if (d.getIP().compareTo(ip) == 0)  {
                               if  (d.getUUID().compareTo(uuid) == 0) {
                                 // No Conflict
-				return false;
+                return false;
                               } else {
                                 // IP Address Conflict
-				return true;
+                return true;
                               }
                         }
-		}
+        }
                 // IP Address Conflict
-		return false;
-	}
+        return false;
+    }
 
 }

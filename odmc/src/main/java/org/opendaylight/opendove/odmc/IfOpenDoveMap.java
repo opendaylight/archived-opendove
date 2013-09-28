@@ -52,17 +52,17 @@ public interface IfOpenDoveMap {
      * @return object stored at that key or null if the key does not exist
      */
     OpenDoveObject get(String s);
-    
+
     /*
      * @return objects in the map
      */
-	public Collection<OpenDoveObject> values();
-	
-	/*
-	 * @param s 
-	 *        key to remove
-	 * @return true if object was removed from the map, false if not
-	 * 
-	 */
-	public OpenDoveObject remove(String key);
+    public Collection<OpenDoveObject> values();
+
+    /*
+     * @param s
+     *        key to remove
+     * @return true if object was removed from the map, false if not
+     *
+     */
+    public OpenDoveObject remove(String key);
 }

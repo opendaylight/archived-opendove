@@ -54,21 +54,21 @@ public class OpenDoveDcsServiceApplianceSouthbound {
     public Response processDcsRegistration (OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         String dsaUUID = appliance.getUUID();
-        
+
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-      
+
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
 
         // Set the Timestamp
         appliance.setTimestamp();
-        sbInterface.addDoveServiceAppliance(dsaUUID, appliance); 
+        sbInterface.addDoveServiceAppliance(dsaUUID, appliance);
 
         return Response.status(201).entity(appliance).build();
     }
@@ -86,22 +86,22 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                                  OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         appliance.setUUID(dsaUUID);
-        System.out.println("*********Inside processHeartbeat  \n"); 
-        
+        System.out.println("*********Inside processHeartbeat  \n");
+
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-      
+
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
 
         // Set the Timestamp
         appliance.setTimestamp();
-        sbInterface.addDoveServiceAppliance(dsaUUID, appliance); 
+        sbInterface.addDoveServiceAppliance(dsaUUID, appliance);
 
         return Response.status(200).entity(appliance).build();
     }

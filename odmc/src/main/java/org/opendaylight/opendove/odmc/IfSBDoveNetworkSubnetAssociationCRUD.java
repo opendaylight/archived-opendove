@@ -18,6 +18,6 @@ public interface IfSBDoveNetworkSubnetAssociationCRUD {
     public void addNetworkSubnetAssociation(OpenDoveNetworkSubnetAssociation association);
 
     public List<OpenDoveNetworkSubnetAssociation> getAssociations();
-    
+
     public void removeNetworkSubnetAssociation(String uuid);
 }

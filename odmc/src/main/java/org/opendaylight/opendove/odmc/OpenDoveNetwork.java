@@ -13,8 +13,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.opendaylight.controller.sal.utils.ServiceHelper;
-
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedObject, IfOpenDGWTrackedObject {

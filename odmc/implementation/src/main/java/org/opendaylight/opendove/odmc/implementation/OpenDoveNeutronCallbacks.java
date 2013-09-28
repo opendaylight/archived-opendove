@@ -10,8 +10,6 @@ package org.opendaylight.opendove.odmc.implementation;
 
 import java.util.Iterator;
 
-import javax.ws.rs.core.Response;
-
 import org.opendaylight.controller.networkconfig.neutron.INeutronFloatingIPAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkCRUD;
@@ -150,7 +148,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         IfSBDoveNetworkCRU networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         IfSBDoveSubnetCRUD subnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         IfSBDoveNetworkSubnetAssociationCRUD networkSubnetAssociationDB =
-        	OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
+            OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
         INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
         if (!neutronNetwork.isRouterExternal()) {
@@ -186,7 +184,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public void neutronSubnetUpdated(NeutronSubnet subnet) {
-    	; //empty because there isn't anything that passes through to the subnet
+        ; //empty because there isn't anything that passes through to the subnet
     }
 
     public int canDeleteSubnet(NeutronSubnet subnet) {
@@ -202,12 +200,12 @@ INeutronRouterAware, INeutronFloatingIPAware {
         while (i.hasNext()) {
             OpenDoveSubnet oDS = i.next();
             if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(subnet.getID())) {
-            	// need to remove from the domain
+                // need to remove from the domain
                 String domainName = "Neutron "+subnet.getTenantID();
                 OpenDoveDomain domain = domainDB.getDomainByName(domainName);
-            	domain.removeSubnet(oDS);
-            	// need to remove from the systemdb
-            	doveSubnetDB.removeSubnet(oDS.getUUID());
+                domain.removeSubnet(oDS);
+                // need to remove from the systemdb
+                doveSubnetDB.removeSubnet(oDS.getUUID());
             }
         }
     }

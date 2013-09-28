@@ -46,7 +46,7 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
         this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
     }
 
-	@Override
+    @Override
     public String getUUID() {
         return uuid;
     }
@@ -82,13 +82,13 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     public void addSubnet(OpenDoveSubnet subnet) {
         scopedSubnets.add(subnet);
     }
-    
+
     public void removeSubnet(OpenDoveSubnet subnet) {
-    	scopedSubnets.remove(subnet);
+        scopedSubnets.remove(subnet);
     }
 
-	public String getSBDcsUri() {
-		return "/controller/sb/v2/opendove/odmc/domains/" + uuid;
-	}
+    public String getSBDcsUri() {
+        return "/controller/sb/v2/opendove/odmc/domains/" + uuid;
+    }
 
 }

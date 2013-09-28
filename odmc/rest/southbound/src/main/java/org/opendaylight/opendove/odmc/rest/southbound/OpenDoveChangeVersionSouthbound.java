@@ -58,15 +58,15 @@ public class OpenDoveChangeVersionSouthbound {
         }
         int i_changeVersion;
         try {
-        	i_changeVersion = Integer.parseInt(changeVersion);
+            i_changeVersion = Integer.parseInt(changeVersion);
         } catch (Exception e) {
-        	return Response.status(500).build();
+            return Response.status(500).build();
         }
         if (!sbInterface.versionExists(i_changeVersion))
             return Response.status(204).build();
         return Response.status(200).entity(sbInterface.getNextOdcsChange(i_changeVersion)).build();
     }
-    
+
     @Path("odgw-changeversion/{changeVersion}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
@@ -83,9 +83,9 @@ public class OpenDoveChangeVersionSouthbound {
         }
         int i_changeVersion;
         try {
-        	i_changeVersion = Integer.parseInt(changeVersion);
+            i_changeVersion = Integer.parseInt(changeVersion);
         } catch (Exception e) {
-        	return Response.status(500).build();
+            return Response.status(500).build();
         }
         if (!sbInterface.versionExists(i_changeVersion))
             return Response.status(204).build();

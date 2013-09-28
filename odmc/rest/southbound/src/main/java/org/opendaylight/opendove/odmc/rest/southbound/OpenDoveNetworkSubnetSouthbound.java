@@ -23,7 +23,7 @@ import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
- * Open DOVE Southbound REST APIs for Subnets.<br>
+ * Open DOVE Southbound REST APIs for Network/Subnet Association.<br>
  *
  * <br>
  * <br>

@@ -1,5 +1,6 @@
 package org.opendaylight.opendove.odmc.implementation;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.EnumSet;
@@ -167,17 +168,48 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
         while (i.hasNext()) {
             OpenDoveServiceAppliance d = i.next();
             if (d.getIP().compareTo(ip) == 0)  {
-                              if  (d.getUUID().compareTo(uuid) == 0) {
-                                // No Conflict
-                return false;
-                              } else {
-                                // IP Address Conflict
-                return true;
-                              }
-                        }
+                if  (d.getUUID().compareTo(uuid) == 0) {
+                    // No Conflict
+                    return false;
+                } else {
+                    // IP Address Conflict
+                    return true;
+                }
+            }
         }
-                // IP Address Conflict
+        // IP Address Conflict
         return false;
     }
 
+    // this method uses reflection to update an object from it's delta.
+
+    private boolean overwrite(Object target, Object delta) {
+        Method[] methods = target.getClass().getMethods();
+
+        for(Method toMethod: methods){
+            if(toMethod.getDeclaringClass().equals(target.getClass())
+                    && toMethod.getName().startsWith("set")){
+
+                String toName = toMethod.getName();
+                String fromName = toName.replace("set", "get");
+
+                try {
+                    Method fromMethod = delta.getClass().getMethod(fromName);
+                    Object value = fromMethod.invoke(delta, (Object[])null);
+                    if(value != null){
+                        toMethod.invoke(target, value);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean updateDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance input) {
+        OpenDoveServiceAppliance target = doveServiceApplianceDB.get(dsaUUID);
+        return overwrite(target, input);
+    }
 }

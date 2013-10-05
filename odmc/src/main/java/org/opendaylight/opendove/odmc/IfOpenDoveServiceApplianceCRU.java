@@ -21,5 +21,6 @@ public interface IfOpenDoveServiceApplianceCRU {
 
     public boolean applianceExists(String saUUID);
     public boolean dsaIPConflict(String ip, String uuid);
+    public boolean updateDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance input);
 
 }

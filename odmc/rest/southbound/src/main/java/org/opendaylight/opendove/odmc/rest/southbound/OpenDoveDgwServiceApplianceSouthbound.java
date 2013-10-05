@@ -29,7 +29,7 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
 /**
- * Open DOVE Southbound REST APIs for DCS Service Appliance.<br>
+ * Open DOVE Southbound REST APIs for DGW Service Appliance.<br>
  *
  * <br>
  * <br>
@@ -45,11 +45,11 @@ import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
  *
  */
 
-@Path("/odcs")
-public class OpenDoveDcsServiceApplianceSouthbound {
+@Path("/odgw")
+public class OpenDoveDgwServiceApplianceSouthbound {
 
     /*
-     *  REST Handler Function for DCS <==> DMC Registration
+     *  REST Handler Function for DGW <==> DMC Registration
      */
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
@@ -58,12 +58,13 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             @ResponseCode(code = 201, condition = "Registration Accepted"),
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response processDcsRegistration (OpenDoveServiceAppliance appliance) {
+    public Response processDgwRegistration (OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         String dsaUUID = appliance.getUUID();
 
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
+        // System.out.println("*********Inside DGW process DGW REGN  \n");
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -90,7 +91,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
     }
 
     /*
-     *  REST Handler Function for DCS Heart-Beat
+     *  REST Handler Function for DGW Heart-Beat
      */
     @Path("/{dsaUUID}")
     @PUT
@@ -100,12 +101,11 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
             @ResponseCode(code = 500, condition = "Internal Error") })
 
-    public Response procesDcsHeartbeat (
+    public Response procesDgwHeartbeat (
                                  @PathParam("dsaUUID") String dsaUUID,
                                  OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         appliance.setUUID(dsaUUID);
-        //System.out.println("*********Inside DCS processHeartbeat  \n");
 
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
@@ -114,6 +114,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
 
+        // System.out.println("*********Inside DGW processHeartbeat  \n");
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();

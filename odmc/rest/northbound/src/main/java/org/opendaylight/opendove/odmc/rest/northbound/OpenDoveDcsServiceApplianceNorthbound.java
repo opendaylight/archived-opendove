@@ -9,6 +9,8 @@
 package org.opendaylight.opendove.odmc.rest.northbound;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -21,9 +23,11 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
+import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
 /**
- * Open DOVE Northbound REST APIs for Service Appliance.<br>
+ * Open DOVE Northbound REST APIs for DCS Service Appliance.<br>
  *
  * <br>
  * <br>
@@ -39,53 +43,44 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
  *
  */
 
-@Path("/serviceAppliances")
-public class OpenDoveServiceApplianceNorthbound {
+@Path("/odcs")
+public class OpenDoveDcsServiceApplianceNorthbound {
 
     /*
-     *  REST(GET) Handler Function for "show service-appliance"
+     *  NB REST(PUT) Handler Function for "DCS service-appliance Role Assignment"
      */
 
-    @Path("{saUUID}")
-    @GET
+    @Path("/role/{saUUID}")
+    @PUT
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 409, condition = "DCS is in a Conflicted State"), 
             @ResponseCode(code = 404, condition = "Not Found"),
-            @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showServiceAppliance(
-            @PathParam("saUUID") String saUUID
+            @ResponseCode(code = 500, condition = "Internal Error") 
+            })
+    public Response nbAssignDcsServiceApplianceRole(
+            @PathParam("saUUID") String dsaUUID
             ) {
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.applianceExists(saUUID))
+        if (!sbInterface.applianceExists(dsaUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(saUUID))).build();
+
+        System.out.println("**********1.   Coming Here..   *******\n");
+
+        OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
+
+        OpenDoveSBRestClient sbRestClient =    new OpenDoveSBRestClient();
+        sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
+
+        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "show service-appliances"
-     */
-
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON })
-    @StatusCodes({
-            @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content"),
-            @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showServiceAppliances() {
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
-        if (sbInterface == null) {
-            throw new ServiceUnavailableException("OpenDove SB Interface "
-                    + RestMessages.SERVICEUNAVAILABLE.toString());
-        }
-        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getAppliances())).build();
-    }
 }
 

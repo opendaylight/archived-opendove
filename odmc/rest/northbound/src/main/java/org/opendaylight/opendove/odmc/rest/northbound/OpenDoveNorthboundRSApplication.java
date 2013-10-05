@@ -30,6 +30,7 @@ public class OpenDoveNorthboundRSApplication extends Application {
 // northbound URIs
         classes.add(OpenDoveSystemNorthbound.class);
         classes.add(OpenDoveServiceApplianceNorthbound.class);
+        classes.add(OpenDoveDcsServiceApplianceNorthbound.class);
         return classes;
     }
 

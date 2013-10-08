@@ -20,4 +20,6 @@ public interface IfSBDoveEGWSNATPoolCRUD {
     public List<OpenDoveEGWSNATPool> getEgwSNATPools();
 
     public void removeEgwSNATPool(String poolUUID);
+
+    public void updateSNATPool(String uuid, OpenDoveEGWSNATPool snatPool);
 }

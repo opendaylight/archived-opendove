@@ -8,6 +8,9 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.util.Iterator;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -44,15 +47,15 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
     public OpenDovePolicy() { }
 
     public OpenDovePolicy(Integer src_vnid, Integer dst_vnid, String dom_UUID, Integer tType) {
-    	uuid = java.util.UUID.randomUUID().toString();
-    	sourceVNID = src_vnid;
-    	destinationVNID = dst_vnid;
-    	timeToLive = 1000;
-    	policyAction = 1;
-    	domainUUID = dom_UUID;
-    	trafficType = tType;
+        uuid = java.util.UUID.randomUUID().toString();
+        sourceVNID = src_vnid;
+        destinationVNID = dst_vnid;
+        timeToLive = 1000;
+        policyAction = 1;
+        domainUUID = dom_UUID;
+        trafficType = tType;
     }
-    
+
     @Override
     public String getUUID() {
         return uuid;
@@ -125,5 +128,60 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     public String getSBDcsUri() {
         return "/controller/sb/v2/opendove/odmc/domains/" + domainUUID + "/policy/" + uuid;
+    }
+
+    public static void removeAllowPolicies(IfSBDovePolicyCRUD dovePolicyDB,
+            OpenDoveNetwork newODN, OpenDoveNetwork oldODN) {
+        removeAllowPolicy(dovePolicyDB, newODN, oldODN, 0);
+        removeAllowPolicy(dovePolicyDB, newODN, oldODN, 1);
+        removeAllowPolicy(dovePolicyDB, oldODN, newODN, 0);
+        removeAllowPolicy(dovePolicyDB, oldODN, newODN, 1);
+    }
+
+    private static void removeAllowPolicy(IfSBDovePolicyCRUD dovePolicyDB,
+            OpenDoveNetwork newODN, OpenDoveNetwork oldODN, int traffic_type) {
+        List<OpenDovePolicy> policies = dovePolicyDB.getPolicies();
+        Iterator<OpenDovePolicy> policyIterator = policies.iterator();
+        boolean found = false;
+        while (policyIterator.hasNext() && !found) {
+            OpenDovePolicy policy = policyIterator.next();
+            if (policy.getSourceVNID() == newODN.getVnid() &&
+                    policy.getDestinationVNID() == oldODN.getVnid() &&
+                    policy.getPolicyAction() == 1 && policy.getTrafficType() == traffic_type) {
+                policy.setPolicyAction(0);
+                found = true;
+                dovePolicyDB.updatePolicy(policy);
+            }
+        }
+    }
+
+    public static void setAllowPolicies(IfSBDovePolicyCRUD dovePolicyDB,
+            OpenDoveNetwork newODN, OpenDoveNetwork oldODN) {
+        setAllowPolicy(dovePolicyDB, newODN, oldODN, 0);
+        setAllowPolicy(dovePolicyDB, newODN, oldODN, 1);
+        setAllowPolicy(dovePolicyDB, oldODN, newODN, 0);
+        setAllowPolicy(dovePolicyDB, oldODN, newODN, 1);
+    }
+
+    private static void setAllowPolicy(IfSBDovePolicyCRUD dovePolicyDB,
+            OpenDoveNetwork newODN, OpenDoveNetwork oldODN, int traffic_type) {
+        List<OpenDovePolicy> policies = dovePolicyDB.getPolicies();
+        Iterator<OpenDovePolicy> policyIterator = policies.iterator();
+        boolean found = false;
+        while (policyIterator.hasNext() && !found) {
+            OpenDovePolicy policy = policyIterator.next();
+            if (policy.getSourceVNID() == newODN.getVnid() &&
+                    policy.getDestinationVNID() == oldODN.getVnid() &&
+                    policy.getPolicyAction() == 0 && policy.getTrafficType() == traffic_type) {
+                policy.setPolicyAction(1);
+                found = true;
+                dovePolicyDB.updatePolicy(policy);
+            }
+        }
+        if (!found) {
+            OpenDovePolicy newPolicy = new OpenDovePolicy(newODN.getVnid(),
+                    oldODN.getVnid(), newODN.getDomain_uuid(), traffic_type);
+            dovePolicyDB.addPolicy(newPolicy.getUUID(), newPolicy);
+        }
     }
 }

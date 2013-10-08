@@ -20,4 +20,6 @@ public interface IfSBDovePolicyCRUD {
     public List<OpenDovePolicy> getPolicies();
 
     public void removePolicy(String policyUUID);
+
+    public void updatePolicy(OpenDovePolicy policy);
 }

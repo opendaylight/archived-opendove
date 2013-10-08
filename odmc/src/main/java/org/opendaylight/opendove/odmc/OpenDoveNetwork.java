@@ -11,6 +11,7 @@ package org.opendaylight.opendove.odmc;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -37,11 +38,11 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     Integer networkType;
 
     String associatedOSNetworkUUID;
-    
+
     List<OpenDoveServiceAppliance> gateways;
 
-    public OpenDoveNetwork() { 
-    	gateways = new ArrayList<OpenDoveServiceAppliance>();
+    public OpenDoveNetwork() {
+        gateways = new ArrayList<OpenDoveServiceAppliance>();
     }
 
     public OpenDoveNetwork(String name, int vnid, OpenDoveDomain scopingDomain, int type, String oSNetworkUUID) {
@@ -52,7 +53,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         this.tombstoneFlag = false;
         this.networkType = type;
         this.associatedOSNetworkUUID = oSNetworkUUID;
-    	gateways = new ArrayList<OpenDoveServiceAppliance>();
+        gateways = new ArrayList<OpenDoveServiceAppliance>();
     }
 
     @Override
@@ -116,11 +117,31 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         return "/controller/sb/v2/opendove/odmc/networks/" + uuid;
     }
 
-	public void addEGW(OpenDoveServiceAppliance target) {
-		gateways.add(target);
-	}
+    public void addEGW(OpenDoveServiceAppliance target) {
+        gateways.add(target);
+    }
 
-	public List<OpenDoveServiceAppliance> getEGWs() {
-		return gateways;
-	}
+    public List<OpenDoveServiceAppliance> getEGWs() {
+        return gateways;
+    }
+
+    private static Random rng;
+
+    public static void initRNG() {
+        rng = new Random();    //TODO: need to seed this better
+    }
+
+    public static long getNext() {
+        return rng.nextLong();
+    }
+
+    public boolean networkUsesEGW(String gatewayUUID) {
+        Iterator<OpenDoveServiceAppliance> iterator = gateways.iterator();
+        while (iterator.hasNext()) {
+            OpenDoveServiceAppliance testDSA = iterator.next();
+            if (testDSA.getUUID().equalsIgnoreCase(gatewayUUID))
+                return true;
+        }
+        return false;
+    }
 }

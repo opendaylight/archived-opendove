@@ -59,16 +59,6 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     private OpenDoveConcurrentBackedMap policyMap, gwIpv4Map, egwSNATPoolMap, egwFwdRuleMap, vgwVNIDMap;
     private ConcurrentMap<Integer, OpenDoveObject> objectDB;
 
-    private static Random rng;
-
-    private static void initRNG() {
-        rng = new Random();    //TODO: need to seed this better
-    }
-
-    public static long getNext() {
-        return rng.nextLong();
-    }
-
     // methods needed for creating caches
 
     void setClusterContainerService(IClusterContainerServices s) {
@@ -172,7 +162,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     private void startUp() {
         allocateCache();
         retrieveCache();
-        OpenDoveSBInterfaces.initRNG();
+        OpenDoveNetwork.initRNG();
     }
 
     /**
@@ -317,7 +307,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     public int allocateVNID() {
         boolean done = false;
         while (!done) {
-            long candidateVNID = OpenDoveSBInterfaces.getNext() & 0x0000000000FFFFFF;
+            long candidateVNID = OpenDoveNetwork.getNext() & 0x0000000000FFFFFF;
             if (!networkExistsByVnid((int) candidateVNID))
                 return (int) candidateVNID;
         }
@@ -507,6 +497,10 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         policyMap.remove(policyUUID);
     }
 
+    public void updatePolicy(OpenDovePolicy policy) {
+        policyMap.update(policy.getUUID(), policy);
+    }
+
     // IfSBDoveEGWSNATPool CRUD Methods
 
     public boolean egwSNATPoolExists(String poolUUID) {
@@ -528,6 +522,10 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
             answer.add((OpenDoveEGWSNATPool) i.next());
         }
         return answer;
+    }
+
+    public void updateSNATPool(String key, OpenDoveEGWSNATPool pool) {
+    	egwSNATPoolMap.update(key, pool);
     }
 
     public void removeEgwSNATPool(String poolUUID) {
@@ -560,7 +558,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     public void removeGwIpv4(String ipv4UUID) {
         gwIpv4Map.remove(ipv4UUID);
     }
-    
+
     // Implementation of IfSBDoveEGWFwdRuleCRUD methods
 
     public boolean egwFwdRuleExists(String ruleUUID) {

@@ -49,7 +49,7 @@ public class OpenDoveSubnet extends OpenDoveObject {
         int length = Integer.parseInt(parts[1]);
         StringBuffer ans = new StringBuffer();
         int octet = 0;
-        while (length > 8) {
+        while (length >= 8) {
             ans.append("255.");
             length -= 8;
             octet++;
@@ -59,10 +59,10 @@ public class OpenDoveSubnet extends OpenDoveObject {
             octet++;
         }
         while (octet < 5) {
-            ans.append("0");
             if (octet < 4)
                 ans.append(".");
             octet++;
+            ans.append("0");
         }
         return ans.toString();
     }
@@ -154,7 +154,7 @@ public class OpenDoveSubnet extends OpenDoveObject {
         return true;
     }
 
-	public boolean containsAddress(String ip) {
+    public boolean containsAddress(String ip) {
         try {
             SubnetUtils util = new SubnetUtils(subnet, mask);
             SubnetInfo info = util.getInfo();

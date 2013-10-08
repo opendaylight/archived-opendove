@@ -31,6 +31,7 @@ public class OpenDoveNorthboundRSApplication extends Application {
         classes.add(OpenDoveSystemNorthbound.class);
         classes.add(OpenDoveServiceApplianceNorthbound.class);
         classes.add(OpenDoveDcsServiceApplianceNorthbound.class);
+        classes.add(OpenDoveDgwServiceApplianceNorthbound.class);
         return classes;
     }
 

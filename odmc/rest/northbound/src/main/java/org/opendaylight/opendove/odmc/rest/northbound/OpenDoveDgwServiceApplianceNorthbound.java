@@ -27,7 +27,7 @@ import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
 /**
- * Open DOVE Northbound REST APIs for DCS Service Appliance.<br>
+ * Open DOVE Northbound REST APIs for DGW Service Appliance.<br>
  *
  * <br>
  * <br>
@@ -43,11 +43,11 @@ import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
  *
  */
 
-@Path("/odcs")
-public class OpenDoveDcsServiceApplianceNorthbound {
+@Path("/odgw")
+public class OpenDoveDgwServiceApplianceNorthbound {
 
     /*
-     *  NB REST(PUT) Handler Function for "DCS service-appliance Role Assignment"
+     *  NB REST(PUT) Handler Function for "DGW service-appliance Role Assignment"
      */
 
     @Path("/role/{saUUID}")
@@ -61,7 +61,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") 
             })
-    public Response nbAssignDcsServiceApplianceRole(
+    public Response nbAssignDgwServiceApplianceRole(
             @PathParam("saUUID") String dsaUUID
             ) {
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);

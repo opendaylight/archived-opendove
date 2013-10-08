@@ -49,13 +49,52 @@ public class OpenDoveSBRestClient {
         Integer dcs_rest_service_port = appliance.getDcsRestServicePort();
 
 
-        // Test PUT subnet2
         try {
             String action = "start";
             JSONObject jo = new JSONObject().put("action", action);
 
             // execute HTTP request and verify response code
             String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odcs/role";
+            HTTPRequest request = new HTTPRequest();
+            request.setMethod("PUT");
+            request.setUri(uri);
+            request.setEntity(jo.toString());
+
+            Map<String, List<String>> headers = new HashMap<String, List<String>>();
+//            String authString = "admin:admin";
+//           byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+//            String authStringEnc = new String(authEncBytes);
+            List<String> header = new ArrayList<String>();
+//            header.add("Basic "+authStringEnc);
+//            headers.put("Authorization", header);
+//            header = new ArrayList<String>();
+            header.add("application/json");
+            headers.put("Content-Type", header);
+            headers.put("Accept", header);
+            request.setHeaders(headers);
+            HTTPResponse response = HTTPClient.sendRequest(request);
+            return response.getStatus();
+        } catch (Exception e) {
+            return 400;
+        }
+    }
+    
+    /*
+     *  REST Client Method for "DGW service-appliance Role Assignment"
+     */
+
+    public Integer assignDgwServiceApplianceRole(OpenDoveServiceAppliance appliance) {
+
+        String  dsaIP   = appliance.getIP();
+        Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
+
+
+        try {
+            String action = "start";
+            JSONObject jo = new JSONObject().put("action", action);
+
+            // execute HTTP request and verify response code
+            String uri = "http://" + dsaIP + ":" + dgw_rest_service_port + "/controller/sb/v2/opendove/odgw/role";
             HTTPRequest request = new HTTPRequest();
             request.setMethod("PUT");
             request.setUri(uri);

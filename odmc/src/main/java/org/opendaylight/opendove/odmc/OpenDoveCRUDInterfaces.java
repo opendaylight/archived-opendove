@@ -32,19 +32,43 @@ public class OpenDoveCRUDInterfaces {
         return answer;
     }
 
-	public static IfSBOpenDoveChangeVersionR getIfSBOpenDoveChangeVersionR(Object o) {
-		IfSBOpenDoveChangeVersionR answer = (IfSBOpenDoveChangeVersionR) ServiceHelper.getGlobalInstance(IfSBOpenDoveChangeVersionR.class, o);
+    public static IfSBDovePolicyCRUD getIfDovePolicyCRUD(Object o) {
+        IfSBDovePolicyCRUD answer = (IfSBDovePolicyCRUD) ServiceHelper.getGlobalInstance(IfSBDovePolicyCRUD.class, o);
         return answer;
-	}
+    }
 
-	public static IfSBDoveNetworkSubnetAssociationCRUD getIfDoveNetworkSubnetAssociationCRUD(Object o) {
-		IfSBDoveNetworkSubnetAssociationCRUD answer = (IfSBDoveNetworkSubnetAssociationCRUD) ServiceHelper.getGlobalInstance(IfSBDoveNetworkSubnetAssociationCRUD.class, o);
+    public static IfSBOpenDoveChangeVersionR getIfSBOpenDoveChangeVersionR(Object o) {
+        IfSBOpenDoveChangeVersionR answer = (IfSBOpenDoveChangeVersionR) ServiceHelper.getGlobalInstance(IfSBOpenDoveChangeVersionR.class, o);
         return answer;
-	}
+    }
 
-	public static IfOpenDoveServiceApplianceCRU getIfDoveServiceApplianceCRU(Object o) {
+    public static IfSBDoveNetworkSubnetAssociationCRUD getIfDoveNetworkSubnetAssociationCRUD(Object o) {
+        IfSBDoveNetworkSubnetAssociationCRUD answer = (IfSBDoveNetworkSubnetAssociationCRUD) ServiceHelper.getGlobalInstance(IfSBDoveNetworkSubnetAssociationCRUD.class, o);
+        return answer;
+    }
+
+    public static IfOpenDoveServiceApplianceCRU getIfDoveServiceApplianceCRU(Object o) {
         IfOpenDoveServiceApplianceCRU answer = (IfOpenDoveServiceApplianceCRU) ServiceHelper.getGlobalInstance(IfOpenDoveServiceApplianceCRU.class, o);
         return answer;
-	}
+    }
 
+    public static IfSBDoveGwIpv4CRUD getIfSBDoveGwIpv4CRUD(Object o) {
+    	IfSBDoveGwIpv4CRUD answer = (IfSBDoveGwIpv4CRUD) ServiceHelper.getGlobalInstance(IfSBDoveGwIpv4CRUD.class, o);
+        return answer;
+    }
+    
+    public static IfSBDoveEGWSNATPoolCRUD getIfDoveEGWSNATPoolCRUD(Object o) {
+        IfSBDoveEGWSNATPoolCRUD answer = (IfSBDoveEGWSNATPoolCRUD) ServiceHelper.getGlobalInstance(IfSBDoveEGWSNATPoolCRUD.class, o);
+        return answer;
+    }
+
+    public static IfSBDoveEGWFwdRuleCRUD getIfSBDoveEGWFwdRuleCRUD(Object o) {
+        IfSBDoveEGWFwdRuleCRUD answer = (IfSBDoveEGWFwdRuleCRUD) ServiceHelper.getGlobalInstance(IfSBDoveEGWFwdRuleCRUD.class, o);
+        return answer;
+    }
+
+    public static IfSBDoveVGWVNIDMappingCRUD getIfSBDoveVGWVNIDMappingCRUD(Object o) {
+    	IfSBDoveVGWVNIDMappingCRUD answer = (IfSBDoveVGWVNIDMappingCRUD) ServiceHelper.getGlobalInstance(IfSBDoveVGWVNIDMappingCRUD.class, o);
+        return answer;
+    }
 }

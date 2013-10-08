@@ -19,11 +19,11 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
+import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
- * Open DOVE Southbound REST APIs for Subnets.<br>
+ * Open DOVE Southbound REST APIs for VGW VNID Mappings.<br>
  *
  * <br>
  * <br>
@@ -39,57 +39,45 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
  *
  */
 
-@Path("/")
-public class OpenDoveChangeVersionSouthbound {
+@Path("/vlan-gws")
+public class OpenDoveVGWVNIDMappingSouthbound {
 
-    @Path("odcs-changeversion/{changeVersion}")
+    @Path("{mappingUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content") })
-    public Response getOdcsChange(
-            @PathParam("changeVersion") String changeVersion
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showRule(
+            @PathParam("mappingUUID") String mappingUUID
             ) {
-        IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
+        IfSBDoveVGWVNIDMappingCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveVGWVNIDMappingCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        int i_changeVersion;
-        try {
-            i_changeVersion = Integer.parseInt(changeVersion);
-        } catch (Exception e) {
-            return Response.status(500).build();
-        }
-        if (sbInterface.versionExists(i_changeVersion) == 204 )
-            return Response.status(204).build();
-        return Response.status(200).entity(sbInterface.getNextOdcsChange(i_changeVersion)).build();
+        if (!sbInterface.vgwVNIDMappingExists(mappingUUID))
+            return Response.status(404).build();
+        return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
     }
 
-    @Path("odgw-changeversion/{changeVersion}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content") })
-    public Response getOdgwChange(
-            @PathParam("changeVersion") String changeVersion
-            ) {
-        IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response listPolicies() {
+        IfSBDoveVGWVNIDMappingCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveVGWVNIDMappingCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        int i_changeVersion;
-        try {
-            i_changeVersion = Integer.parseInt(changeVersion);
-        } catch (Exception e) {
-            return Response.status(500).build();
-        }
-        if (sbInterface.versionExists(i_changeVersion) == 204 )
-            return Response.status(204).build();
-        return Response.status(200).entity(sbInterface.getNextOdgwChange(i_changeVersion)).build();
+        return Response.status(200).entity(new OpenDoveVGWVNIDMappingRequest(sbInterface.getVgwVNIDMappings())).build();
     }
 }
 

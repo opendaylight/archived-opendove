@@ -23,9 +23,13 @@ public class OpenDoveNeutronControlBlock {
     @XmlElement(name="snat_pool_size")
     Integer snatPoolSize;
 
+    @XmlElement(name="egw_replication_factor")
+    Integer egwReplicationFactor;
+
     public OpenDoveNeutronControlBlock() {
         domainSeparation = false;
         snatPoolSize = new Integer(1);
+        egwReplicationFactor = new Integer(1);
     }
 
     public Boolean getDomainSeparation() {
@@ -42,5 +46,13 @@ public class OpenDoveNeutronControlBlock {
 
     public void setSnatPoolSize(Integer snatPoolSize) {
         this.snatPoolSize = snatPoolSize;
+    }
+
+    public Integer getEgwReplicationFactor() {
+        return egwReplicationFactor;
+    }
+
+    public void setEgwReplicationFactor(Integer egwReplicationFactor) {
+        this.egwReplicationFactor = egwReplicationFactor;
     }
 }

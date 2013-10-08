@@ -76,7 +76,9 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
         if (systemDB == null) {
             logger.error("Cache couldn't be retrieved for openDOVENeutronSystem");
         }
-        systemDB.putIfAbsent("default", new OpenDoveNeutronControlBlock());
+        OpenDoveNeutronControlBlock block = new OpenDoveNeutronControlBlock();
+        //block.setDomainSeparation(true);
+        systemDB.putIfAbsent("default", block);
         logger.debug("Cache was successfully retrieved for openDOVENeutronSystem");
     }
 

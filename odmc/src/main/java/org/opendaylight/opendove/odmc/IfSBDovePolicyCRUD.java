@@ -8,10 +8,16 @@
 
 package org.opendaylight.opendove.odmc;
 
-public interface IfSBOpenDoveChangeVersionR {
-    public int versionExists(int version);
+import java.util.List;
 
-    public OpenDoveChange getNextOdcsChange(int version);
+public interface IfSBDovePolicyCRUD {
+    public boolean policyExists(String policyUUID);
 
-    public OpenDoveChange getNextOdgwChange(int version);
+    public OpenDovePolicy getPolicy(String policyUUID);
+
+    public void addPolicy(String policyUUID, OpenDovePolicy policy);
+
+    public List<OpenDovePolicy> getPolicies();
+
+    public void removePolicy(String policyUUID);
 }

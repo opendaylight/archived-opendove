@@ -8,8 +8,12 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 public class OpenDoveConcurrentBackedMap implements IfOpenDoveMap
@@ -29,21 +33,36 @@ public class OpenDoveConcurrentBackedMap implements IfOpenDoveMap
     }
 
     /*
-     * UpdateConcurrentMap is a private method that starts at counter and checks the
-     * ConcurrentMap for key values until it reaches the end of any updates.  If a key
-     *  exists in the ConcurrentMap, an entry is added to the HashMap for that OpenDoveObject
-     *  if one is not already there.
-     *
-     * The string that should be used as the key in the HashMap is uuid - it's already present
-     * in OpenDoveDomain and OpenDoveNetwork, but needs to be moved up to OpenDoveObject
+     * getOrderedBackingKeys provides a list representation of the ConcurrentMap's keyset which is
+     * guaranteed to be ordered in ascending order - this is necessary to handle non-dense key sets.
+     */
+
+    static public List<Integer> getOrderedBackingKeys(ConcurrentMap<Integer,OpenDoveObject> map) {
+        List<Integer> answer = new ArrayList<Integer>();
+        answer.addAll(map.keySet());
+        Collections.sort(answer);
+        return answer;
+    }
+
+    /*
+     * UpdateConcurrentMap first collects a set of ordered keys from the underlying
+     * ConcurrentMap and iterates through it.  For keys greater than the current objectIntegerCounter
+     * an entry is added to the HashMap for that OpenDoveObject if one is not already there.
+     * In the hash map, the UUID of the OpenDoveObject is used as its key and lastly, the
+     * objectIntegerCounter is set to be one more than the last value in the orderedKeys list.
      */
     public void updateConcurrentMap(){
-        while (int2OpenDoveObjectMap.containsKey(objectIntegerCounter)) {
-            OpenDoveObject object = int2OpenDoveObjectMap.get(objectIntegerCounter);
-            String key = object.getUUID();
-            if (object.getClass().isInstance(myInterestedClass) && !str2OpenDoveObjectMap.containsKey(key))
-                str2OpenDoveObjectMap.put(key, object);
-            objectIntegerCounter++;
+        List<Integer> orderedKeys = getOrderedBackingKeys(int2OpenDoveObjectMap);
+        Iterator<Integer> keyIterator = orderedKeys.iterator();
+        while (keyIterator.hasNext()) {
+            Integer i = keyIterator.next();
+            if (i>=objectIntegerCounter) {
+                OpenDoveObject object = int2OpenDoveObjectMap.get(i);
+                String key = object.getUUID();
+                if (object.getClass().isInstance(myInterestedClass) && !str2OpenDoveObjectMap.containsKey(key))
+                    str2OpenDoveObjectMap.put(key, object);
+                objectIntegerCounter = i+1;
+            }
         }
     }
 

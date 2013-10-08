@@ -8,10 +8,17 @@
 
 package org.opendaylight.opendove.odmc;
 
-public interface IfSBOpenDoveChangeVersionR {
-    public int versionExists(int version);
+import java.util.List;
 
-    public OpenDoveChange getNextOdcsChange(int version);
+public interface IfSBDoveGwIpv4CRUD {
 
-    public OpenDoveChange getNextOdgwChange(int version);
+    public boolean gwIpv4Exists(String ipv4UUID);
+    
+    public void addGwIpv4(String ipv4UUID, OpenDoveGwIpv4 ipv4);
+
+    public OpenDoveGwIpv4 getGwIpv4(String ipv4UUID);
+
+    public List<OpenDoveGwIpv4> getGwIpv4Pool();
+
+    public void removeGwIpv4(String ipv4UUID);
 }

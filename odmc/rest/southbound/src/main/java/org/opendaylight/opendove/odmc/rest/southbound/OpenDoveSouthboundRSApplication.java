@@ -32,6 +32,11 @@ public class OpenDoveSouthboundRSApplication extends Application {
         classes.add(OpenDoveNetworkSouthbound.class);
         classes.add(OpenDoveNetworkSubnetSouthbound.class);
         classes.add(OpenDoveSubnetSouthbound.class);
+        classes.add(OpenDovePolicySouthbound.class);
+        classes.add(OpenDoveGwIpv4Southbound.class);
+        classes.add(OpenDoveEGWSNATPoolSouthbound.class);
+        classes.add(OpenDoveEGWFwdRuleSouthbound.class);
+        classes.add(OpenDoveVGWVNIDMappingSouthbound.class);
         classes.add(OpenDoveChangeVersionSouthbound.class);
         classes.add(OpenDoveDcsServiceApplianceSouthbound.class);
         classes.add(OpenDoveDgwServiceApplianceSouthbound.class);

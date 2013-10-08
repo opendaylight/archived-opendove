@@ -15,15 +15,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
+import org.opendaylight.controller.networkconfig.neutron.INeutronFloatingIPAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkAware;
+import org.opendaylight.controller.networkconfig.neutron.INeutronPortAware;
+import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.sal.core.ComponentActivatorAbstractBase;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
+import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
+import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
+import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 
 public class Activator extends ComponentActivatorAbstractBase {
@@ -93,7 +101,10 @@ public class Activator extends ComponentActivatorAbstractBase {
         if (imp.equals(OpenDoveNeutronCallbacks.class)) {
             c.setInterface(
                     new String[] { INeutronNetworkAware.class.getName(),
-                            INeutronSubnetAware.class.getName() }, null);
+                            INeutronSubnetAware.class.getName(),
+                            INeutronPortAware.class.getName(),
+                            INeutronRouterAware.class.getName(),
+                            INeutronFloatingIPAware.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)
@@ -116,6 +127,11 @@ public class Activator extends ComponentActivatorAbstractBase {
                     new String[] { IfSBDoveDomainCRU.class.getName(),
                             IfSBDoveNetworkCRU.class.getName(),
                             IfSBDoveSubnetCRUD.class.getName(),
+                            IfSBDovePolicyCRUD.class.getName(),
+                            IfSBDoveEGWSNATPoolCRUD.class.getName(),
+                            IfSBDoveGwIpv4CRUD.class.getName(),
+                            IfSBDoveEGWFwdRuleCRUD.class.getName(),
+                            IfSBDoveVGWVNIDMappingCRUD.class.getName(),
                             IfSBOpenDoveChangeVersionR.class.getName(),
                             IfSBDoveNetworkSubnetAssociationCRUD.class.getName()
                             }, null);

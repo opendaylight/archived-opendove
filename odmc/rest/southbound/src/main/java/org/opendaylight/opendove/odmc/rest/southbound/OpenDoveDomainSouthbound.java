@@ -21,8 +21,10 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
+import org.opendaylight.opendove.odmc.OpenDovePolicy;
 
 /**
  * Open DOVE Southbound REST APIs for Domains.<br>
@@ -97,6 +99,39 @@ public class OpenDoveDomainSouthbound {
         if (!domainUUID.equalsIgnoreCase(oDN.getDomain_uuid()))
             return Response.status(404).build();
         return Response.status(200).entity(oDN).build();
+    }
+
+    @Path("{domainUUID}/policy/{policyUUID}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showPolicy(
+            @PathParam("domainUUID") String domainUUID,
+            @PathParam("policyUUID") String policyUUID
+            ) {
+        IfSBDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbDomainInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        IfSBDovePolicyCRUD sbPolicyInterface = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
+        if (sbPolicyInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbDomainInterface.domainExists(domainUUID))
+            return Response.status(404).build();
+        if (!sbPolicyInterface.policyExists(policyUUID))
+            return Response.status(404).build();
+        OpenDovePolicy oDP = sbPolicyInterface.getPolicy(policyUUID);
+        if (!domainUUID.equalsIgnoreCase(oDP.getDomainUUID()))
+            return Response.status(404).build();
+        return Response.status(200).entity(oDP).build();
     }
 
     @GET

@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.commons.net.util.SubnetUtils;
+import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 import org.opendaylight.controller.networkconfig.neutron.NeutronNetwork;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 
@@ -150,5 +152,15 @@ public class OpenDoveSubnet extends OpenDoveObject {
 
     public boolean isTrackedByDCS() {
         return true;
+    }
+
+	public boolean containsAddress(String ip) {
+        try {
+            SubnetUtils util = new SubnetUtils(subnet, mask);
+            SubnetInfo info = util.getInfo();
+            return info.isInRange(ip);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

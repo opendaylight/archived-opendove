@@ -13,7 +13,6 @@ import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.felix.dm.Component;
@@ -525,7 +524,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     }
 
     public void updateSNATPool(String key, OpenDoveEGWSNATPool pool) {
-    	egwSNATPoolMap.update(key, pool);
+        egwSNATPoolMap.update(key, pool);
     }
 
     public void removeEgwSNATPool(String poolUUID) {
@@ -584,6 +583,10 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
 
     public void removeEgwFwdRule(String ruleUUID) {
         egwFwdRuleMap.remove(ruleUUID);
+    }
+
+    public void updateEgwFwdRule(String ruleUUID, OpenDoveEGWFwdRule rule) {
+        egwFwdRuleMap.update(ruleUUID, rule);
     }
 
     // IfSBDoveVGWVNIDMappingCRUD methods

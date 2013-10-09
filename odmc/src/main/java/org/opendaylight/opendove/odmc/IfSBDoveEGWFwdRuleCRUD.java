@@ -20,4 +20,6 @@ public interface IfSBDoveEGWFwdRuleCRUD {
     public List<OpenDoveEGWFwdRule> getEgwFwdRules();
 
     public void removeEgwFwdRule(String ruleUUID);
+
+    public void updateEgwFwdRule(String uuid, OpenDoveEGWFwdRule egwFwdRule);
 }

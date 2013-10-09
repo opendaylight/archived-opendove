@@ -15,6 +15,7 @@ import org.opendaylight.controller.networkconfig.neutron.INeutronFloatingIPAware
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronPortAware;
+import org.opendaylight.controller.networkconfig.neutron.INeutronPortCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetCRUD;
@@ -25,10 +26,10 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronPort;
 import org.opendaylight.controller.networkconfig.neutron.NeutronRouter;
 import org.opendaylight.controller.networkconfig.neutron.NeutronRouter_Interface;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
-import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet_IPAllocationPool;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
@@ -37,6 +38,7 @@ import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
+import org.opendaylight.opendove.odmc.OpenDoveEGWFwdRule;
 import org.opendaylight.opendove.odmc.OpenDoveEGWSNATPool;
 import org.opendaylight.opendove.odmc.OpenDoveGwIpv4;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
@@ -357,10 +359,10 @@ INeutronRouterAware, INeutronFloatingIPAware {
         NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(routerInterface.getSubnetUUID());
         INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
-        String networkUUID = "Neutron " + neutronNetwork.getID();
+        String networkName = "Neutron " + neutronNetwork.getID();
         IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         IfSBDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
-        OpenDoveNetwork newODN = doveNetworkDB.getNetworkByName(networkUUID);
+        OpenDoveNetwork newODN = doveNetworkDB.getNetworkByName(networkName);
         IfSBDovePolicyCRUD dovePolicyDB = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
         IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
@@ -478,29 +480,34 @@ INeutronRouterAware, INeutronFloatingIPAware {
     // INeutronFloatingIPAware methods
 
     public int canCreateFloatingIP(NeutronFloatingIP floatingIP) {
-        // TODO Auto-generated method stub
+        // opendove doesn't block anything here
         return 200;
     }
-    public void neutronFloatingIPCreated(NeutronFloatingIP floatingIP) {
-        // TODO Auto-generated method stub
 
+    public void neutronFloatingIPCreated(NeutronFloatingIP floatingIP) {
+        OpenDoveEGWFwdRule.mapFloatingIPtoEGWFwdRule(floatingIP, this);
     }
+
     public int canUpdateFloatingIP(NeutronFloatingIP delta,
             NeutronFloatingIP original) {
-        // TODO Auto-generated method stub
+        // opendove doesn't block anything here
         return 200;
     }
     public void neutronFloatingIPUpdated(NeutronFloatingIP floatingIP) {
-        // TODO Auto-generated method stub
-
+        // if Port-ID is null, look through all EGWFwdRules and set tombstone flag for each
+        // if Port-ID is not null, repeat create steps (refactor)
+        if (floatingIP.getPortUUID() == null)
+            OpenDoveEGWFwdRule.removeEgwFwdRulesForFloatingIP(floatingIP, this);
+        else
+            OpenDoveEGWFwdRule.mapFloatingIPtoEGWFwdRule(floatingIP, this);
     }
     public int canDeleteFloatingIP(NeutronFloatingIP floatingIP) {
-        // TODO Auto-generated method stub
+        // opendove doesn't block anything here
         return 200;
     }
     public void neutronFloatingIPDeleted(NeutronFloatingIP floatingIP) {
-        // TODO Auto-generated method stub
-
+        // look through all EGWFwdRules and set tombstone flag for each (refactor)
+        OpenDoveEGWFwdRule.removeEgwFwdRulesForFloatingIP(floatingIP, this);
     }
 
     private int canAllocateEGW(String uuid, boolean negate) {

@@ -64,12 +64,20 @@ public class OpenDoveDgwServiceApplianceSouthbound {
 
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
-        // System.out.println("*********Inside DGW process DGW REGN  \n");
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
 
+
+        /*
+         *  Registration from Same UUID with a different IP will be accepted - It will be
+         *  treated as a change in IP Address, Infinispan Cache will be updated in this
+         *  case.
+         *  
+         *  Registration from different UUID with an  IP that already exists in DMC Cache will 
+         *  treated as a conflict, Registration will be rejected in this case.
+         */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
@@ -114,7 +122,14 @@ public class OpenDoveDgwServiceApplianceSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
 
-        // System.out.println("*********Inside DGW processHeartbeat  \n");
+        /*
+         *  Heart-Beat from Same UUID with a different IP will be accepted - It will be
+         *  treated as a change in IP Address, Infinispan Cache will be updated in this
+         *  case.
+         *  
+         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will 
+         *  treated as a conflict
+         */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();

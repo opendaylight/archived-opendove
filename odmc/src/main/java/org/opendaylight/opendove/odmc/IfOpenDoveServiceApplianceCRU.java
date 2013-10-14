@@ -16,6 +16,7 @@ public interface IfOpenDoveServiceApplianceCRU {
     public OpenDoveServiceAppliance getDoveServiceAppliance(String dsaUUID);
 
     public List<OpenDoveServiceAppliance> getAppliances();
+    public List<OpenDoveServiceAppliance> getRoleAssignedDcsAppliances();
 
     public void addDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance openDoveDSA);
 

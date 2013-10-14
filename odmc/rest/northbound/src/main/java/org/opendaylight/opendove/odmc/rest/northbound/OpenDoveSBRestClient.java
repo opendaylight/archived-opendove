@@ -12,10 +12,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONArray;
 import org.opendaylight.controller.commons.httpclient.*;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
  * Open DOVE REST Client Interface Class for  Service Appliances (DCS and DGW etc.).<br>
@@ -61,13 +65,13 @@ public class OpenDoveSBRestClient {
             request.setEntity(jo.toString());
 
             Map<String, List<String>> headers = new HashMap<String, List<String>>();
-//            String authString = "admin:admin";
-//           byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
-//            String authStringEnc = new String(authEncBytes);
+            //  String authString = "admin:admin";
+            //  byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+            //  String authStringEnc = new String(authEncBytes);
             List<String> header = new ArrayList<String>();
-//            header.add("Basic "+authStringEnc);
-//            headers.put("Authorization", header);
-//            header = new ArrayList<String>();
+            //  header.add("Basic "+authStringEnc);
+            //  headers.put("Authorization", header);
+            //  header = new ArrayList<String>();
             header.add("application/json");
             headers.put("Content-Type", header);
             headers.put("Accept", header);
@@ -78,13 +82,107 @@ public class OpenDoveSBRestClient {
             return 400;
         }
     }
-    
+    /*
+     *  REST Client Method for Providing DCS Cluster Nodes Details to All DCS Nodes that are 
+     *  in Role Assigned State
+     *  Return:
+     *    1: for Success, if o-DMC receives HTTP_OK(200) from all the Nodes
+     *   -1: failure for All other cases. 
+     */
+
+    public Integer sendDcsClusterInfo() {
+
+        Integer dcs_rest_service_port;
+        Integer dcs_raw_service_port;
+        String  uuid;
+        Integer ip_family;
+        String  dsaIP;
+
+        Integer  retVal = 1; // Success
+
+        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        List<OpenDoveServiceAppliance> oDCSs = sbInterface.getRoleAssignedDcsAppliances();
+
+        Iterator<OpenDoveServiceAppliance> iterator = oDCSs.iterator();
+
+        JSONArray dcs_list = new JSONArray();
+        while (iterator.hasNext()) {
+            OpenDoveServiceAppliance appliance =  iterator.next();
+            ip_family = appliance.getIPFamily ();
+            dsaIP     = appliance.getIP();
+            uuid      = appliance.getUUID();
+            dcs_rest_service_port = appliance.getDcsRestServicePort();
+            dcs_raw_service_port = appliance.getDcsRawServicePort();
+
+            JSONObject dcs = new JSONObject();
+            try {
+                  dcs.put("uuid", uuid);
+                  dcs.put("ip_family", ip_family);
+                  dcs.put("ip", dsaIP);
+                  dcs.put("dcs_rest_service_port", dcs_rest_service_port);
+                  dcs.put("dcs_raw_service_port",  dcs_raw_service_port);
+            } catch ( Exception e ) {
+               retVal = -1;
+               return retVal;
+            }
+            dcs_list.put(dcs);
+        }
+
+        //String jsonList = dcs_list.toString();
+        JSONObject jo;
+        try {
+              jo = new JSONObject().put("dps", dcs_list);
+        } catch ( Exception e ) {
+              retVal = -1;
+              return retVal;
+        }
+        
+        iterator = oDCSs.iterator();
+
+        while (iterator.hasNext()) {
+             try {
+                 OpenDoveServiceAppliance appliance =  iterator.next();
+                 dsaIP     = appliance.getIP();
+                 dcs_rest_service_port = appliance.getDcsRestServicePort();
+                 // execute HTTP request and verify response code
+                 String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odcs/cluster";
+                 HTTPRequest request = new HTTPRequest();
+                 request.setMethod("PUT");
+                 request.setUri(uri);
+                 //request.setEntity(dcs_list.toString());
+                 request.setEntity(jo.toString());
+
+                 Map<String, List<String>> headers = new HashMap<String, List<String>>();
+                 // String authString = "admin:admin";
+                 // byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+                 // String authStringEnc = new String(authEncBytes);
+                 List<String> header = new ArrayList<String>();
+                 // header.add("Basic "+authStringEnc);
+                 // headers.put("Authorization", header);
+                 // header = new ArrayList<String>();
+                 header.add("application/json");
+                 headers.put("Content-Type", header);
+                 headers.put("Accept", header);
+                 request.setHeaders(headers);
+                 HTTPResponse response = HTTPClient.sendRequest(request);
+
+                 if ( (response.getStatus() != 200)  || (response.getStatus() != 204)) {
+                     retVal = -1;
+                 } 
+             } catch (Exception e) {
+                 retVal =  -1;
+                 return retVal;
+             }
+        } // end of while.
+        return retVal;
+    }
     /*
      *  REST Client Method for "DGW service-appliance Role Assignment"
      */
 
     public Integer assignDgwServiceApplianceRole(OpenDoveServiceAppliance appliance) {
 
+        
         String  dsaIP   = appliance.getIP();
         Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
 
@@ -101,13 +199,13 @@ public class OpenDoveSBRestClient {
             request.setEntity(jo.toString());
 
             Map<String, List<String>> headers = new HashMap<String, List<String>>();
-//            String authString = "admin:admin";
-//           byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
-//            String authStringEnc = new String(authEncBytes);
+            //  String authString = "admin:admin";
+            //  byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+            //  String authStringEnc = new String(authEncBytes);
             List<String> header = new ArrayList<String>();
-//            header.add("Basic "+authStringEnc);
-//            headers.put("Authorization", header);
-//            header = new ArrayList<String>();
+            //  header.add("Basic "+authStringEnc);
+            //  headers.put("Authorization", header);
+            //  header = new ArrayList<String>();
             header.add("application/json");
             headers.put("Content-Type", header);
             headers.put("Accept", header);

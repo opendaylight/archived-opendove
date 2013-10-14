@@ -125,7 +125,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
     public void neutronNetworkDeleted(NeutronNetwork network) {
         IfSBDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         // mark open dove networks for deletion
-        // TODO: need to release EGW and SNAT pools for networks.
+        // no need to release EGW and SNAT pools for networks here - before the network can be removed,
+        // the router interface has to be removed (which tears down policies and SNAT pools) and
+        // then the port has to be removed.
         Iterator<OpenDoveNetwork> i = doveNetworkDB.getNetworks().iterator();
         while (i.hasNext()) {
             OpenDoveNetwork oDN = i.next();

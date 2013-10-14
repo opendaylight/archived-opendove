@@ -160,6 +160,17 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
         return answer;
     }
 
+    public List<OpenDoveServiceAppliance> getRoleAssignedDcsAppliances() {
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveServiceAppliance d = i.next();
+            if (d.get_isDCS () == true )
+                answer.add(d);
+        }
+        return answer;
+    }
+
     public boolean applianceExists(String saUUID) {
         return doveServiceApplianceDB.containsKey(saUUID);
     }

@@ -75,10 +75,22 @@ public class OpenDoveDcsServiceApplianceNorthbound {
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
 
         OpenDoveSBRestClient sbRestClient =    new OpenDoveSBRestClient();
-        sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
+        Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
 
+        if ( http_response == 200 || http_response == 204 ) {
+
+           // Set the isDCS field.
+           Boolean isDCS = true;
+           dcsAppliance.set_isDCS(isDCS);
+
+           if (sbInterface.applianceExists(dsaUUID) ) {
+               sbInterface.updateDoveServiceAppliance(dsaUUID, dcsAppliance);
+           }
+
+           /* Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State */
+           sbRestClient.sendDcsClusterInfo();
+        }
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
     }
-
 }
 

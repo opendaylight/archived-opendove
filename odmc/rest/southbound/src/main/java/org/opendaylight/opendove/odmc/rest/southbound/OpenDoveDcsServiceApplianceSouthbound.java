@@ -69,6 +69,14 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
 
+        /*
+         *  Registration from Same UUID with a different IP will be accepted - It will be
+         *  treated as a change in IP Address, Infinispan Cache will be updated in this
+         *  case.
+         *  
+         *  Registration from different UUID with an  IP that already exists in DMC Cache will 
+         *  treated as a conflict, Registration will be rejected in this case.
+         */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
@@ -77,7 +85,13 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
 
+
         if (sbInterface.applianceExists(dsaUUID) ) {
+             //  Copy the isDCS field from the Infinispan Cache if the Appliance Already exists.
+             OpenDoveServiceAppliance  dcsNode = sbInterface.getDoveServiceAppliance(dsaUUID);
+             Boolean isDCS  = dcsNode.get_isDCS();
+             
+             appliance.set_isDCS(isDCS);
              sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
            
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
@@ -105,7 +119,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                                  OpenDoveServiceAppliance appliance) {
         String dsaIP   = appliance.getIP();
         appliance.setUUID(dsaUUID);
-        //System.out.println("*********Inside DCS processHeartbeat  \n");
 
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
@@ -114,6 +127,14 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
 
+        /*
+         *  Heart-Beat from Same UUID with a different IP will be accepted - It will be
+         *  treated as a change in IP Address, Infinispan Cache will be updated in this
+         *  case.
+         *  
+         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will 
+         *  treated as a conflict
+         */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
             return Response.status(409).build();
         appliance.initDefaults();
@@ -123,7 +144,12 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         appliance.setTimestamp(timestamp);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
-            sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
+             //  Copy the isDCS field from the Infinispan Cache if the Appliance Already exists.
+             OpenDoveServiceAppliance  dcsNode = sbInterface.getDoveServiceAppliance(dsaUUID);
+             Boolean isDCS  = dcsNode.get_isDCS();
+             
+             appliance.set_isDCS(isDCS);
+             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
         } else {
             /*
              * Heart-Beat will be accepted only for Registered Appliances

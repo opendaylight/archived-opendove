@@ -8,9 +8,8 @@
 
 package org.opendaylight.opendove.odmc.rest.northbound;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -23,6 +22,7 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
@@ -52,6 +52,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
 
     @Path("/role/{saUUID}")
     @PUT
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),

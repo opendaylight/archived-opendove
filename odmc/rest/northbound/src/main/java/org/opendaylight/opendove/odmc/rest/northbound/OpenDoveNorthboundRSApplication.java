@@ -28,10 +28,15 @@ public class OpenDoveNorthboundRSApplication extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
 // northbound URIs
-        classes.add(OpenDoveSystemNorthbound.class);
-        classes.add(OpenDoveServiceApplianceNorthbound.class);
         classes.add(OpenDoveDcsServiceApplianceNorthbound.class);
         classes.add(OpenDoveDgwServiceApplianceNorthbound.class);
+        classes.add(OpenDoveDomainNorthbound.class);
+        classes.add(OpenDoveNetworksNorthbound.class);
+        classes.add(OpenDoveServiceApplianceNorthbound.class);
+        classes.add(OpenDoveSwitchNorthbound.class);
+        classes.add(OpenDoveSwitchStatsNorthbound.class);
+        classes.add(OpenDoveSystemNorthbound.class);
+        classes.add(OpenDoveVGWVNIDMappingNorthbound.class);
         return classes;
     }
 

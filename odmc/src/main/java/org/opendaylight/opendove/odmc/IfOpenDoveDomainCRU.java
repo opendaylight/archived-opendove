@@ -10,7 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.List;
 
-public interface IfSBDoveDomainCRU {
+public interface IfOpenDoveDomainCRU {
     public boolean domainExists(String domainUUID);
 
     public boolean domainExistsByName(String name);
@@ -24,4 +24,6 @@ public interface IfSBDoveDomainCRU {
     public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network);
 
     public List<OpenDoveDomain> getDomains();
+
+    public List<OpenDoveServiceAppliance> getDCSList(String saUUID);
 }

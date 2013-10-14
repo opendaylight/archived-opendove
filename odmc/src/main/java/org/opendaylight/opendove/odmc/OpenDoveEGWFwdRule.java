@@ -180,9 +180,9 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
         OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
         if (network.isShared() && !controlBlock.getDomainSeparation())
             doveDomainName = "SharedDomain";
-        IfSBDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(o);
+        IfOpenDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(o);
         String doveDomainUUID = domainDB.getDomainByName(doveDomainName).getUUID();
-        IfSBDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(o);
+        IfOpenDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(o);
         Iterator<OpenDoveNetwork> doveNetworkIterator = doveNetworkDB.getNetworks().iterator();
         while (doveNetworkIterator.hasNext()) {
             OpenDoveNetwork doveNetwork = doveNetworkIterator.next();

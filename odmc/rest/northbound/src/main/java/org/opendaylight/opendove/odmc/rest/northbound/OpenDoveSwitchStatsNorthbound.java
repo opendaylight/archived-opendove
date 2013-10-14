@@ -6,12 +6,12 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest.northbound;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -19,12 +19,12 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
-import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
+import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchStatsRequest;
 
 /**
- * Open DOVE Southbound REST APIs for Gw Ipv4 Addresses.<br>
+ * Open DOVE Northbound REST APIs for Switch Stats.<br>
  *
  * <br>
  * <br>
@@ -40,44 +40,32 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
  *
  */
 
-@Path("/gw-ipv4")
-public class OpenDoveGwIpv4Southbound {
+@Path("/switch_stats")
+public class OpenDoveSwitchStatsNorthbound {
 
-    @Path("{ipv4UUID}")
+    /*
+     *  REST(GET) Handler Function for "show service-appliances"
+     */
+
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showIpv4(
-            @PathParam("ipv4UUID") String ipv4UUID
+    public Response showStats(
+            @QueryParam("ip") String queryIPAddr,
+            @QueryParam("vnid") String queryVNID,
+            @QueryParam("mac") String queryMAC
             ) {
-        IfSBDoveGwIpv4CRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.gwIpv4Exists(ipv4UUID))
-            return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getGwIpv4(ipv4UUID)).build();
-    }
-
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON })
-    @StatusCodes({
-            @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content"),
-            @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response listPolicies() {
-        IfSBDoveGwIpv4CRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-        if (sbInterface == null) {
-            throw new ServiceUnavailableException("OpenDove SB Interface "
-                    + RestMessages.SERVICEUNAVAILABLE.toString());
-        }
-        return Response.status(200).entity(new OpenDoveGwIpv4Request(sbInterface.getGwIpv4Pool())).build();
+        return Response.status(200).entity(new OpenDoveSwitchStatsRequest(
+                sbInterface.getStats(queryIPAddr, queryVNID, queryMAC))).build();
     }
 }
+

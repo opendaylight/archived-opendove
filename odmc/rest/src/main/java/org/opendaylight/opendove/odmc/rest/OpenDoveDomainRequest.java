@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -29,15 +29,15 @@ public class OpenDoveDomainRequest {
     @XmlElement(name="domains")
     List<OpenDoveDomain> bulkDomains;
 
-    OpenDoveDomainRequest() {
+    public OpenDoveDomainRequest() {
     }
 
-    OpenDoveDomainRequest(List<OpenDoveDomain> bulk) {
+    public OpenDoveDomainRequest(List<OpenDoveDomain> bulk) {
         bulkDomains = bulk;
         singletonDomain = null;
     }
 
-    OpenDoveDomainRequest(OpenDoveDomain single) {
+    public OpenDoveDomainRequest(OpenDoveDomain single) {
         singletonDomain = single;
     }
 

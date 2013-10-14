@@ -8,9 +8,9 @@
 
 package org.opendaylight.opendove.odmc.rest.northbound;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -23,6 +23,7 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
@@ -52,6 +53,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
 
     @Path("/role/{saUUID}")
     @PUT
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
@@ -74,11 +76,43 @@ public class OpenDoveDgwServiceApplianceNorthbound {
 
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
 
-        OpenDoveSBRestClient sbRestClient =    new OpenDoveSBRestClient();
+        OpenDoveSBRestClient sbRestClient = new OpenDoveSBRestClient();
         sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
 
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
     }
 
+    @Path("/allstats")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+        @ResponseCode(code = 200, condition = "Operation successful"),
+        @ResponseCode(code = 204, condition = "No content"),
+        })
+    public Response getAllStats() {
+    	return Response.status(501).build();
+    }
+
+    @Path("/session_stats")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+        @ResponseCode(code = 200, condition = "Operation successful"),
+        @ResponseCode(code = 204, condition = "No content"),
+        })
+    public Response getSessionStats() {
+    	return Response.status(501).build();
+    }
+
+    @Path("/vnid_stats")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+        @ResponseCode(code = 200, condition = "Operation successful"),
+        @ResponseCode(code = 204, condition = "No content"),
+        })
+    public Response getVNIDStats() {
+    	return Response.status(501).build();
+    }
 }
 

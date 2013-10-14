@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -27,15 +27,15 @@ public class OpenDoveEGWFwdRuleRequest {
     @XmlElement(name="egw_fwd_rules")
     List<OpenDoveEGWFwdRule> bulkRules;
 
-    OpenDoveEGWFwdRuleRequest() {
+    public OpenDoveEGWFwdRuleRequest() {
     }
 
-    OpenDoveEGWFwdRuleRequest(List<OpenDoveEGWFwdRule> bulk) {
+    public OpenDoveEGWFwdRuleRequest(List<OpenDoveEGWFwdRule> bulk) {
         bulkRules = bulk;
         singletonRule = null;
     }
 
-    OpenDoveEGWFwdRuleRequest(OpenDoveEGWFwdRule single) {
+    public OpenDoveEGWFwdRuleRequest(OpenDoveEGWFwdRule single) {
         singletonRule = single;
     }
 

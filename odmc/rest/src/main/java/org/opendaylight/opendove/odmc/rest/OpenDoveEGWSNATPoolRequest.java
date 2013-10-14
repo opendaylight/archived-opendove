@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -15,31 +15,31 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.opendaylight.opendove.odmc.OpenDoveGwIpv4;
+import org.opendaylight.opendove.odmc.OpenDoveEGWSNATPool;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class OpenDoveGwIpv4Request {
+public class OpenDoveEGWSNATPoolRequest {
 
-    @XmlElement(name="gw_ipv4_assignment")
-    OpenDoveGwIpv4 singletonPool;
+    @XmlElement(name="egw_snat_pool")
+    OpenDoveEGWSNATPool singletonPool;
 
-    @XmlElement(name="gw_ipv4_assignments")
-    List<OpenDoveGwIpv4> bulkPools;
+    @XmlElement(name="egw_snat_pools")
+    List<OpenDoveEGWSNATPool> bulkPools;
 
-    OpenDoveGwIpv4Request() {
+    public OpenDoveEGWSNATPoolRequest() {
     }
 
-    OpenDoveGwIpv4Request(List<OpenDoveGwIpv4> bulk) {
+    public OpenDoveEGWSNATPoolRequest(List<OpenDoveEGWSNATPool> bulk) {
         bulkPools = bulk;
         singletonPool = null;
     }
 
-    OpenDoveGwIpv4Request(OpenDoveGwIpv4 single) {
+    public OpenDoveEGWSNATPoolRequest(OpenDoveEGWSNATPool single) {
         singletonPool = single;
     }
 
-    public OpenDoveGwIpv4 getSingleton() {
+    public OpenDoveEGWSNATPool getSingleton() {
         return singletonPool;
     }
 
@@ -47,7 +47,7 @@ public class OpenDoveGwIpv4Request {
         return (singletonPool != null);
     }
 
-    public List<OpenDoveGwIpv4> getBulk() {
+    public List<OpenDoveEGWSNATPool> getBulk() {
         return bulkPools;
     }
 }

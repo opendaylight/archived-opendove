@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -27,15 +27,15 @@ public class OpenDoveVGWVNIDMappingRequest {
     @XmlElement(name="vnid_mapping_rules")
     List<OpenDoveVGWVNIDMapping> bulkMappings;
 
-    OpenDoveVGWVNIDMappingRequest() {
+    public OpenDoveVGWVNIDMappingRequest() {
     }
 
-    OpenDoveVGWVNIDMappingRequest(List<OpenDoveVGWVNIDMapping> bulk) {
+    public OpenDoveVGWVNIDMappingRequest(List<OpenDoveVGWVNIDMapping> bulk) {
         bulkMappings = bulk;
         singletonMapping = null;
     }
 
-    OpenDoveVGWVNIDMappingRequest(OpenDoveVGWVNIDMapping single) {
+    public OpenDoveVGWVNIDMappingRequest(OpenDoveVGWVNIDMapping single) {
         singletonMapping = single;
     }
 

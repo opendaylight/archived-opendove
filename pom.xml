@@ -18,6 +18,7 @@
   <modules>
     <module>odmc</module>
     <module>odmc/implementation</module>
+    <module>odmc/rest</module>
     <module>odmc/rest/northbound</module>
     <module>odmc/rest/southbound</module>
   </modules>

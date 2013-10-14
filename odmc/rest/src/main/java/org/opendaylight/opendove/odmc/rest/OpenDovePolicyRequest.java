@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -27,15 +27,15 @@ public class OpenDovePolicyRequest {
     @XmlElement(name="policies")
     List<OpenDovePolicy> bulkPolicies;
 
-    OpenDovePolicyRequest() {
+    public OpenDovePolicyRequest() {
     }
 
-    OpenDovePolicyRequest(List<OpenDovePolicy> bulk) {
+    public OpenDovePolicyRequest(List<OpenDovePolicy> bulk) {
         bulkPolicies = bulk;
         singletonPolicy = null;
     }
 
-    OpenDovePolicyRequest(OpenDovePolicy single) {
+    public OpenDovePolicyRequest(OpenDovePolicy single) {
         singletonPolicy = single;
     }
 

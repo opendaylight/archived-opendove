@@ -20,4 +20,6 @@ public interface IfSBDoveVGWVNIDMappingCRUD {
     public List<OpenDoveVGWVNIDMapping> getVgwVNIDMappings();
 
     public void removeVgwVNIDMapping(String mappingUUID);
+
+    public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping mapping);
 }

@@ -22,6 +22,7 @@ import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailab
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveEGWFwdRuleRequest;
 
 /**
  * Open DOVE Southbound REST APIs for EGW SNAT Pools.<br>

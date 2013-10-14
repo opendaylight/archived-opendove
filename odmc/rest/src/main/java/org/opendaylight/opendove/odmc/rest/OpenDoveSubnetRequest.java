@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -29,15 +29,15 @@ public class OpenDoveSubnetRequest {
     @XmlElement(name="subnets")
     List<OpenDoveSubnet> bulkSubnets;
 
-    OpenDoveSubnetRequest() {
+    public OpenDoveSubnetRequest() {
     }
 
-    OpenDoveSubnetRequest(List<OpenDoveSubnet> bulk) {
+    public OpenDoveSubnetRequest(List<OpenDoveSubnet> bulk) {
         bulkSubnets = bulk;
         singletonSubnet = null;
     }
 
-    OpenDoveSubnetRequest(OpenDoveSubnet single) {
+    public OpenDoveSubnetRequest(OpenDoveSubnet single) {
         singletonSubnet = single;
     }
 

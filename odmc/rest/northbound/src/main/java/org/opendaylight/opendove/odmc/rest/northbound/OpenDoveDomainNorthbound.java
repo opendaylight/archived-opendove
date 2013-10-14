@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest.northbound;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -19,12 +19,12 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
-import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
+import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
 
 /**
- * Open DOVE Southbound REST APIs for Gw Ipv4 Addresses.<br>
+ * Open DOVE Northbound REST APIs for Domains.<br>
  *
  * <br>
  * <br>
@@ -40,10 +40,14 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
  *
  */
 
-@Path("/gw-ipv4")
-public class OpenDoveGwIpv4Southbound {
+@Path("/domains")
+public class OpenDoveDomainNorthbound {
 
-    @Path("{ipv4UUID}")
+    /*
+     *  REST(GET) Handler Function for "show domain"
+     */
+
+    @Path("{saUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -52,18 +56,48 @@ public class OpenDoveGwIpv4Southbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showIpv4(
-            @PathParam("ipv4UUID") String ipv4UUID
+    public Response showServiceAppliance(
+            @PathParam("saUUID") String saUUID
             ) {
-        IfSBDoveGwIpv4CRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.gwIpv4Exists(ipv4UUID))
+        if (!sbInterface.domainExists(saUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getGwIpv4(ipv4UUID)).build();
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(saUUID))).build();
     }
+
+    /*
+     *  REST(GET) Handler Function for "show domain"
+     */
+
+    @Path("{saUUID}/odcs-list")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showODCSList(
+            @PathParam("saUUID") String saUUID
+            ) {
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.domainExists(saUUID))
+            return Response.status(404).build();
+        return Response.status(200).entity(sbInterface.getDCSList(saUUID)).build();
+    }
+
+    /*
+     *  REST(GET) Handler Function for "list domains"
+     */
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
@@ -72,12 +106,13 @@ public class OpenDoveGwIpv4Southbound {
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response listPolicies() {
-        IfSBDoveGwIpv4CRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+    public Response showServiceAppliances() {
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        return Response.status(200).entity(new OpenDoveGwIpv4Request(sbInterface.getGwIpv4Pool())).build();
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomains())).build();
     }
 }
+

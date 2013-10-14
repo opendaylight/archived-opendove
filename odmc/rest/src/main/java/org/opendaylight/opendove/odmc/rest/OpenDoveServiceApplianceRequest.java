@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.northbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -29,15 +29,15 @@ public class OpenDoveServiceApplianceRequest {
     @XmlElement(name="service_appliances")
     List<OpenDoveServiceAppliance> bulkAppliances;
 
-    OpenDoveServiceApplianceRequest() {
+    public OpenDoveServiceApplianceRequest() {
     }
 
-    OpenDoveServiceApplianceRequest(List<OpenDoveServiceAppliance> bulk) {
+    public OpenDoveServiceApplianceRequest(List<OpenDoveServiceAppliance> bulk) {
         bulkAppliances = bulk;
         singletonAppliance = null;
     }
 
-    OpenDoveServiceApplianceRequest(OpenDoveServiceAppliance single) {
+    public OpenDoveServiceApplianceRequest(OpenDoveServiceAppliance single) {
         singletonAppliance = single;
     }
 

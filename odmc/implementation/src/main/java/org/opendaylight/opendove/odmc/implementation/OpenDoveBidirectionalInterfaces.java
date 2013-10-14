@@ -13,17 +13,35 @@ import org.opendaylight.controller.clustering.services.CacheConfigException;
 import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
+import org.opendaylight.controller.networkconfig.neutron.NeutronNetwork;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
+import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
+import org.opendaylight.opendove.odmc.OpenDoveDomain;
+import org.opendaylight.opendove.odmc.OpenDoveEndpoint;
+import org.opendaylight.opendove.odmc.OpenDoveNVP;
+import org.opendaylight.opendove.odmc.OpenDoveNetwork;
+import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
+import org.opendaylight.opendove.odmc.OpenDoveSwitch;
+import org.opendaylight.opendove.odmc.OpenDoveVGWVNIDMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplianceCRU  {
+public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfOpenDoveNetworkCRU,
+        IfOpenDoveDomainCRU, IfOpenDoveServiceApplianceCRU, IfSBDoveVGWVNIDMappingCRUD  {
     private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
 
     private IClusterContainerServices clusterContainerService = null;
     private ConcurrentMap<String, OpenDoveServiceAppliance> doveServiceApplianceDB;
+    private OpenDoveConcurrentBackedMap networkMap, domainMap, switchMap, vgwVNIDMap;
+    private ConcurrentMap<Integer, OpenDoveObject> objectDB;
+
 
     // methods needed for creating caches
 
@@ -71,7 +89,16 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
             logger.error("Cache couldn't be retrieved for openDoveServiceAppliances");
         }
         logger.debug("Cache was successfully retrieved for openDoveServiceAppliances");
-
+        logger.debug("Retrieving cache for openDoveObjects");
+        objectDB = (ConcurrentMap<Integer, OpenDoveObject>) this.clusterContainerService
+                .getCache("openDoveObjects");
+        if (objectDB == null) {
+            logger.error("Cache couldn't be retrieved for openDoveSubnets");
+        }
+        domainMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveDomain.class);
+        networkMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveNetwork.class);
+        switchMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveSwitch.class);
+        vgwVNIDMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveVGWVNIDMapping.class);
     }
 
     @SuppressWarnings("deprecation")
@@ -223,4 +250,196 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveServiceApplian
         OpenDoveServiceAppliance target = doveServiceApplianceDB.get(dsaUUID);
         return overwrite(target, input);
     }
+
+    // code to support domain interfaces (including URI)
+
+    public boolean domainExists(String domainUUID) {
+        return(domainMap.containsKey(domainUUID));
+    }
+
+    public boolean domainExistsByName(String name) {
+        Iterator<OpenDoveObject> i = domainMap.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveDomain d = (OpenDoveDomain) i.next();
+            if (d.getName().compareTo(name) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    public OpenDoveDomain getDomain(String domainUUID) {
+        return(OpenDoveDomain) (domainMap.get(domainUUID));
+    }
+
+    public OpenDoveDomain getDomainByName(String name) {
+        Iterator<OpenDoveObject> i = domainMap.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveDomain d = (OpenDoveDomain) i.next();
+            if (d.getName().compareTo(name) == 0)
+                return d;
+        }
+        return null;
+    }
+
+    public void addDomain(String domainUUID, OpenDoveDomain domain) {
+        domainMap.putIfAbsent(domainUUID, domain);
+    }
+
+    public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network) {
+        if (domainExists(domainUUID)) {
+            OpenDoveDomain domain = (OpenDoveDomain) domainMap.get(domainUUID);
+            domain.addNetwork(network);
+        }
+    }
+
+    public List<OpenDoveDomain> getDomains() {
+        List<OpenDoveDomain> answer = new ArrayList<OpenDoveDomain>();
+        Iterator<OpenDoveObject> i = domainMap.values().iterator();
+        while (i.hasNext()) {
+            answer.add((OpenDoveDomain) i.next());
+        }
+        return answer;
+    }
+
+    public List<OpenDoveServiceAppliance> getDCSList(String saUUID) {
+        //TODO: FILL IN
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        return answer;
+    }
+
+    // code to support SB network interfaces (including URI)
+
+    public boolean networkExists(String networkUUID) {
+        return(networkMap.containsKey(networkUUID));
+    }
+
+    public boolean networkExistsByVnid(int vnid) {
+        Iterator<OpenDoveObject> i = networkMap.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
+            if (n.getVnid() == vnid)
+                return true;
+        }
+        return false;
+    }
+
+    public OpenDoveNetwork getNetwork(String networkUUID) {
+        return (OpenDoveNetwork) (networkMap.get(networkUUID));
+    }
+
+    public OpenDoveNetwork getNetworkByVnid(int vnid) {
+        Iterator<OpenDoveObject> i = networkMap.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
+            if (n.getVnid() == vnid)
+                return n;
+        }
+        return null;
+    }
+
+    public OpenDoveNetwork getNetworkByName(String name) {
+        Iterator<OpenDoveObject> i = networkMap.values().iterator();
+        while (i.hasNext()) {
+            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
+            if (n.getName().equals(name))
+                return n;
+        }
+        return null;
+    }
+
+    public void addNetwork(String networkUUID, OpenDoveNetwork network) {
+        networkMap.putIfAbsent(networkUUID, network);
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbInterface != null)
+            sbInterface.addNetworkToDomain(network.getDomain_uuid(), network);
+    }
+
+    public int allocateVNID() {
+        boolean done = false;
+        while (!done) {
+            long candidateVNID = OpenDoveNetwork.getNext() & 0x0000000000FFFFFF;
+            if (!networkExistsByVnid((int) candidateVNID))
+                return (int) candidateVNID;
+        }
+        return 0;
+    }
+
+    public List<OpenDoveNetwork> getNetworks() {
+        List<OpenDoveNetwork> answer = new ArrayList<OpenDoveNetwork>();
+        Iterator<OpenDoveObject> i = networkMap.values().iterator();
+        while (i.hasNext()) {
+            answer.add((OpenDoveNetwork) i.next());
+        }
+        return answer;
+    }
+
+    public List<OpenDoveEndpoint> getEndpoints(String saUUID) {
+        //TODO: FILL IN
+        List<OpenDoveEndpoint> answer = new ArrayList<OpenDoveEndpoint>();
+        return answer;
+    }
+
+    // IfOpenDoveSwitchCRU
+
+    public boolean switchExists(String switchUUID) {
+        return(switchMap.containsKey(switchUUID));
+    }
+
+    public OpenDoveSwitch getSwitch(String switchUUID) {
+        return (OpenDoveSwitch) (switchMap.get(switchUUID));
+    }
+
+    public void addSwitch(String switchUUID, OpenDoveSwitch oSwitch) {
+        switchMap.putIfAbsent(switchUUID, oSwitch);
+    }
+
+    public List<OpenDoveSwitch> getSwitches() {
+        List<OpenDoveSwitch> answer = new ArrayList<OpenDoveSwitch>();
+        Iterator<OpenDoveObject> i = switchMap.values().iterator();
+        while (i.hasNext()) {
+            answer.add((OpenDoveSwitch) i.next());
+        }
+        return answer;
+    }
+
+	public List<OpenDoveNVP> getStats(String queryIPAddr, String queryVNID,
+			String queryMAC) {
+		// TODO Fill in
+        List<OpenDoveNVP> answer = new ArrayList<OpenDoveNVP>();
+        return answer;
+	}
+	
+    // IfSBDoveVGWVNIDMappingCRUD methods
+
+    public boolean vgwVNIDMappingExists(String mappingUUID) {
+        return(vgwVNIDMap.containsKey(mappingUUID));
+    }
+
+    public OpenDoveVGWVNIDMapping getVgwVNIDMapping(String mappingUUID) {
+        return (OpenDoveVGWVNIDMapping) (vgwVNIDMap.get(mappingUUID));
+    }
+
+    public void addVgwVNIDMapping(String mappingUUID,
+            OpenDoveVGWVNIDMapping mapping) {
+        vgwVNIDMap.putIfAbsent(mappingUUID, mapping);
+    }
+
+    public List<OpenDoveVGWVNIDMapping> getVgwVNIDMappings() {
+        List<OpenDoveVGWVNIDMapping> answer = new ArrayList<OpenDoveVGWVNIDMapping>();
+        Iterator<OpenDoveObject> i = vgwVNIDMap.values().iterator();
+        while (i.hasNext()) {
+            answer.add((OpenDoveVGWVNIDMapping) i.next());
+        }
+        return answer;
+    }
+
+    public void removeVgwVNIDMapping(String mappingUUID) {
+        vgwVNIDMap.remove(mappingUUID);
+    }
+
+	public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping delta) {
+		OpenDoveVGWVNIDMapping target = (OpenDoveVGWVNIDMapping) vgwVNIDMap.get(mappingUUID);
+        overwrite(target, delta);
+		vgwVNIDMap.update(mappingUUID, target);		
+	}
 }

@@ -28,18 +28,18 @@ public class OpenDoveSouthboundRSApplication extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
 // southbound URIs
-        classes.add(OpenDoveDomainSouthbound.class);
-        classes.add(OpenDoveNetworkSouthbound.class);
-        classes.add(OpenDoveNetworkSubnetSouthbound.class);
-        classes.add(OpenDoveSubnetSouthbound.class);
-        classes.add(OpenDovePolicySouthbound.class);
-        classes.add(OpenDoveGwIpv4Southbound.class);
-        classes.add(OpenDoveEGWSNATPoolSouthbound.class);
-        classes.add(OpenDoveEGWFwdRuleSouthbound.class);
-        classes.add(OpenDoveVGWVNIDMappingSouthbound.class);
         classes.add(OpenDoveChangeVersionSouthbound.class);
         classes.add(OpenDoveDcsServiceApplianceSouthbound.class);
         classes.add(OpenDoveDgwServiceApplianceSouthbound.class);
+        classes.add(OpenDoveDomainSouthbound.class);
+        classes.add(OpenDoveEGWFwdRuleSouthbound.class);
+        classes.add(OpenDoveEGWSNATPoolSouthbound.class);
+        classes.add(OpenDoveGwIpv4Southbound.class);
+        classes.add(OpenDoveNetworkSouthbound.class);
+        classes.add(OpenDoveNetworkSubnetSouthbound.class);
+        classes.add(OpenDovePolicySouthbound.class);
+        classes.add(OpenDoveSubnetSouthbound.class);
+        classes.add(OpenDoveVGWVNIDMappingSouthbound.class);
         return classes;
     }
 

@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.southbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.List;
 
@@ -15,41 +15,41 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.opendaylight.opendove.odmc.OpenDoveNetwork;
+import org.opendaylight.opendove.odmc.OpenDoveNVP;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class OpenDoveNetworkRequest {
+public class OpenDoveSwitchStatsRequest {
     // See OpenStack Network API v2.0 Reference for description of
     // annotated attributes
 
-    @XmlElement(name="network")
-    OpenDoveNetwork singletonNetwork;
+    @XmlElement(name="stat")
+    OpenDoveNVP stat;
 
-    @XmlElement(name="networks")
-    List<OpenDoveNetwork> bulkNetworks;
+    @XmlElement(name="stats")
+    List<OpenDoveNVP> bulkStats;
 
-    OpenDoveNetworkRequest() {
+    public OpenDoveSwitchStatsRequest() {
     }
 
-    OpenDoveNetworkRequest(List<OpenDoveNetwork> bulk) {
-        bulkNetworks = bulk;
-        singletonNetwork = null;
+    public OpenDoveSwitchStatsRequest(List<OpenDoveNVP> bulk) {
+    	bulkStats = bulk;
+    	stat = null;
     }
 
-    OpenDoveNetworkRequest(OpenDoveNetwork single) {
-        singletonNetwork = single;
+    public OpenDoveSwitchStatsRequest(OpenDoveNVP single) {
+    	stat = single;
     }
 
-    public OpenDoveNetwork getSingleton() {
-        return singletonNetwork;
+    public OpenDoveNVP getSingleton() {
+        return stat;
     }
 
     public boolean isSingleton() {
-        return (singletonNetwork != null);
+        return (stat != null);
     }
 
-    public List<OpenDoveNetwork> getBulk() {
-        return bulkNetworks;
+    public List<OpenDoveNVP> getBulk() {
+        return bulkStats;
     }
 }

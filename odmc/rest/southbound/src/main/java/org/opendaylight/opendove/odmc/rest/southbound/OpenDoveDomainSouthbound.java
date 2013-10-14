@@ -19,12 +19,13 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
-import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDovePolicy;
+import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
 
 /**
  * Open DOVE Southbound REST APIs for Domains.<br>
@@ -58,7 +59,7 @@ public class OpenDoveDomainSouthbound {
     public Response showDomain(
             @PathParam("domainUUID") String domainUUID
             ) {
-        IfSBDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -81,12 +82,12 @@ public class OpenDoveDomainSouthbound {
             @PathParam("domainUUID") String domainUUID,
             @PathParam("vnid") String vnid
             ) {
-        IfSBDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbDomainInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        IfSBDoveNetworkCRU sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRU sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbNetworkInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -114,7 +115,7 @@ public class OpenDoveDomainSouthbound {
             @PathParam("domainUUID") String domainUUID,
             @PathParam("policyUUID") String policyUUID
             ) {
-        IfSBDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbDomainInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -142,7 +143,7 @@ public class OpenDoveDomainSouthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response listDomains() {
-        IfSBDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

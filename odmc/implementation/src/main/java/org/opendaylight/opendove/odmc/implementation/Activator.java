@@ -22,11 +22,12 @@ import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.sal.core.ComponentActivatorAbstractBase;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
-import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
-import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
@@ -114,7 +115,11 @@ public class Activator extends ComponentActivatorAbstractBase {
         }
         if (imp.equals(OpenDoveBidirectionalInterfaces.class)) {
             c.setInterface(
-                    new String[] { IfOpenDoveServiceApplianceCRU.class.getName() }, null);
+                    new String[] { IfOpenDoveSwitchCRU.class.getName(),
+                            IfOpenDoveNetworkCRU.class.getName(),
+                            IfOpenDoveDomainCRU.class.getName(),
+                            IfSBDoveVGWVNIDMappingCRUD.class.getName(),
+                            IfOpenDoveServiceApplianceCRU.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)
@@ -124,14 +129,11 @@ public class Activator extends ComponentActivatorAbstractBase {
         }
         if (imp.equals(OpenDoveSBInterfaces.class)) {
             c.setInterface(
-                    new String[] { IfSBDoveDomainCRU.class.getName(),
-                            IfSBDoveNetworkCRU.class.getName(),
-                            IfSBDoveSubnetCRUD.class.getName(),
+                    new String[] { IfSBDoveSubnetCRUD.class.getName(),
                             IfSBDovePolicyCRUD.class.getName(),
-                            IfSBDoveEGWSNATPoolCRUD.class.getName(),
                             IfSBDoveGwIpv4CRUD.class.getName(),
+                            IfSBDoveEGWSNATPoolCRUD.class.getName(),
                             IfSBDoveEGWFwdRuleCRUD.class.getName(),
-                            IfSBDoveVGWVNIDMappingCRUD.class.getName(),
                             IfSBOpenDoveChangeVersionR.class.getName(),
                             IfSBDoveNetworkSubnetAssociationCRUD.class.getName()
                             }, null);

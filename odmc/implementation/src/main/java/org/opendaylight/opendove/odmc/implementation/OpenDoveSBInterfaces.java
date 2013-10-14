@@ -22,19 +22,15 @@ import org.opendaylight.controller.clustering.services.IClusterContainerServices
 import org.opendaylight.controller.clustering.services.IClusterServices;
 import org.opendaylight.opendove.odmc.IfOpenDCSTrackedObject;
 import org.opendaylight.opendove.odmc.IfOpenDGWTrackedObject;
-import org.opendaylight.opendove.odmc.IfSBDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
-import org.opendaylight.opendove.odmc.IfSBDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
-import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 import org.opendaylight.opendove.odmc.OpenDoveChange;
 import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
-import org.opendaylight.opendove.odmc.OpenDoveDomain;
 import org.opendaylight.opendove.odmc.OpenDoveEGWFwdRule;
 import org.opendaylight.opendove.odmc.OpenDoveEGWSNATPool;
 import org.opendaylight.opendove.odmc.OpenDoveGwIpv4;
@@ -43,19 +39,17 @@ import org.opendaylight.opendove.odmc.OpenDoveNetworkSubnetAssociation;
 import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDovePolicy;
 import org.opendaylight.opendove.odmc.OpenDoveSubnet;
-import org.opendaylight.opendove.odmc.OpenDoveVGWVNIDMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkCRU, IfSBDoveSubnetCRUD,
-    IfSBDovePolicyCRUD, IfSBDoveGwIpv4CRUD, IfSBDoveEGWSNATPoolCRUD, IfSBDoveEGWFwdRuleCRUD, IfSBDoveVGWVNIDMappingCRUD,
-    IfSBOpenDoveChangeVersionR, IfSBDoveNetworkSubnetAssociationCRUD {
+public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyCRUD, IfSBDoveGwIpv4CRUD, 
+    IfSBDoveEGWSNATPoolCRUD, IfSBDoveEGWFwdRuleCRUD, IfSBOpenDoveChangeVersionR, IfSBDoveNetworkSubnetAssociationCRUD {
     private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
 
     private IClusterContainerServices clusterContainerService = null;
-    private OpenDoveConcurrentBackedMap domainMap, networkMap, subnetMap, networkSubnetAssociationMap;
-    private OpenDoveConcurrentBackedMap policyMap, gwIpv4Map, egwSNATPoolMap, egwFwdRuleMap, vgwVNIDMap;
+    private OpenDoveConcurrentBackedMap subnetMap, networkSubnetAssociationMap;
+    private OpenDoveConcurrentBackedMap policyMap, gwIpv4Map, egwSNATPoolMap, egwFwdRuleMap;
     private ConcurrentMap<Integer, OpenDoveObject> objectDB;
 
     // methods needed for creating caches
@@ -133,15 +127,12 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
         if (objectDB == null) {
             logger.error("Cache couldn't be retrieved for openDoveSubnets");
         }
-        domainMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveDomain.class);
-        networkMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveNetwork.class);
         subnetMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveSubnet.class);
         policyMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDovePolicy.class);
         networkSubnetAssociationMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveNetworkSubnetAssociation.class);
         egwSNATPoolMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveEGWSNATPool.class);
         gwIpv4Map = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveGwIpv4.class);
         egwFwdRuleMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveEGWFwdRule.class);
-        vgwVNIDMap = new OpenDoveConcurrentBackedMap(objectDB, OpenDoveVGWVNIDMapping.class);
         logger.debug("Cache was successfully retrieved for openDoveSubnets");
     }
 
@@ -208,119 +199,6 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
     void stop() {
     }
 
-    // code to support SB domain interfaces (including URI)
-
-    public boolean domainExists(String domainUUID) {
-        return(domainMap.containsKey(domainUUID));
-    }
-
-    public boolean domainExistsByName(String name) {
-        Iterator<OpenDoveObject> i = domainMap.values().iterator();
-        while (i.hasNext()) {
-            OpenDoveDomain d = (OpenDoveDomain) i.next();
-            if (d.getName().compareTo(name) == 0)
-                return true;
-        }
-        return false;
-    }
-
-    public OpenDoveDomain getDomain(String domainUUID) {
-        return(OpenDoveDomain) (domainMap.get(domainUUID));
-    }
-
-    public OpenDoveDomain getDomainByName(String name) {
-        Iterator<OpenDoveObject> i = domainMap.values().iterator();
-        while (i.hasNext()) {
-            OpenDoveDomain d = (OpenDoveDomain) i.next();
-            if (d.getName().compareTo(name) == 0)
-                return d;
-        }
-        return null;
-    }
-
-    public void addDomain(String domainUUID, OpenDoveDomain domain) {
-        domainMap.putIfAbsent(domainUUID, domain);
-    }
-
-    public void addNetworkToDomain(String domainUUID, OpenDoveNetwork network) {
-        if (domainExists(domainUUID)) {
-            OpenDoveDomain domain = (OpenDoveDomain) domainMap.get(domainUUID);
-            domain.addNetwork(network);
-        }
-    }
-
-    public List<OpenDoveDomain> getDomains() {
-        List<OpenDoveDomain> answer = new ArrayList<OpenDoveDomain>();
-        Iterator<OpenDoveObject> i = domainMap.values().iterator();
-        while (i.hasNext()) {
-            answer.add((OpenDoveDomain) i.next());
-        }
-        return answer;
-    }
-
-    // code to support SB network interfaces (including URI)
-
-    public boolean networkExists(String networkUUID) {
-        return(networkMap.containsKey(networkUUID));
-    }
-
-    public boolean networkExistsByVnid(int vnid) {
-        Iterator<OpenDoveObject> i = networkMap.values().iterator();
-        while (i.hasNext()) {
-            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getVnid() == vnid)
-                return true;
-        }
-        return false;
-    }
-
-    public OpenDoveNetwork getNetwork(String networkUUID) {
-        return (OpenDoveNetwork) (networkMap.get(networkUUID));
-    }
-
-    public OpenDoveNetwork getNetworkByVnid(int vnid) {
-        Iterator<OpenDoveObject> i = networkMap.values().iterator();
-        while (i.hasNext()) {
-            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getVnid() == vnid)
-                return n;
-        }
-        return null;
-    }
-
-    public OpenDoveNetwork getNetworkByName(String name) {
-        Iterator<OpenDoveObject> i = networkMap.values().iterator();
-        while (i.hasNext()) {
-            OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getName().equals(name))
-                return n;
-        }
-        return null;
-    }
-
-    public void addNetwork(String networkUUID, OpenDoveNetwork network) {
-        networkMap.putIfAbsent(networkUUID, network);
-        addNetworkToDomain(network.getDomain_uuid(), network);
-    }
-
-    public int allocateVNID() {
-        boolean done = false;
-        while (!done) {
-            long candidateVNID = OpenDoveNetwork.getNext() & 0x0000000000FFFFFF;
-            if (!networkExistsByVnid((int) candidateVNID))
-                return (int) candidateVNID;
-        }
-        return 0;
-    }
-
-    public List<OpenDoveNetwork> getNetworks() {
-        List<OpenDoveNetwork> answer = new ArrayList<OpenDoveNetwork>();
-        Iterator<OpenDoveObject> i = networkMap.values().iterator();
-        while (i.hasNext()) {
-            answer.add((OpenDoveNetwork) i.next());
-        }
-        return answer;
-    }
 
     // code to support SB subnet interfaces (including URI)
 
@@ -587,33 +465,5 @@ public class OpenDoveSBInterfaces implements IfSBDoveDomainCRU, IfSBDoveNetworkC
 
     public void updateEgwFwdRule(String ruleUUID, OpenDoveEGWFwdRule rule) {
         egwFwdRuleMap.update(ruleUUID, rule);
-    }
-
-    // IfSBDoveVGWVNIDMappingCRUD methods
-
-    public boolean vgwVNIDMappingExists(String mappingUUID) {
-        return(vgwVNIDMap.containsKey(mappingUUID));
-    }
-
-    public OpenDoveVGWVNIDMapping getVgwVNIDMapping(String mappingUUID) {
-        return (OpenDoveVGWVNIDMapping) (vgwVNIDMap.get(mappingUUID));
-    }
-
-    public void addVgwVNIDMapping(String mappingUUID,
-            OpenDoveVGWVNIDMapping mapping) {
-        vgwVNIDMap.putIfAbsent(mappingUUID, mapping);
-    }
-
-    public List<OpenDoveVGWVNIDMapping> getVgwVNIDMappings() {
-        List<OpenDoveVGWVNIDMapping> answer = new ArrayList<OpenDoveVGWVNIDMapping>();
-        Iterator<OpenDoveObject> i = vgwVNIDMap.values().iterator();
-        while (i.hasNext()) {
-            answer.add((OpenDoveVGWVNIDMapping) i.next());
-        }
-        return answer;
-    }
-
-    public void removeVgwVNIDMapping(String mappingUUID) {
-        vgwVNIDMap.remove(mappingUUID);
     }
 }

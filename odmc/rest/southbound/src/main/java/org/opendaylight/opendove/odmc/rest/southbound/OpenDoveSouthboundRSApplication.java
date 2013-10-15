@@ -28,8 +28,9 @@ public class OpenDoveSouthboundRSApplication extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
 // southbound URIs
-        classes.add(OpenDoveChangeVersionSouthbound.class);
+        classes.add(OpenDoveDcsChangeVersionSouthbound.class);
         classes.add(OpenDoveDcsServiceApplianceSouthbound.class);
+        classes.add(OpenDoveDgwChangeVersionSouthbound.class);
         classes.add(OpenDoveDgwServiceApplianceSouthbound.class);
         classes.add(OpenDoveDomainSouthbound.class);
         classes.add(OpenDoveEGWFwdRuleSouthbound.class);

@@ -23,7 +23,7 @@ import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
- * Open DOVE Southbound REST APIs for Subnets.<br>
+ * Open DOVE Southbound REST APIs for DCS Change Version.<br>
  *
  * <br>
  * <br>
@@ -39,10 +39,10 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
  *
  */
 
-@Path("/")
-public class OpenDoveChangeVersionSouthbound {
+@Path("/odcs/changeversion")
+public class OpenDoveDcsChangeVersionSouthbound {
 
-    @Path("odcs-changeversion/{changeVersion}")
+    @Path("/{changeVersion}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -52,6 +52,8 @@ public class OpenDoveChangeVersionSouthbound {
             @PathParam("changeVersion") String changeVersion
             ) {
         IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
+
+        System.out.println("********************** Inside getOdcsChange  ^^^^^^^^ ");
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -67,29 +69,5 @@ public class OpenDoveChangeVersionSouthbound {
         return Response.status(200).entity(sbInterface.getNextOdcsChange(i_changeVersion)).build();
     }
 
-    @Path("odgw-changeversion/{changeVersion}")
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON })
-    @StatusCodes({
-            @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content") })
-    public Response getOdgwChange(
-            @PathParam("changeVersion") String changeVersion
-            ) {
-        IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
-        if (sbInterface == null) {
-            throw new ServiceUnavailableException("OpenDove SB Interface "
-                    + RestMessages.SERVICEUNAVAILABLE.toString());
-        }
-        int i_changeVersion;
-        try {
-            i_changeVersion = Integer.parseInt(changeVersion);
-        } catch (Exception e) {
-            return Response.status(500).build();
-        }
-        if (sbInterface.versionExists(i_changeVersion) == 204 )
-            return Response.status(204).build();
-        return Response.status(200).entity(sbInterface.getNextOdgwChange(i_changeVersion)).build();
-    }
 }
 

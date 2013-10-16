@@ -240,7 +240,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
-    public Response updateRouter(
+    public Response updateRule(
             @PathParam("mappingUUID") String mappingUUID,
             OpenDoveVGWVNIDMappingRequest input
             ) {
@@ -289,15 +289,13 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      */
     @Path("{mappingUUID}")
     @DELETE
-    @Produces({})
-    @Consumes({})
     @StatusCodes({
             @ResponseCode(code = 204, condition = "No Content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 409, condition = "Conflict"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
-    public Response deleteRouter(
+    public Response deleteRule(
             @PathParam("mappingUUID") String mappingUUID) {
         IfSBDoveVGWVNIDMappingCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveVGWVNIDMappingCRUD(this);
         if (sbInterface == null) {

@@ -16,6 +16,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
@@ -45,12 +46,31 @@ import org.opendaylight.opendove.odmc.OpenDoveNeutronControlBlock;
 
 @Path("/system")
 public class OpenDoveSystemNorthbound {
-    /**
-     * Returns the system control block */
 
+	/**
+     * Returns the system control block
+     *
+     * @param none
+     *            Identifier of the mapping
+     * @return System Control Block
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/system
+     *
+     * Response body in JSON:
+     * {
+     *    "domain_separation": false,
+     *    "snat_pool_size": 1,
+     *    "egw_replication_factor": 1
+     * }
+     * </pre>
+     */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    //@TypeHint(OpenStackSystem.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
@@ -66,12 +86,35 @@ public class OpenDoveSystemNorthbound {
     }
 
     /**
-     * Updates the control block */
-
+     * Updates the control block
+     *
+     * @param input
+     *            system control block in patch format
+     * @return Updated System Control Block
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/system
+     *
+     * Request body in JSON:
+     * {
+     *    "domain_separation": true
+     * }
+     * 
+     * Response body in JSON:
+     * {
+     *    "domain_separation": true,
+     *    "snat_pool_size": 1,
+     *    "egw_replication_factor": 1
+     * }
+     * </pre>
+     */
     @PUT
     @Produces({ MediaType.APPLICATION_JSON })
     @Consumes({ MediaType.APPLICATION_JSON })
-    //@TypeHint(OpenStackSystem.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 400, condition = "Bad Request"),

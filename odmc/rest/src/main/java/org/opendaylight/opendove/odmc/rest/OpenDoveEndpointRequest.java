@@ -15,41 +15,41 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.opendaylight.opendove.odmc.OpenDoveNetwork;
+import org.opendaylight.opendove.odmc.OpenDoveEndpoint;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class OpenDoveNetworkRequest {
+public class OpenDoveEndpointRequest {
     // See OpenStack Network API v2.0 Reference for description of
     // annotated attributes
 
-    @XmlElement(name="network")
-    OpenDoveNetwork singletonNetwork;
+    @XmlElement(name="endpoint")
+    OpenDoveEndpoint singletonEndpoint;
 
-    @XmlElement(name="networks")
-    List<OpenDoveNetwork> bulkNetworks;
+    @XmlElement(name="endpoints")
+    List<OpenDoveEndpoint> bulkEndpoints;
 
-    public OpenDoveNetworkRequest() {
+    public OpenDoveEndpointRequest() {
     }
 
-    public OpenDoveNetworkRequest(List<OpenDoveNetwork> bulk) {
-        bulkNetworks = bulk;
-        singletonNetwork = null;
+    public OpenDoveEndpointRequest(List<OpenDoveEndpoint> bulk) {
+        bulkEndpoints = bulk;
+        singletonEndpoint = null;
     }
 
-    public OpenDoveNetworkRequest(OpenDoveNetwork single) {
-        singletonNetwork = single;
+    public OpenDoveEndpointRequest(OpenDoveEndpoint single) {
+        singletonEndpoint = single;
     }
 
-    public OpenDoveNetwork getSingleton() {
-        return singletonNetwork;
+    public OpenDoveEndpoint getSingleton() {
+        return singletonEndpoint;
     }
 
     public boolean isSingleton() {
-        return (singletonNetwork != null);
+        return (singletonEndpoint != null);
     }
 
-    public List<OpenDoveNetwork> getBulk() {
-        return bulkNetworks;
+    public List<OpenDoveEndpoint> getBulk() {
+        return bulkEndpoints;
     }
 }

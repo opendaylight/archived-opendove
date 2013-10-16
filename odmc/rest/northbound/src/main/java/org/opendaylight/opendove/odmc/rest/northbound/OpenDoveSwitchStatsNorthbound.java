@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
@@ -43,12 +44,36 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchStatsRequest;
 @Path("/switch_stats")
 public class OpenDoveSwitchStatsNorthbound {
 
-    /*
-     *  REST(GET) Handler Function for "show service-appliances"
-     */
+   /**
+    * Returns switch statistics
+    *
+    * @param ip
+    *            switches' IPv4 address
+    * @param vnid
+    *            Vitrual Network Identifier to query
+    * @param mac
+    *            optional MAC to query
+    * @return statistics
+    *
+    *         <pre>
+    *
+    * Example:
+    *
+    * Request URL:
+    * http://localhost:8080/controller/nb/v2/opendove/odmc/switch_stats
+    *
+    * Response body in JSON:
+    * {
+    *    "domain_separation": false,
+    *    "snat_pool_size": 1,
+    *    "egw_replication_factor": 1
+    * }
+    * </pre>
+    */
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveSwitchStatsRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),

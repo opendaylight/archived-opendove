@@ -46,11 +46,48 @@ import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 @Path("/odcs")
 public class OpenDoveDcsServiceApplianceNorthbound {
 
-    /*
-     *  NB REST(PUT) Handler Function for "DCS service-appliance Role Assignment"
+    /**
+     * Sets/Resets the odcs service role on a service appliance
+     *
+     * @param saUUID
+     *            serivce appliance UUID to modify
+     * @return Updated service appliance information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odcs/uuid/role
+     *
+     * Request body in JSON:
+     * {
+     *    "service_appliance": {
+     *      "is_DCS": true
+     *    }
+     * }
+     *
+     * Response body in JSON:
+     * {
+     *   "service_appliance": {
+     *     "ip_family": 4,
+     *     "ip": "10.10.10.1",
+     *     "uuid": "uuid",
+     *     "dcs_rest_service_port": 1888,
+     *     "dgw_rest_service_port": 1888,
+     *     "dcs_raw_service_port": 932,
+     *     "timestamp": "now",
+     *     "build_version": "openDSA-1",
+     *     "dcs_config_version": 60,
+     *     "canBeDCS": true,
+     *     "canBeDGW": true,
+     *     "isDCS": true,
+     *     "isDGW": false
+     *   }
+     * }
+     * </pre>
      */
-
-    @Path("/role/{saUUID}")
+	@Path("/{saUUID}/role")
     @PUT
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
@@ -63,7 +100,8 @@ public class OpenDoveDcsServiceApplianceNorthbound {
             @ResponseCode(code = 500, condition = "Internal Error") 
             })
     public Response nbAssignDcsServiceApplianceRole(
-            @PathParam("saUUID") String dsaUUID
+            @PathParam("saUUID") String dsaUUID,
+            OpenDoveServiceApplianceRequest request
             ) {
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
         if (sbInterface == null) {
@@ -72,8 +110,15 @@ public class OpenDoveDcsServiceApplianceNorthbound {
         }
         if (!sbInterface.applianceExists(dsaUUID))
             return Response.status(404).build();
-
+        if (!request.isSingleton())
+            return Response.status(400).build();
+        OpenDoveServiceAppliance delta = request.getSingleton();
+        if (delta.get_isDCS() == null)
+            return Response.status(400).build();
+        
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
+        if (!dcsAppliance.get_canBeDCS())
+            return Response.status(400).build();
 
         OpenDoveSBRestClient sbRestClient =    new OpenDoveSBRestClient();
         Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);

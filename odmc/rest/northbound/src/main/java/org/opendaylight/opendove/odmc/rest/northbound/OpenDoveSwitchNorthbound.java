@@ -14,9 +14,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
@@ -40,16 +42,39 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchRequest;
  *
  */
 
-@Path("/switch")
+@Path("/switches")
 public class OpenDoveSwitchNorthbound {
 
-    /*
-     *  REST(GET) Handler Function for "show switch"
+    /**
+     * Returns a particular switch
+     *
+     * @param switchUUID
+     *            Identifier of the switch
+     * @return Data on that switch
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/switches/uuid
+     *
+     * Response body in JSON:
+     * {
+     *   "switch": {
+     *     "id": "uuid",
+     *     "name": "switch name",
+     *     "tunnelip": "10.10.10.1",
+     *     "mgmtip": "20.20.20.2",
+     *     "timestamp": "now"
+     *   }
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}")
+    @Path("{switchUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveSwitchRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -57,24 +82,47 @@ public class OpenDoveSwitchNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showSwtich(
-            @PathParam("saUUID") String saUUID
+            @PathParam("switchUUID") String switchUUID
             ) {
         IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.switchExists(saUUID))
+        if (!sbInterface.switchExists(switchUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(new OpenDoveSwitchRequest(sbInterface.getSwitch(saUUID))).build();
+        return Response.status(200).entity(new OpenDoveSwitchRequest(sbInterface.getSwitch(switchUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "show service-appliances"
+    /**
+     * Returns all switches
+     *
+     * @param none
+     * 
+     * @return List of all switches
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/switches
+     *
+     * Response body in JSON:
+     * {
+     *   "switches":  [ {
+     *     "id": "uuid",
+     *     "name": "switch name",
+     *     "tunnelip": "10.10.10.1",
+     *     "mgmtip": "20.20.20.2",
+     *     "timestamp": "now"
+     *   } ]
+     * }
+     * </pre>
      */
-
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveSwitchRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),

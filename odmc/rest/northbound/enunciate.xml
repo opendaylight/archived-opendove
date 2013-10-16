@@ -3,10 +3,10 @@
     xsi:noNamespaceSchemaLocation="http://enunciate.codehaus.org/schemas/enunciate-1.26.xsd">
 
   <services>
-    <rest defaultRestSubcontext="/opendove/nb"/>
+    <rest defaultRestSubcontext="/controller/nb/v2/opendove/odmc"/>
   </services>
 
   <modules>
-    <docs docsDir="rest" includeExampleXml="true" includeExampleJson="true" title="OpenDOVE REST API"/>
+    <docs docsDir="rest" title="OpenDOVE NB REST API" includeExampleXml="false" includeExampleJson="true"/>
   </modules>
 </enunciate>

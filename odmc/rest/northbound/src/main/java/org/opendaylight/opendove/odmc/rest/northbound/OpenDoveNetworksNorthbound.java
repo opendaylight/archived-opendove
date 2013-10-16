@@ -17,11 +17,12 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveEndpointRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 
 /**
@@ -43,13 +44,37 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 
 @Path("/networks")
 public class OpenDoveNetworksNorthbound {
-    /*
-     *  REST(GET) Handler Function for "show network"
+    
+    /**
+     * Returns a particular network
+     *
+     * @param networkUUID
+     *            Identifier of the network
+     * @return Data on that network
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/networks/uuid
+     *
+     * Response body in JSON:
+     * {
+     *   "network": {
+     *     "id": "uuid",
+     *     "network_id": 102,
+     *     "name": "Test Network",
+     *     "domain_id": "domain_uuid",
+     *     "type": 1,
+     *   }
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}")
+    @Path("{networkUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveNetworkRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -57,25 +82,47 @@ public class OpenDoveNetworksNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showServiceAppliance(
-            @PathParam("saUUID") String saUUID
+            @PathParam("networkUUID") String networkUUID
             ) {
         IfOpenDoveNetworkCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.networkExists(saUUID))
+        if (!sbInterface.networkExists(networkUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(new OpenDoveNetworkRequest(sbInterface.getNetwork(saUUID))).build();
+        return Response.status(200).entity(new OpenDoveNetworkRequest(sbInterface.getNetwork(networkUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "show endpoints"
+    /**
+     * List endpoints on a particular network
+     *
+     * @param networkUUID
+     *            Identifier of the network
+     * @return List of endpoints on that network
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/networks/uuid/endpoints
+     *
+     * Response body in JSON:
+     * {
+     *   "endpoints":  [ {
+     *   "Host IP": "100.100.100.100",
+     *   "mac": "00:00:00:00:00:00",
+     *   "virtual IPs": "10.10.10.1",
+     *   "physical IPs": "1.2.3.4"
+     *   } ]
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}/endpoints")
+    @Path("{networkUUID}/endpoints")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveEndpointRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -83,23 +130,47 @@ public class OpenDoveNetworksNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showOVSEndpoints(
-            @PathParam("saUUID") String saUUID
+            @PathParam("networkUUID") String networkUUID
             ) {
         IfOpenDoveNetworkCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.networkExists(saUUID))
+        if (!sbInterface.networkExists(networkUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getEndpoints(saUUID)).build();
+        return Response.status(200).entity(new OpenDoveEndpointRequest(sbInterface.getEndpoints(networkUUID))).build();
     }
-    /*
-     *  REST(GET) Handler Function for "list networks"
-     */
 
+    /**
+     * Lists networks
+     *
+     * @param none
+     * 
+     * @return List of networks
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/networks
+     *
+     * Response body in JSON:
+     * {
+     *   "networks": [ {
+     *     "id": "uuid",
+     *     "network_id": 102,
+     *     "name": "Test Network",
+     *     "domain_id": "domain_uuid",
+     *     "type": 1,
+     *   } ]
+     * }
+     * </pre>
+     */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveNetworkRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),

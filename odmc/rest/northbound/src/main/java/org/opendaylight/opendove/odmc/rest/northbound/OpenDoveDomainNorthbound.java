@@ -17,10 +17,12 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveDCSList;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
 
 /**
@@ -43,13 +45,34 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
 @Path("/domains")
 public class OpenDoveDomainNorthbound {
 
-    /*
-     *  REST(GET) Handler Function for "show domain"
+    /**
+     * Returns a particular domain
+     *
+     * @param domainUUID
+     *            Identifier of the domain
+     * @return Data on that domain
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/domains/uuid
+     *
+     * Response body in JSON:
+     * {
+     *   "domain": {
+     *     "id": "uuid",
+     *     "name": "domain_name",
+     *     "replication_factor": 2
+     *   }
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}")
+	@Path("{domainUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveDomainRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -57,25 +80,56 @@ public class OpenDoveDomainNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showServiceAppliance(
-            @PathParam("saUUID") String saUUID
+            @PathParam("domainUUID") String domainUUID
             ) {
         IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExists(saUUID))
+        if (!sbInterface.domainExists(domainUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(saUUID))).build();
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(domainUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "show domain"
+    /**
+     * List service appliances hosting a particular domain
+     *
+     * @param domainUUID
+     *            Identifier of the network
+     * @return List of service appliances hosting that domain
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/networks/uuid/domains/uuid/odcs-list
+     *
+     * Response body in JSON:
+     * {
+     *   "odcs-list":  [ {
+     *     "ip_family": 4,
+     *     "ip": "10.10.10.1",
+     *     "uuid": "uuid",
+     *     "dcs_rest_service_port": 1888,
+     *     "dgw_rest_service_port": 1888,
+     *     "dcs_raw_service_port": 932,
+     *     "timestamp": "now",
+     *     "build_version": "openDSA-1",
+     *     "dcs_config_version": 60,
+     *     "canBeDCS": true,
+     *     "canBeDGW": true,
+     *     "isDCS": true,
+     *     "isDGW": false
+     *   } ]
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}/odcs-list")
+	@Path("{domainUUID}/odcs-list")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveDCSList.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -83,24 +137,44 @@ public class OpenDoveDomainNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showODCSList(
-            @PathParam("saUUID") String saUUID
+            @PathParam("domainUUID") String domainUUID
             ) {
         IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExists(saUUID))
+        if (!sbInterface.domainExists(domainUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getDCSList(saUUID)).build();
+        return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "list domains"
-     */
-
-    @GET
+    /**
+     * Lists domains
+     *
+     * @param none
+     * 
+     * @return List of domains
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/domains
+     *
+     * Response body in JSON:
+     * {
+     *   "domains": [ {
+     *     "id": "uuid",
+     *     "name": "domain_name",
+     *     "replication_factor": 2
+     *   } ]
+     * }
+     * </pre>
+     */@GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveDomainRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),

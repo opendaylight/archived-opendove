@@ -47,6 +47,17 @@
             <plugin>
                 <groupId>org.codehaus.enunciate</groupId>
                 <artifactId>maven-enunciate-plugin</artifactId>
+          <version>${enunciate.version}</version>
+          <configuration>
+            <configFile>enunciate.xml</configFile>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>docs</goal>
+              </goals>
+            </execution>
+          </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -72,8 +83,8 @@
                             javax.xml.bind.annotation,
                             javax.xml.bind,
                             org.slf4j,
-                            !org.codehaus.enunciate.jaxrs,
-                            org.codehaus.jettison.json
+                            org.codehaus.jettison.json,
+                            !org.codehaus.enunciate.jaxrs
                         </Import-Package>
                         <Web-ContextPath>/controller/nb/v2/opendove/odmc</Web-ContextPath>
                     </instructions>

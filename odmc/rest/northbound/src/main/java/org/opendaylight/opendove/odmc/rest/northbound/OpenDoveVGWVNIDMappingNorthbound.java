@@ -21,9 +21,9 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.controller.sal.utils.ServiceHelper;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveVGWVNIDMapping;
@@ -49,6 +49,30 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveVGWVNIDMappingRequest;
 @Path("/vlan-gws")
 public class OpenDoveVGWVNIDMappingNorthbound {
 
+    /**
+     * Returns a particular VNID to VLAN mapping
+     *
+     * @param mappingUUID
+     *            Identifier of the mapping
+     * @return Data on that mapping
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/uuid
+     *
+     * Response body in JSON:
+     * {
+     *   "vnid_mapping_rule": {
+     *     "id": "uuid",
+     *     "net_id": 100,
+     *     "gatewayUUID": "uuid2"
+     *   }
+     * }
+     * </pre>
+     */
     @Path("{mappingUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
@@ -70,9 +94,33 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             return Response.status(404).build();
         return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
     }
-
+    
+    /**
+     * Returns the list of VNID to VLAN mappings
+     *
+     * @param none
+     * @return Mapping data
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/
+     *
+     * Response body in JSON:
+     * {
+     *   "vnid_mapping_rules": [ {
+     *     "id": "uuid",
+     *     "net_id": 100,
+     *     "gatewayUUID": "uuid2"
+     *   } ... ]
+     * }
+     * </pre>
+     */
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveVGWVNIDMappingRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -88,8 +136,38 @@ public class OpenDoveVGWVNIDMappingNorthbound {
     }
     
     /**
-     * Creates new rules */
-
+     * Creates a new VNID to VLAN mappings
+     *
+     * @param input
+     *            Mapping request data
+     * @return Created mapping
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/
+     *
+     * Request body in JSON:
+     * {
+     *   "vnid_mapping_rule": {
+     *     "id": "uuid",
+     *     "net_id": 100,
+     *     "gatewayUUID": "uuid2"
+     *   }
+     * }
+     * 
+     * Response body in JSON:
+     * {
+     *   "vnid_mapping_rule": {
+     *     "id": "uuid",
+     *     "net_id": 100,
+     *     "gatewayUUID": "uuid2"
+     *   }
+     * }
+     * </pre>
+     */
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -119,9 +197,39 @@ public class OpenDoveVGWVNIDMappingNorthbound {
     }
 
     /**
-     * Updates a rule */
-
-    @Path("{routerUUID}")
+     * Updates a rule
+     *
+     * @param mappingUUID
+     *            Identifier of the mapping
+     * @param input
+     *            Mapping request delta
+     * @return Modified mapping
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/uuid
+     *
+     * Request body in JSON:
+     * {
+     *   "vnid_mapping_rule": {
+     *     "net_id": 110200,
+     *   }
+     * }
+     * 
+     * Response body in JSON:
+     * {
+     *   "vnid_mapping_rule": {
+     *     "id": "uuid",
+     *     "net_id": 110200,
+     *     "gatewayUUID": "uuid2"
+     *   }
+     * }
+     * </pre>
+     */
+    @Path("{mappingUUID}")
     @PUT
     @Produces({ MediaType.APPLICATION_JSON })
     @Consumes({ MediaType.APPLICATION_JSON })
@@ -133,7 +241,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
     public Response updateRouter(
-            @PathParam("routerUUID") String mappingUUID,
+            @PathParam("mappingUUID") String mappingUUID,
             OpenDoveVGWVNIDMappingRequest input
             ) {
         IfSBDoveVGWVNIDMappingCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveVGWVNIDMappingCRUD(this);
@@ -161,10 +269,28 @@ public class OpenDoveVGWVNIDMappingNorthbound {
     }
 
     /**
-     * Deletes a Rule */
-
-    @Path("{routerUUID}")
+     * Deletes a mapping
+     *
+     * @param mappingUUID
+     *            Identifier of the mapping
+     * @return nothing
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/uuid
+     *
+     * Request body in JSON: none
+     * 
+     * Response body in JSON: none
+     * </pre>
+     */
+    @Path("{mappingUUID}")
     @DELETE
+    @Produces({})
+    @Consumes({})
     @StatusCodes({
             @ResponseCode(code = 204, condition = "No Content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
@@ -172,7 +298,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             @ResponseCode(code = 409, condition = "Conflict"),
             @ResponseCode(code = 501, condition = "Not Implemented") })
     public Response deleteRouter(
-            @PathParam("routerUUID") String mappingUUID) {
+            @PathParam("mappingUUID") String mappingUUID) {
         IfSBDoveVGWVNIDMappingCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveVGWVNIDMappingCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

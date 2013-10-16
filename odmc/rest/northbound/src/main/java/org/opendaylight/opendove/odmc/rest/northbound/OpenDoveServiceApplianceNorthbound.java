@@ -14,9 +14,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
@@ -43,13 +45,44 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 @Path("/serviceAppliances")
 public class OpenDoveServiceApplianceNorthbound {
 
-    /*
-     *  REST(GET) Handler Function for "show service-appliance"
+    /**
+     * Returns a particular service appliance
+     *
+     * @param saUUID
+     *            Identifier of the service appliance
+     * @return Data on that service appliance
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances/uuid
+     *
+     * Response body in JSON:
+     * {
+     *   "service_appliance": {
+     *     "ip_family": 4,
+     *     "ip": "10.10.10.1",
+     *     "uuid": "uuid",
+     *     "dcs_rest_service_port": 1888,
+     *     "dgw_rest_service_port": 1888,
+     *     "dcs_raw_service_port": 932,
+     *     "timestamp": "now",
+     *     "build_version": "openDSA-1",
+     *     "dcs_config_version": 60,
+     *     "canBeDCS": true,
+     *     "canBeDGW": true,
+     *     "isDCS": false,
+     *     "isDGW": false
+     *   }
+     * }
+     * </pre>
      */
-
-    @Path("{saUUID}")
+	@Path("{saUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceApplianceRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
@@ -69,11 +102,41 @@ public class OpenDoveServiceApplianceNorthbound {
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(saUUID))).build();
     }
 
-    /*
-     *  REST(GET) Handler Function for "show service-appliances"
+    /**
+     * Returns all service appliances
+     *
+     * @param none
+     * 
+     * @return List of all service appliances
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances
+     *
+     * Response body in JSON:
+     * {
+     *   "service_appliances":  [ {
+     *     "ip_family": 4,
+     *     "ip": "10.10.10.1",
+     *     "uuid": "uuid",
+     *     "dcs_rest_service_port": 1888,
+     *     "dgw_rest_service_port": 1888,
+     *     "dcs_raw_service_port": 932,
+     *     "timestamp": "now",
+     *     "build_version": "openDSA-1",
+     *     "dcs_config_version": 60,
+     *     "canBeDCS": true,
+     *     "canBeDGW": true,
+     *     "isDCS": false,
+     *     "isDGW": false
+     *   } ]
+     * }
+     * </pre>
      */
-
-    @GET
+	@GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),

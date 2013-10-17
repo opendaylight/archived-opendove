@@ -30,6 +30,14 @@
 #define ASYNC_REST_CLIENT_TIMEOUT_SEC 3
 
 
+typedef struct thd_cb
+{
+	long qid;
+	long tid;
+	struct event_base *evbase;
+} thd_cb_t;
+
+static thd_cb_t rclient_thd_cb[RCLIENT_THD_NUM];
 static void syncprocess_callback(struct evhttp_request *request, void *args)
 {
 	struct event_base *base = (struct event_base *)((void **)args)[0];
@@ -65,7 +73,6 @@ static void dove_rest_request_info_free(dove_rest_request_info_t *rinfo)
 		evhttp_request_free(rinfo->request);
 	}
 }
-#ifdef PTHREAD_REPLACEMENT
 static unsigned int get_rclient_thd_idx(const char *addr, unsigned short port)
 {
 	unsigned int v = 0;
@@ -78,7 +85,6 @@ static unsigned int get_rclient_thd_idx(const char *addr, unsigned short port)
 	v %= RCLIENT_THD_NUM;
 	return v;
 }
-#endif
 
 /*
  ******************************************************************************
@@ -128,6 +134,11 @@ int dove_rest_request_and_syncprocess (
 	struct evhttp_connection *conn = NULL;
 	void *args[3];
 	int ret = -1;
+    char b64_enc_str[100] = {'\0'};
+    char auth_header_value[100] = {'\0'};
+    char uname[100] = {'\0'};
+
+
 	if (NULL == address || NULL == uri || NULL == request)
 	{
 		if(request)
@@ -179,7 +190,18 @@ int dove_rest_request_and_syncprocess (
 		args[2] = request->cb_arg;
 		request->cb = syncprocess_callback;
 		request->cb_arg = (void *)args;
-		
+        memset(uname,0,100);
+        strcat(uname,AUTH_HEADER_USERNAME);
+        strcat(uname,":");
+        strcat(uname,AUTH_HEADER_PASSWORD);
+        memset(b64_enc_str,0,100);
+        dps_base64_encode(uname,b64_enc_str);
+        memset(auth_header_value,0,100);
+        strcat(auth_header_value,"Basic ");
+        strcat(auth_header_value,b64_enc_str);
+        evhttp_add_header(evhttp_request_get_output_headers(request),
+                "Authorization",auth_header_value );
+
 		/* We give ownership of the request to the connection */
 		ret = evhttp_make_request(conn, request, type, uri);
 		if(ret)
@@ -242,50 +264,100 @@ int dove_rest_request_and_syncprocess (
  ******************************************************************************/
 int dove_rest_request_and_asyncprocess (dove_rest_request_info_t *rinfo)
 {
-#ifdef PTHREAD_REPLACEMENT
 	unsigned int thd_cb_idx;
-#endif
 	if(NULL == rinfo->address || NULL == rinfo->uri || NULL == rinfo->request)
 	{
 		dove_rest_request_info_free(rinfo);
 		return -1;
 	}
-#ifdef PTHREAD_REPLACEMENT
-// Add pthread calls
-#endif
+	thd_cb_idx = get_rclient_thd_idx(rinfo->address, rinfo->port);
+	if (OSW_OK != queue_send(rclient_thd_cb[thd_cb_idx].qid, (char *)&rinfo, OSW_MAX_Q_MSG_LEN))
+	{
+		dove_rest_request_info_free(rinfo);
+		return -1;
+	}
+	send_event(rclient_thd_cb[thd_cb_idx].tid, RCLIENT_THD_EVENT_READQ);
 	return 0;
 }
 
-#ifdef PTHREAD_REPLACEMENT
-static void
-dove_rest_client_main (char *arg)
+static void dove_rest_client_main (void *arg)
 {
 	unsigned int u4Event;
 	long idx = (long)arg;
 	dove_rest_request_info_t *rinfo;
 
 	Py_Initialize();
-
+	log_info(RESTHandlerLogLevel, "Enter");
 	while(1)
 	{
-		// Replace pthread_replacement
+		recv_event(rclient_thd_cb[idx].tid, RCLIENT_THD_EVENT_READQ,
+		           (unsigned int)(OSW_WAIT | OSW_EV_ANY), &u4Event);
+		
+		if ((u4Event & RCLIENT_THD_EVENT_READQ) == RCLIENT_THD_EVENT_READQ) 
+		{
+			while (queue_receive(rclient_thd_cb[idx].qid, (char *)&rinfo,
+			                     sizeof(&rinfo), OSW_NO_WAIT) == OSW_OK)
+			{
+				dove_rest_request_and_syncprocess(rinfo->address,
+				                                  rinfo->port,
+				                                  rinfo->type,
+				                                  rinfo->uri,
+				                                  rinfo->request,
+				                                  rclient_thd_cb[idx].evbase,
+				                                  ASYNC_REST_CLIENT_TIMEOUT_SEC);
+				/* The ownership of request is given to dove_rest_request_and_syncprocess */
+				rinfo->request = NULL;
+				dove_rest_request_info_free(rinfo);
+			}
+		}
 	}
+	log_info(RESTHandlerLogLevel, "Exit");
 	Py_Finalize();
 	return;
 }
-#endif
 
 int dove_rest_client_init(void)
 {
 	int ret = 0;
-#ifdef PTHREAD_REPLACEMENT
 	int i;
 	char thdnamebuf[16];
 	for (i = 0; i < RCLIENT_THD_NUM; i++)
 	{
-
+		rclient_thd_cb[i].evbase = event_base_new();
+		if(NULL == rclient_thd_cb[i].evbase)
+		{
+			ret = -1;
+			break;
+		}
+		sprintf(thdnamebuf, "RC%d", i); 
+		log_notice(RESTHandlerLogLevel,
+		           "dove_rest_client_init: Loop %d, creating queue %s",
+		           i, thdnamebuf);
+		if (create_queue((const char *)thdnamebuf, OSW_MAX_Q_MSG_LEN,
+		                 RCLIENT_QUEUE_LEN, &rclient_thd_cb[i].qid) != OSW_OK)
+		{
+			log_notice(RESTHandlerLogLevel,
+			           "dove_rest_client_init: Loop %d, create queue %s failed",
+			           i, thdnamebuf);
+			ret = -1;
+			break;
+		}
+		log_notice(RESTHandlerLogLevel,
+		           "dove_rest_client_init: Loop %d, creating task %s",
+		           i, thdnamebuf);
+		if (create_task((const char *)thdnamebuf, 0, OSW_DEFAULT_STACK_SIZE,
+		                dove_rest_client_main, (void *)((long)i),
+		                &rclient_thd_cb[i].tid) != OSW_OK)
+		{
+			log_notice(RESTHandlerLogLevel,
+			           "dove_rest_client_init: Loop %d, create task %s failed",
+			           i, thdnamebuf);
+			ret = -1;
+			break;
+		}
+		log_notice(RESTHandlerLogLevel,
+		           "dove_rest_client_init: Loop %d, finished", i);
 	}
-#endif
 	return ret;
 }
 

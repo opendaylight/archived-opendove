@@ -12,7 +12,7 @@
  *      include.h
  *
  *  Abstract:
- *      The main header file for the DPS Server. All DPS Server sources and header
+ *      The main header file for the DCS Server. All DCS Server sources and header
  *      files should include only include this file. This file will resolve all
  *      dependencies.
  *
@@ -88,6 +88,7 @@
 #include "dps_pkt.h"
 #include "dps_pkt_svr.h"
 #include "python_interface.h"
+#include "cli_interface.h"
 #include "statistics.h"
 #include "client_protocol_interface.h"
 #include "controller_interface.h"
@@ -101,15 +102,21 @@
 #include "rest_sync.h"
 #include "cluster_rest_client.h"
 #include "controller_rest_api.h"
-//#include "controller_rest_api.h"
 #include "debug_interface.h"
+//Include the OS Wrapper files
+#include "osw.h"
+#include "osw_list.h"
+#include "osw_queue.h"
+#include "osw_semaphore.h"
+#include "osw_task.h"
+#include "osw_timer.h"
 //#include "dps_get_dmc_info.h"
 #define dps_offsetof(_type, _member) ((size_t) &((_type *)0)->_member)
 
 /**
  * \brief Contains the Local IP address of the DPS Node
  */
-extern ip_addr_t dps_local_ip;
+extern ip_addr_t dcs_local_ip;
 
 /**
  * \brief The DPS REST Services Port
@@ -140,7 +147,7 @@ extern char *dsa_version_string;
 /**
  * \brief Contains the Local IP Address
  */
-extern char *dps_local_ip_string;
+extern char *dcs_local_ip_string;
 
 /**
  * \brief Contains the IP address of the DPS Cluster Leader
@@ -155,7 +162,7 @@ extern char *dps_cluster_leader_ip_string;
 
 /*
  ******************************************************************************
- * dps_set_service_role --                                                *//**
+ * dcs_set_service_role --                                                *//**
  *
  * \brief This routine starts or stops the DCS service role
  *
@@ -164,16 +171,21 @@ extern char *dps_cluster_leader_ip_string;
  * \return dove_status
  *
  *****************************************************************************/
-dove_status dps_set_service_role(uint32_t action);
+dove_status dcs_set_service_role(uint32_t action);
 
 /*
  ******************************************************************************
- * dps_initialize                                                         *//**
+ * dcs_initialize                                                         *//**
  *
- * \brief - Initializes the DPS Server
+ * \brief - Initializes the DCS Server
  *
- * \param[in] udp_port - The UDP Port to run the DPS Server on
+ * \param[in] udp_port - The UDP Port to run the DCS Server on
  * \param[in] rest_port - The port the REST Services should run on
+ * \param[in] fDebugCli - Whether the DebugCli should be started.
+ * \param[in] fExitOnCtrlC - Whether the Server Process should exit on
+ *                           CTRL+C being pressed. In a development environment
+ *                           this should be TRUE (1) while in a Production
+ *                           Build this should be FALSE (0).
  * \param[in] python_path - The Location of the Python Scripts. This should be
  *                          NULL in most cases since the code will assume the
  *                          scripts are in the "." directory (i.e. the same
@@ -183,7 +195,8 @@ dove_status dps_set_service_role(uint32_t action);
  *
  ******************************************************************************
  */
-int dps_initialize(int udp_port, int rest_port, char *python_path);
+
+int dcs_initialize(int udp_port, int rest_port, int fDebugCli, int fExitOnCtrlC, char *python_path);
 
 /*
  ******************************************************************************

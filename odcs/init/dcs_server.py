@@ -36,9 +36,11 @@ def handler_no_quit(signum, frame):
 
 if __name__ == '__main__':
     if len(sys.argv) > 6 or len(sys.argv) < 2:
-        print "Usage: ./dps_server.py <udp port> <REST port>\r"
-        print "udp port: Range [12340-12349], Default 12345\r"
+        print "Usage: ./dps_server.py <udp port> <REST port> <CLI?>\r"
+        print "udp port range: Default 12345\r"
         print "REST service port: Default 1888\r"
+        print "CLI (Y/N): Default Y \r"
+        print "Exit on Ctrl+C (Y/N): Default Y\r"
         sys.exit()
     try:
         #UDP Port
@@ -51,12 +53,39 @@ if __name__ == '__main__':
             rest_port = int(sys.argv[2])
         except Exception:
             rest_port = 1888
-        if len(sys.argv) == 3:
-            dcslib.initialize(udp_port, rest_port)
+        #Start CLI?
+        try:
+            DebugCli = sys.argv[3]
+        except Exception:
+            DebugCli = 'Y'
+        if str(DebugCli).lower() in ['yes', 'y']:
+            fDebugCli = 1
         else:
-            raise Exception('Too many parameters')
+            fDebugCli = 0
+        #Exit on CTRL+C?
+        try:
+            ExitOnCtrlC = sys.argv[4]
+        except Exception:
+            ExitOnCtrlC = 'Y'
+        if str(ExitOnCtrlC).lower() in ['no', 'n']:
+            fExitOnCtrlC = 0
+            signal.signal(signal.SIGINT, handler_no_quit)
+            signal.signal(signal.SIGABRT, handler_no_quit)
+            signal.signal(signal.SIGTSTP, handler_no_quit)
+            #signal.signal(signal.SIG_DFL, handler_no_quit)
+            signal.signal(signal.SIG_IGN, handler_no_quit)
+            signal.signal(signal.SIGFPE, handler_no_quit)
+            signal.signal(signal.SIGILL, handler_no_quit)
+            signal.signal(signal.SIGQUIT, handler_no_quit)
+            #signal.signal(signal.SIGSEGV, handler_no_quit)
+            signal.signal(signal.SIGTERM, handler_no_quit)
+        else:
+            fExitOnCtrlC = 1
+        if len(sys.argv) == 6:
+            dcslib.initialize(udp_port, rest_port, fDebugCli, fExitOnCtrlC, sys.argv[5])
+        else:
+            dcslib.initialize(udp_port, rest_port, fDebugCli, fExitOnCtrlC)
     except Exception, ex:
         log.warning('Exception %s', ex)
-        print "Usage: ./dps_server.py <udp port [range: 12340-12349]> <rest port>\r"
+        print "Usage: ./dps_server.py <udp port> <REST port> <CLI (Y/N)> <exit on ctrl+c (Y/N)>\r"
         sys.exit()
-

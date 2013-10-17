@@ -54,7 +54,7 @@ dove_status write_uuid_to_file(void);
  ******************************************************************************
  * dps_get_uuid                                                   *//**
  *
- * \brief - This function get the uuid and store it in the parameter return_uuid. 
+ * \brief - This function get the uuid and store it in the parameter return_uuid.
  *
  * \param return_uuid   return result
  *
@@ -67,7 +67,7 @@ dove_status dps_get_uuid(char *return_uuid);
 
 /*
  ******************************************************************************
- * dps_read_svc_app_uuid --                                    *//**
+ * dcs_read_svc_app_uuid --                                    *//**
  *
  * \brief This routine reads the UUID from the file and store it in a global
  * 	  variable.
@@ -75,8 +75,6 @@ dove_status dps_get_uuid(char *return_uuid);
  * \return dove_status
  *
  *****************************************************************************/
-dove_status dps_read_svc_app_uuid();
-
-
+dove_status dcs_read_svc_app_uuid();
 
 #endif

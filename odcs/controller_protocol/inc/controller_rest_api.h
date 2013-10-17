@@ -41,11 +41,13 @@
 #define DPS_SERVICE_ROLE_URI "/api/dove/dps/service/role"
 
 #define DPS_CLUSTER_LEADER_URI 	"/api/dove/dps/cluster/leader"
-#define DPS_APPLIANCE_REGISTRATION_URI 	"/api/dove/dps/service/registration"
+#define DPS_APPLIANCE_REGISTRATION_URI 	"/controller/sb/v2/opendove/odmc/odcs"
 #define DPS_DOMAIN_TO_NODE_MAPPING_URI "/api/dove/dps/domains/*/dcslist"
 #define DPS_CONTROLLER_LOCATION_UPDATE_URI "/api/dove/dps/dmc"
 #define DOVE_CONTROLLER_DSA_SYSLOG_URI "/api/dove/sys/event-logs"
 
+/* ODCS URI definitions */
+#define ODCS_SERVICE_ROLE_ASSIGNMENT_URI "/controller/sb/v2/opendove/odcs/role"
 
 /*Trevor: 2013-01-15 DPS Debug URI for DMC  */
 
@@ -99,7 +101,6 @@ json_t *dps_rest_api_get_statistics_general_statistics(unsigned int domain_id);
 dove_status dps_rest_api_create_ipsubnet(unsigned int associated_type, unsigned int associated_id, unsigned int type, unsigned char *ip, unsigned int mask, unsigned int mode, unsigned char *gateway);
 dove_status dps_rest_api_del_ipsubnet(unsigned int associated_type, unsigned int associated_id, unsigned int type, unsigned char *ip, unsigned int mask);
 json_t *dps_rest_api_get_ipsubnet(unsigned int associated_type, unsigned int associated_id, unsigned int type, unsigned char *ip, unsigned int mask);
-json_t *dps_rest_api_get_ipsubnets_all(unsigned int associated_type, unsigned int associated_id, unsigned int IP_type);
 
 extern unsigned int ip_id_to_v4_addr (char *str, unsigned int *addr);
 extern unsigned int v4_addr_to_ip_id (char *str, unsigned int addr);

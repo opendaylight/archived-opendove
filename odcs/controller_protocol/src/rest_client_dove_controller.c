@@ -452,7 +452,7 @@ static void dps_dove_controller_http_response_handler(struct evhttp_request *req
 		}
 #endif
 		response_code = evhttp_request_get_response_code(req);
-		if (response_code != HTTP_OK)
+		if (response_code != HTTP_OK && response_code != 201 )
 		{
 			log_notice(RESTHandlerLogLevel,
 			           "FAILED, the response code is NOT HTTP_OK [%d], "
@@ -537,7 +537,8 @@ static void dps_dove_controller_http_response_handler(struct evhttp_request *req
 		{
 			log_info(RESTHandlerLogLevel,
 			         "DPS Appliance Registration response handler");
-			if (evhttp_request_get_response_code(req) == HTTP_OK)
+			response_code = evhttp_request_get_response_code(req);
+			if (response_code == HTTP_OK || response_code == 201)
 			{
 				log_notice(RESTHandlerLogLevel,
 				           "DCS: Registration with DMC successful!");
@@ -932,10 +933,10 @@ json_t *dps_form_json_endpoint_update_and_conflict_json(
 	json_t *js_dps_node = NULL;
 	char str[256];
 
-	inet_ntop(AF_INET, &dps_local_ip.ip4, str, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &dcs_local_ip.ip4, str, INET_ADDRSTRLEN);
 
 	js_dps_node = json_pack("{s:i, s:s, s:s, s:s}",
-	                    "family", (int)dps_local_ip.family,
+	                    "family", (int)dcs_local_ip.family,
 	                    "ip", str,
 	                    "UUID", dps_node_uuid,
 	                    "Cluster_Leader", dps_cluster_leader_ip_string);
@@ -1061,6 +1062,10 @@ void dps_rest_client_json_send_to_dove_controller(json_t *js_res,
 
 	log_info(RESTHandlerLogLevel, "Enter - URI %s", uri);
 	memset(host_header_str,0, 150);
+	char b64_enc_str[100] = {'\0'};
+	char auth_header_value[100] = {'\0'};
+	char uname[100] = {'\0'};
+
 	do
 	{
 		if(js_res == NULL)
@@ -1084,10 +1089,10 @@ void dps_rest_client_json_send_to_dove_controller(json_t *js_res,
 			break;
 		}
 
-		log_debug(RESTHandlerLogLevel,
-		          "Controller IP ==>> [%s : %d]",
-		          controller_location_ip_string,
-		          controller_location.port_http);
+		log_info(RESTHandlerLogLevel,
+		         "Controller IP ==>> [%s : %d]",
+		         controller_location_ip_string,
+		         controller_location.port_http);
 
 		if (controller_location.port_http != 80)
 		{
@@ -1099,7 +1104,7 @@ void dps_rest_client_json_send_to_dove_controller(json_t *js_res,
 		{
 			sprintf(host_header_str,"%s", controller_location_ip_string);
 		}
-		log_debug(RESTHandlerLogLevel, "host_header_str %s", host_header_str);
+		log_info(RESTHandlerLogLevel, "host_header_str %s", host_header_str);
 
 		if(evhttp_find_header(request->output_headers, "Host") == NULL)
 		{
@@ -1113,6 +1118,18 @@ void dps_rest_client_json_send_to_dove_controller(json_t *js_res,
 			evhttp_add_header(evhttp_request_get_output_headers(request), 
 			"Content-Type", "application/json");
 		}
+
+		 memset(uname,0,100);
+		 strcat(uname,AUTH_HEADER_USERNAME);
+		 strcat(uname,":");
+		 strcat(uname,AUTH_HEADER_PASSWORD);
+		 memset(b64_enc_str,0,100);
+		 dps_base64_encode(uname,b64_enc_str);
+		 memset(auth_header_value,0,100);
+		 strcat(auth_header_value,"Basic ");
+		 strcat(auth_header_value,b64_enc_str);
+		 evhttp_add_header(evhttp_request_get_output_headers(request),
+				 "Authorization",auth_header_value );
 
 		//send it synchronously, maybe it should asynchronously to Dove Controller
 #if 0
@@ -1153,13 +1170,13 @@ json_t *dps_form_cluster_leader_json()
 	int node_id = 1;
 	char ipstr[INET6_ADDRSTRLEN];
 
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
 
 	js_root = json_pack("{s:i,s:i,s:s,s:i,s:i,s:s}",
 	                    "id",node_id,
-	                    "ip_family",dps_local_ip.family,
+	                    "ip_family",dcs_local_ip.family,
 	                    "ip",ipstr,
-	                    "service_port",dps_local_ip.port,
+	                    "service_port",dcs_local_ip.port,
 	                    "rest_port",dps_rest_port,
 	                    "uuid",dps_node_uuid
 	                   );
@@ -1269,15 +1286,15 @@ static json_t *dps_form_appliance_registration_json()
 {
 	json_t *js_root = NULL;
 	char ipstr[INET6_ADDRSTRLEN];
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
 
 	js_root = json_pack("{s:i,s:s,s:s,s:i,s:i,s:i,s:s}",
-	                    "ip_family", dps_local_ip.family,
+	                    "ip_family", dcs_local_ip.family,
 	                    "ip",ipstr,
 	                    "uuid",dps_node_uuid,
-	                    "rest_port",dps_rest_port,
-	                    "service_port",dps_local_ip.port,
-	                    "role_assigned",dcs_role_assigned,
+	                    "dcs_rest_service_port",dps_rest_port,
+	                    "dcs_raw_service_port",dcs_local_ip.port,
+	                    "canBeDCS",CAN_BE_DCS,
 	                    "build_version", dsa_version_string
 	                   );
 
@@ -1311,7 +1328,7 @@ void dps_appliance_registration()
 			log_info(RESTHandlerLogLevel, "Controller not set by user");
 			break;
 		}
-		if (dps_local_ip.ip4 == htonl(INADDR_LOOPBACK))
+		if (dcs_local_ip.ip4 == htonl(INADDR_LOOPBACK))
 		{
 			log_info(RESTHandlerLogLevel, "Local IP not yet set. Not point in registering");
 			break;
@@ -1446,16 +1463,16 @@ void dps_rest_client_send_endpoint_conflict_to_dove_controller2(dps_rest_client_
 
 /*
 	char ipstr[INET6_ADDRSTRLEN];
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6,
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6,
 	          ipstr, INET6_ADDRSTRLEN);
 	//form json string
 	js_res = json_pack("{s:s,s:i,s:s}",
 			"ip",ipstr,
-			"port",(int)dps_local_ip.port,
+			"port",(int)dcs_local_ip.port,
 			"domains", local_domain_str);
 */
 //extern char uuid[];
-static char dps_query_dove_controller_cluster_info_uri[] = DPS_DOVE_CONTROLLER_QUERY_DPS_CLUSTER_INFO_URI;
+static char dps_query_dove_controller_cluster_info_uri[] = ODCS_CLUSTER_INFO_URI;
 
 /* Form the query cluster json string */
 static json_t *dps_form_query_dove_controller_cluster_info_json(uint32_t family,
@@ -1505,9 +1522,9 @@ void dps_rest_client_query_dove_controller_cluster_info()
 
 	log_debug(RESTHandlerLogLevel, "Enter");
 
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
-	js_res = dps_form_query_dove_controller_cluster_info_json(dps_local_ip.family, 
-	                                                          ipstr, dps_local_ip.port,
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
+	js_res = dps_form_query_dove_controller_cluster_info_json(dcs_local_ip.family, 
+	                                                          ipstr, dcs_local_ip.port,
 	                                                          dps_node_uuid);
 	if(js_res)
 	{

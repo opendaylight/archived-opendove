@@ -64,7 +64,7 @@
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_INVALID_DVG,                "Invalid DVG",                     16)\
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_INVALID_POLICY,             "Invalid Policy",                  17)\
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_THREAD_FAILED,              "Thread Creation Failed",          18)\
-    DEFINE_DOVE_ERROR_AT(DOVE_STATUS_OSIX_INIT_FAILED,           "OSIX Initialization Failed",      19)\
+    DEFINE_DOVE_ERROR_AT(DOVE_STATUS_OSW_INIT_FAILED,            "OSW Initialization Failed",       19)\
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_INVALID_SERVICE,            "Invalid Service",                 20)\
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_RESTC_INIT_FAILED,          "REST Client Init Failed",         21)\
     DEFINE_DOVE_ERROR_AT(DOVE_STATUS_LOCAL_DOMAIN,               "Domain Handled by Local Node",    22)\

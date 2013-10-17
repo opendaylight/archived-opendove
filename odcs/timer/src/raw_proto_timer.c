@@ -1,5 +1,4 @@
 /*
- *
  * Copyright (c) 2010-2013 IBM Corporation
  * All rights reserved.
  *
@@ -7,10 +6,13 @@
  * terms of the Eclipse Public License v1.0 which accompanies this
  * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
  *
- *
  *  Source File:
  *      raw_proto_timer.c
  *      RAW PKT Retransmission Code
+ *
+ *  ALERT:
+ *      
+ *      
  *
  *  Author:
  *      Dove Development Team
@@ -30,6 +32,7 @@
 #include <ctype.h>
 #include <pthread.h>
 #include <time.h>
+#include <math.h>
 #include <syslog.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -214,6 +217,32 @@ static int hash(int key)
  *
  *********************************************************************
  */
+
+/* Calculate the Re-Transmission Interval using the Exponential back-off
+ * Algorithm: Time Gap for n th Retransmission is:
+ *  E(n) =  3 +   {(2 ** n  - 1)/2 }
+ *  We will use the round off value( the next integer value) of it because our 
+ *  thread wakes up every second..
+ */ 
+
+static unsigned int uceil(float x)
+{
+    unsigned int y = (unsigned int)x;
+    if (x == (float)y)
+        return y;
+    else {
+        return y+1;
+    }
+}
+static unsigned int calculate_retry_interval(int n)
+{
+    unsigned int value = 0; /* Total Value */
+    float x;
+    x =  RETRY_TIMER_OFFSET + (((1 << n) - 1 )/(2.0));
+
+    value = (int)uceil(x);
+    return value;
+}
 
 
 #if defined (RAW_DATA_STRUCTURE_HASH)
@@ -511,8 +540,20 @@ static void  raw_pkt_retransmit (void)
           prevTimerNode   = currTimerNode;
           while (currTimerNode != NULL) 
           {
+
+              /* Calculate the Re-Transmission Interval using the Exponential back-off
+               * Algorithm: Time Gap for n th Retransmission is:
+               *  E(n) =  3 +   {(2 ** n  - 1)/2 }
+               *  We will use the round off value( the next integer value) of it because our 
+               *  thread wakes up every second..
+               */ 
+              
+              /*
               if (difftime (time(NULL), currTimerNode->lastSentTime) >= 
                   currTimerNode->retransmitInterval ) 
+              */
+              if (difftime (time(NULL), currTimerNode->lastSentTime) >= 
+                  calculate_retry_interval(currTimerNode->transmitCount)) 
               {
                   if ( currTimerNode->transmitCount <= currTimerNode->maxNumRetransmit ) 
                   {
@@ -522,10 +563,11 @@ static void  raw_pkt_retransmit (void)
                                          currTimerNode->pktId, currTimerNode->transmitCount);
                       currTimerNode->transmitCount++;
                       currTimerNode->lastSentTime = time(NULL);
-                      /*rc = */sendto(currTimerNode->sockFd, currTimerNode->rawPkt,
-                                  currTimerNode->rawPktLen,
-                                  0, (struct sockaddr *)(&currTimerNode->addr), 
-                                  sizeof(struct sockaddr)); 
+                      sendto(currTimerNode->sockFd, 
+                             currTimerNode->rawPkt, 
+                             currTimerNode->rawPktLen,
+                             0, (struct sockaddr *)(&currTimerNode->addr), 
+                             sizeof(struct sockaddr)); 
                       /* keep going */
                       
                       prevTimerNode = currTimerNode;

@@ -23,13 +23,12 @@
 #include <stdbool.h>
 #include "include.h"
 #include "../inc/evhttp_helper.h"
-#include "cluster_rest_req_handler.h"
 
 /**
  * \brief The mutex and condition variable used by thread. 
  */
-pthread_cond_t dps_rest_sync_cv = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t dps_rest_sync_mp = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t dps_rest_sync_cv = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t dps_rest_sync_mp = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * \brief The Interval in which DCS start new sync circle. Unit(second)
@@ -41,6 +40,11 @@ int dps_rest_sync_interval = 4;
  */
 static int dps_rest_sync_iterations = 0;
 
+/**
+ * \brief The thread id of task that syncs configuration with the
+ *        DMC (DOVE Controller)
+ */
+static long restsyncTaskId;
 
 /*
  ******************************************************************************
@@ -484,7 +488,7 @@ int dps_rest_sync_dmc_agent(char *req_body_buf, enum evhttp_cmd_type cmd_type, c
 		}
 
 		/* step 2 - forward the new request to local REST handler */
-		inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ip_addr_str, INET6_ADDRSTRLEN);
+		inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ip_addr_str, INET6_ADDRSTRLEN);
 		log_debug(RESTHandlerLogLevel, "Routing %s REQ to local REST handler[%s]", uri, ip_addr_str);
 		ret = dove_rest_request_and_syncprocess(ip_addr_str, dps_rest_port,
 		                                        cmd_type, uri,
@@ -662,7 +666,7 @@ static int dps_rest_sync_process(void)
 	char target_uri[DPS_URI_LEN];
 	char target_method[16];
 	enum evhttp_cmd_type cmd_type;
-	int version = 0;
+	int version, version_start = 0;
 	int next_version = 0;
 #ifdef DPS_REST_SYNC_POST_METHOD_SUPPORTED
 	char **ptr = NULL;
@@ -675,7 +679,8 @@ static int dps_rest_sync_process(void)
 	log_debug(RESTHandlerLogLevel, "Enter");
 	dps_rest_sync_iterations++;
 	//Try to get the next one in the queue
-	version = dps_rest_sync_cluster_version_get() + 1;
+	version_start = dps_rest_sync_cluster_version_get() + 1;
+	version = version_start;
 	log_info(RESTHandlerLogLevel, "[%d] Starting with version %d",
 	         dps_rest_sync_iterations, version);
 	// Version to start with is the Cluster version at this time
@@ -689,7 +694,7 @@ static int dps_rest_sync_process(void)
 		{
 			break;
 		}
-		if (!memcmp(controller_location.ip6, dps_local_ip.ip6, 16))
+		if (!memcmp(controller_location.ip6, dcs_local_ip.ip6, 16))
 		{
 			break;
 		}
@@ -731,11 +736,17 @@ static int dps_rest_sync_process(void)
 			do
 			{
 				log_info(RESTHandlerLogLevel,
-				         "[%d] Target URI %s: Method %s",
+				         "[%d] Target URI '%s': Method '%s'",
 				         dps_rest_sync_iterations, target_uri, target_method);
 				if (strlen(target_uri) == 0)
 				{
-					/* blank uri means goto next */
+					// Blank URI means goto next
+					// ABiswas: Update the local version to indicate
+					//          that blank URI has been picked up.
+					if (version > version_start)
+					{
+						cluster_config_version = (long long)version;
+					}
 					break;
 				}
 				else if (!strcmp(target_method, "DELETE"))
@@ -804,7 +815,7 @@ static int dps_rest_sync_process(void)
 					// ABiswas: Delete not incrementing verison
 					//          since delete doesn't have a Body
 					//          so version is lost
-					dps_cluster_node_heartbeat(&dps_local_ip,
+					dps_cluster_node_heartbeat(&dcs_local_ip,
 					                           dps_cluster_is_local_node_active(),
 					                           version);
 				}
@@ -839,7 +850,7 @@ static int dps_rest_sync_process(void)
  * \retval None
  *
  *****************************************************************************/
-static void dps_rest_sync_main(char *pDummy)
+static void dps_rest_sync_main(void *pDummy)
 {
 	struct timespec   ts;
 	struct timeval    tp;
@@ -869,9 +880,7 @@ static void dps_rest_sync_main(char *pDummy)
 			pthread_mutex_unlock(&dps_rest_sync_mp);
 			pthread_mutex_destroy(&dps_rest_sync_mp);
 			pthread_cond_destroy(&dps_rest_sync_cv);
-#ifdef PTHREAD_REPLACEMENT
-			/* pthread delete */
-#endif
+			del_task(restsyncTaskId);
 			return;
 		}
 		pthread_mutex_unlock(&dps_rest_sync_mp);
@@ -883,7 +892,7 @@ static void dps_rest_sync_main(char *pDummy)
 
 /*
  ******************************************************************************
- * dps_rest_sync_init --                                                  *//**
+ * dcs_rest_sync_init --                                                  *//**
  *
  * \brief This routine creates sync task and resource.
  *
@@ -891,10 +900,10 @@ static void dps_rest_sync_main(char *pDummy)
  * \retval >0 	Failure
  *
  *****************************************************************************/
-dove_status dps_rest_sync_init(void)
+dove_status dcs_rest_sync_init(void)
 {
 	dove_status status = DOVE_STATUS_OK;
-	pthread_t rest_sync_thread;
+
 	do
 	{
 		/* Initialize mutex and condition variable objects */
@@ -906,9 +915,14 @@ dove_status dps_rest_sync_init(void)
 			status = DOVE_STATUS_INVALID_PARAMETER;
 			break;
 		}
-		// Add pthread_replacement wrapper. Need to change this func call once the pthread wrapper is implemented 
-		pthread_create(&rest_sync_thread, NULL, (void *)dps_rest_sync_main, NULL);
-
+		/* Create a thread for configuration sync */
+		if (create_task((const char *)"SYNC", 0, OSW_DEFAULT_STACK_SIZE,
+		                dps_rest_sync_main, 0,
+		                &restsyncTaskId) != OSW_OK)
+		{
+			status = DOVE_STATUS_THREAD_FAILED;
+			break;
+		}
 	} while (0);
 
 	return status;

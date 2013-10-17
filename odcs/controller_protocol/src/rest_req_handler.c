@@ -67,7 +67,7 @@ static dove_status dps_generic_domain_property_rest_handler(unsigned int domain_
 
 			for(int i = 0; i < (int)nodes_count; i++)
 			{
-				if (nodes[i].ip4 == dps_local_ip.ip4) {
+				if (nodes[i].ip4 == dcs_local_ip.ip4) {
 					// domain handled locally
 					*fLocal = 1;
 					log_debug(RESTHandlerLogLevel,
@@ -2189,219 +2189,6 @@ void dps_req_handler_statistics_general_statistics(struct evhttp_request *req, v
 }
 
 /* 
-   GET /api/dove/dps/domains/{domain_id}/ipv4-subnets
-   POST /api/dove/dps/domains/{domain_id}/ipv4-subnets
-   or
-   GET /api/dove/dps/vns/{vn_id}/ipv4-subnets
-   POST /api/dove/dps/vns/{vn_id}/ipv4-subnets
- */
-void dps_req_handler_ipsubnets(struct evhttp_request *req, void *arg, int argc, char **argv)
-{
-	json_t *js_root = NULL;
-	json_t *js_ip = NULL, *js_mask = NULL, *js_mode = NULL, *js_gateway = NULL;
-	json_t *js_res = NULL;
-	char *res_body_str = NULL;
-	struct evbuffer *retbuf = NULL;
-	struct evbuffer *req_body = NULL;
-	char req_body_buf[1024];
-	char res_uri[DPS_URI_LEN]; 
-	char subnet_id[64];
-	int res_code = HTTP_BADREQUEST;
-	int n;
-	unsigned long int associated_type, associated_id;
-	json_error_t jerror;
-	char *endptr = NULL;
-	const char *ip_str, *mask_str, *mode_str, *gateway_str;
-	unsigned int ip, mask, mode, gateway;
-
-	log_debug(RESTHandlerLogLevel,"Enter");
-	if (argc != 1 || NULL == argv )
-	{
-		log_debug(RESTHandlerLogLevel,"Argument count invalid");
-		evhttp_send_reply(req, HTTP_BADREQUEST, NULL, NULL);
-		return;
-	}
-	if (strstr(evhttp_request_get_uri(req), "vns"))
-	{
-		associated_type = IP_SUBNET_ASSOCIATED_TYPE_VNID;
-	}
-	else
-	{
-		associated_type = IP_SUBNET_ASSOCIATED_TYPE_DOMAIN;
-	}
-	associated_id = strtoul(argv[0], &endptr, 10);
-	if (*endptr != '\0')
-	{
-		evhttp_send_reply(req, HTTP_BADREQUEST, NULL, NULL);
-		return;
-	}
-
-	switch (evhttp_request_get_command(req))
-	{
-		case EVHTTP_REQ_GET:
-		{
-			js_res = dps_rest_api_get_ipsubnets_all(associated_type, associated_id, AF_INET);
-			if (js_res)
-			{
-				res_body_str = json_dumps(js_res, JSON_PRESERVE_ORDER);
-				if (NULL == res_body_str)
-				{
-					break;
-				}
-				retbuf = evbuffer_new();
-				if (NULL == retbuf)
-				{
-					break;
-				}
-				evbuffer_add(retbuf, res_body_str, strlen(res_body_str) + 1);
-				res_code = HTTP_OK;
-			}
-			break;
-		}
-		case EVHTTP_REQ_POST: 
-		{
-			req_body = evhttp_request_get_input_buffer(req);
-			if (!req_body || evbuffer_get_length(req_body) > (sizeof(req_body_buf) - 1))
-			{
-				log_debug(RESTHandlerLogLevel,"Could not get input buffer");
-				break;
-			}
-			n = evbuffer_copyout(req_body, req_body_buf, (sizeof(req_body_buf) - 1));
-			req_body_buf[n] = '\0';
-			js_root = json_loads(req_body_buf, 0, &jerror);
-			if (!js_root)
-			{
-				log_debug(RESTHandlerLogLevel,"JSON body NULL");
-				break;
-			}
-			/* Borrowed reference, no need to decref */
-			js_ip = json_object_get(js_root, "ip");
-			if (!json_is_string(js_ip))
-			{
-				break;
-			}
-			if ((ip_str = json_string_value(js_ip)) == NULL)
-			{
-				break;
-			}
-			if (0 == inet_pton(AF_INET, ip_str, (void *)&ip))
-			{
-				break;
-			}
-			js_mask = json_object_get(js_root, "mask");
-			if (!json_is_string(js_mask))
-			{
-				break;
-			}
-			if ((mask_str = json_string_value(js_mask)) == NULL)
-			{
-				break;
-			}
-			if (0 == inet_pton(AF_INET, mask_str, (void *)&mask))
-			{
-				break;
-			}
-			js_mode = json_object_get(js_root, "mode");
-			if (!json_is_string(js_mode))
-			{
-				break;
-			}
-			if ((mode_str = json_string_value(js_mode)) == NULL)
-			{
-				break;
-			}
-			if (strcmp(mode_str, "dedicated") == 0)
-			{
-				mode = 0;
-			}
-			else if (strcmp(mode_str, "shared") == 0)
-			{
-				mode = 1;
-			}
-			else
-			{
-				break;
-			}
-			js_gateway = json_object_get(js_root, "gateway");
-			if (!json_is_string(js_gateway))
-			{
-				break;
-			}
-			if ((gateway_str = json_string_value(js_gateway)) == NULL)
-			{
-				break;
-			}
-			if (0 == inet_pton(AF_INET, gateway_str, (void *)&gateway))
-			{
-				break;
-			}
-			log_debug(RESTHandlerLogLevel,"ip %s, mask %s gw %s mode %s", ip_str, mask_str,gateway_str,mode_str);
-			if (DOVE_STATUS_OK == dps_rest_api_create_ipsubnet(associated_type, associated_id, AF_INET, (unsigned char *)&ip, mask, mode, (unsigned char *)&gateway))
-			{
-				/* {
-					"id":"192.168.1.0-255.255.255.0",
-					"uri":"/api/dove/dps/domains/12345/ipv4-subnets/192.168.1.0-255.255.255.0"
-				   }
-				   or
-				   {
-					"id":"192.168.1.0-255.255.255.0",
-					"uri":"/api/dove/dps/vns/789/ipv4-subnets/192.168.1.0-255.255.255.0"
-				   }
-				*/
-				snprintf(subnet_id, sizeof(subnet_id), "%s-%s", ip_str, mask_str);
-				if (associated_type == IP_SUBNET_ASSOCIATED_TYPE_DOMAIN)
-				{
-					DPS_DOMAIN_IPV4SUBNET_URI_GEN(res_uri, associated_id, ip_str, mask_str);
-				}
-				else
-				{
-					DPS_DVG_IPV4SUBNET_URI_GEN(res_uri, associated_id, ip_str, mask_str);
-				}
-				js_res = json_pack("{s:s, s:s}", "id", subnet_id,  "uri", res_uri);
-				res_body_str = json_dumps(js_res, JSON_PRESERVE_ORDER);
-				if (NULL == res_body_str)
-				{
-					break;
-				}
-				retbuf = evbuffer_new();
-				if (NULL == retbuf)
-				{
-					break;
-				}
-				evhttp_add_header(evhttp_request_get_output_headers(req), "Location", res_uri);
-				evbuffer_add(retbuf, res_body_str, strlen(res_body_str) + 1);
-				/* CREATED 201 */
-				res_code = 201;
-			}
-			break;
-		}
-		default:
-		{
-			res_code = HTTP_BADMETHOD;
-			break;
-		}
-	}
-	evhttp_send_reply(req, res_code, NULL, retbuf);
-	if (js_root)
-	{
-		json_decref(js_root);
-	}
-	if (js_res)
-	{
-		json_decref(js_res);
-	}
-	if (res_body_str)
-	{
-		free(res_body_str);
-	}
-	if (retbuf)
-	{
-		evbuffer_free(retbuf);
-	}
-	log_debug(RESTHandlerLogLevel,"Exit");
-}
-
-/* 
 	GET /api/dove/dps/domains/{domain_id}/ipv4-subnets/{ip-mask}
         DELETE /api/dove/dps/domains/{domain_id}/ipv4-subnets/{ip-mask}
         or
@@ -2630,7 +2417,7 @@ static dove_status dps_form_local_domain_mapping_json(struct evbuffer **retbuf)
 	log_debug(RESTHandlerLogLevel, "Enter");
 	do
 	{
-		status = dps_node_get_domains(dps_local_ip, &local_domain_str);
+		status = dps_node_get_domains(dcs_local_ip, &local_domain_str);
 		if (status != DOVE_STATUS_OK)
 		{
 			log_error(RESTHandlerLogLevel,
@@ -2638,11 +2425,11 @@ static dove_status dps_form_local_domain_mapping_json(struct evbuffer **retbuf)
 			          DOVEStatusToString(status));
 			break;
 		}
-		inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
+		inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
 		/* form json string*/
 		js_res = json_pack("{s:s,s:i,s:s}",
 		                   "ip",ipstr,
-		                   "port",(int)dps_local_ip.port,
+		                   "port",(int)dcs_local_ip.port,
 		                   "domains", local_domain_str);
 		if(NULL == js_res)
 		{
@@ -2822,7 +2609,7 @@ void dps_req_handler_service_role(struct evhttp_request *req, void *arg, int arg
 	struct evbuffer *retbuf = NULL;
 	struct evbuffer *req_body = NULL;
 	char req_body_buf[1024];
-	int res_code = HTTP_BADREQUEST;
+	int res_code = 409;
 	int n;
 	const char *action_str;
 	uint32_t action = 0;
@@ -2834,7 +2621,7 @@ void dps_req_handler_service_role(struct evhttp_request *req, void *arg, int arg
 	{
 		case EVHTTP_REQ_GET:
 		{
-			res_code = HTTP_OK;
+			res_code = HTTP_NOCONTENT;
 			break;
 		}
 		case EVHTTP_REQ_POST: 
@@ -2877,14 +2664,14 @@ void dps_req_handler_service_role(struct evhttp_request *req, void *arg, int arg
 				log_notice(RESTHandlerLogLevel, "DCS: From DMC reset role");
 				action = 0;
 			}
-			status = dps_set_service_role(action);
+			status = dcs_set_service_role(action);
 			if (DOVE_STATUS_OK == status)
 			{
 				/* CREATED 201 */
 				log_notice(RESTHandlerLogLevel,
 				           "DCS: Set service role to %s returns Success!",
 				           action_str);
-				res_code = HTTP_OK;
+				res_code = HTTP_NOCONTENT;
 			}
 			else
 			{
@@ -2893,13 +2680,13 @@ void dps_req_handler_service_role(struct evhttp_request *req, void *arg, int arg
 				          action_str, DOVEStatusToString(status));
 				show_print("DCS: Set service role to %s returns Failure [%s]!",
 				           action_str, DOVEStatusToString(status));
-				res_code = HTTP_EXPECTATIONFAILED;
+				res_code = 409;
 			}
 			break;
 		}
 		default:
 		{
-			res_code = HTTP_BADMETHOD;
+			res_code = 409;
 			break;
 		}
 	}
@@ -3007,7 +2794,7 @@ static void dps_dmc_query_cluster_nodes_process(json_t *js_nodes)
 			}
 
 			/* REST Port */
-			js_node_info = json_object_get(js_node, "rest_port");
+			js_node_info = json_object_get(js_node, "dcs_rest_service_port");
 			if (json_is_null(js_node_info) || !json_is_integer(js_node_info))
 			{
 				log_error(RESTHandlerLogLevel,
@@ -3018,7 +2805,7 @@ static void dps_dmc_query_cluster_nodes_process(json_t *js_nodes)
 			node_rest_port = (unsigned int) json_integer_value(js_node_info);
 
 			/* Service Port */
-			js_node_info = json_object_get(js_node, "service_port");
+			js_node_info = json_object_get(js_node, "dcs_raw_service_port");
 			if (json_is_null(js_node_info) || !json_is_integer(js_node_info))
 			{
 				log_error(RESTHandlerLogLevel,
@@ -3098,7 +2885,7 @@ void dps_req_handler_query_cluster_nodes(struct evhttp_request *req,
 
 	switch (evhttp_request_get_command(req))
 	{
-		case EVHTTP_REQ_POST: {
+		case EVHTTP_REQ_PUT: {
 			log_notice(PythonClusterDataLogLevel,
 			          "Got list of updated DCS nodes from DMC");
 			req_body = evhttp_request_get_input_buffer(req);
@@ -3137,6 +2924,7 @@ void dps_req_handler_query_cluster_nodes(struct evhttp_request *req,
 				break;
 			}
 			dps_dmc_query_cluster_nodes_process(js_id);
+			res_code = HTTP_OK;
 			break;
 		}
 		default:
@@ -3380,7 +3168,7 @@ void dps_req_handler_set_dmc_location(struct evhttp_request *req, void *arg, int
 			if (DOVE_STATUS_OK == status)
 			{
 				//User explicitly enter an IP Address reset it.
-				dps_set_service_role(0);
+				dcs_set_service_role(0);
 			}
 			res_code = HTTP_OK;
 			break;

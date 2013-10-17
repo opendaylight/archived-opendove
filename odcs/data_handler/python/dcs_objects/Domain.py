@@ -515,14 +515,6 @@ class Domain(dcs_object):
         '''
         return self.IP_Subnet_List.flush()
 
-    def ip_subnet_getallids(self):
-        '''
-        Get all IDs from list
-        @return: status, subnet_ids
-        @rtype: Integer, Long
-        '''
-        return self.IP_Subnet_List.getallids()
-
     def process_lookup_not_found(self, dps_client_IP_type, dps_client_IP_val,
                                  source_dvg, vIP_type, vIP_value, vIP_packed):
         '''

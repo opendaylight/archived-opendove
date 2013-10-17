@@ -230,7 +230,7 @@ PyObject *send_all_vm_migration_update(PyObject *self, PyObject *args);
  * mass_transfer_endpoint --                                              *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        endpoint mass transfer to a remote DPS Server
+ *        endpoint mass transfer to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -246,7 +246,7 @@ PyObject *mass_transfer_endpoint(PyObject *self, PyObject *args);
  * mass_transfer_tunnel --                                                *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        tunnel endpoint mass transfer to a remote DPS Server
+ *        tunnel endpoint mass transfer to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -262,7 +262,7 @@ PyObject *mass_transfer_tunnel(PyObject *self, PyObject *args);
  * mass_transfer_multicast_sender --                                      *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        multicast sender (mass transfer) to a remote DPS Server
+ *        multicast sender (mass transfer) to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -278,7 +278,7 @@ PyObject *mass_transfer_multicast_sender(PyObject *self, PyObject *args);
  * mass_transfer_multicast_receiver --                                    *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        multicast receiver (mass transfer) to a remote DPS Server
+ *        multicast receiver (mass transfer) to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -336,22 +336,6 @@ PyObject * dps_policy_replicate(PyObject *self, PyObject *args);
  *
  ******************************************************************************/
 PyObject * dps_policy_bulk_replicate(PyObject *self, PyObject *args);
-
-/*
- ******************************************************************************
- * dps_policy_replicate --                                                *//**
- *
- * \brief This is the routine that the PYTHON Scripts calls to replicate policy
- *        configuration to other DPS nodes
- *
- * \param[in] self  PyObject
- * \param[in] args  The input must be the following:
- *
- * \retval 0 Success
- * \retval -1 Failure
- *
- ******************************************************************************/
-PyObject * dps_ipsubnet_replicate(PyObject *self, PyObject *args);
 
 /*
  ******************************************************************************
@@ -451,7 +435,7 @@ PyObject *domain_query_policy_from_controller(PyObject *self, PyObject *args);
 
 /*
  ******************************************************************************
- * python_init_dps_protocol_interface --                                  *//**
+ * python_init_dcs_protocol_interface --                                  *//**
  *
  * \brief This routine initializes the new DPS Message Handling PYTHON Interface
  *
@@ -462,13 +446,13 @@ PyObject *domain_query_policy_from_controller(PyObject *self, PyObject *args);
  *
  *****************************************************************************/
 
-dove_status python_init_dps_protocol_interface(char *pythonpath);
+dove_status python_init_dcs_protocol_interface(char *pythonpath);
 
 /*
  ******************************************************************************
  * dps_protocol_send_to_server --                                         *//**
  *
- * \brief This routine sends a request to the PYTHON based DPS Server Data
+ * \brief This routine sends a request to the PYTHON based DCS Server Data
  *        Handler
  *
  * \param client_data - Pointer to DPS Client Server Protocol Message
@@ -485,7 +469,7 @@ dps_return_status dps_protocol_send_to_server(dps_client_data_t *client_data);
  *
  * \brief This is the routine that the PYTHON Replication Scripts calls to
  *        send a reply to a DPS Client Request which was replicated by the DPS
- *        Server. The DPS Server C code i.e. this routine MUST free up the
+ *        Server. The DCS Server C code i.e. this routine MUST free up the
  *        message buffer.
  *
  * \param[in] self  PyObject
@@ -499,7 +483,7 @@ PyObject *send_message_and_free(PyObject *self, PyObject *args);
 
 /*
  ******************************************************************************
- * dps_protocol_handler_stop --                                           *//**
+ * dcs_protocol_handler_stop --                                           *//**
  *
  * \brief This routine stops the DPS Client Server Protocol Handler
  *
@@ -507,11 +491,11 @@ PyObject *send_message_and_free(PyObject *self, PyObject *args);
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_protocol_handler_stop();
+dove_status dcs_protocol_handler_stop();
 
 /*
  ******************************************************************************
- * dps_protocol_handler_start --                                           *//**
+ * dcs_protocol_handler_start --                                           *//**
  *
  * \brief This routine starts the DPS Client Server Protocol Handler
  *
@@ -519,7 +503,7 @@ dove_status dps_protocol_handler_stop();
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_protocol_handler_start();
+dove_status dcs_protocol_handler_start();
 
 
 /** @} */

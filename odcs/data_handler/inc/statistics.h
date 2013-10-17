@@ -156,7 +156,7 @@ dove_status dps_statistics_domain_general_statistics_get(dps_object_general_stat
 
 /*
  ******************************************************************************
- * dps_server_rest_init                                                    *//**
+ * dcs_server_rest_init                                                    *//**
  *
  * \brief - Initializes the DPS statistics infrastructure
  *
@@ -166,7 +166,7 @@ dove_status dps_statistics_domain_general_statistics_get(dps_object_general_stat
  *
  ******************************************************************************
  */
-dove_status dps_statistics_init(char *pythonpath);
+dove_status dcs_statistics_init(char *pythonpath);
 
 dove_status dps_statistics_start(void);
 dove_status dps_statistics_stop(void);

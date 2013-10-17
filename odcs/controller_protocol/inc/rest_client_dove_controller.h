@@ -28,12 +28,17 @@
 
 #define HTTPD_DEFAULT_PORT  80
 
+#define MAX_URI_LEN     1024
+
 #define DPS_DOVE_CONTROLLER_ENDPOINT_CONFLICT_URI "/api/dove/dps/domains/*/endpoint-conflict"
 #define DPS_DOVE_CONTROLLER_DPS_STATISTICS_URI "/api/dove/dps/stats"
-#define DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI "/api/dove/dps/heartbeat"
+#define DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI "/controller/sb/v2/opendove/odmc/odcs/%s"
 
 /* DPS Query Dove Controller for Cluster info URI */
 #define DPS_DOVE_CONTROLLER_QUERY_DPS_CLUSTER_INFO_URI "/api/dove/dps/cluster"
+
+/* ODCS Cluster info URI*/
+#define ODCS_CLUSTER_INFO_URI "/controller/sb/v2/opendove/odcs/cluster"
 
 /* DPS Query Dove Controller for VNID info URI (Generate)*/
 #define DOVE_CONTROLLER_VNID_INFO_URI_GEN(_buf, _id) \
@@ -176,7 +181,6 @@ void dps_rest_client_query_dove_controller_vnid_info(uint32_t vnid);
 
 //extern int SIMULATE_DOVE_CONTROLLER_HTTPD_flag;
 
-//dove_status dps_server_rest_init2(short rest_port);
 void dove_controller_rest_httpd_server_log_endpoint_conflict(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dove_controller_rest_httpd_server_log_dps_statistics(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dove_controller_rest_httpd_server_process_dps_heartbeat(struct evhttp_request *req, void *arg, int argc, char **argv);

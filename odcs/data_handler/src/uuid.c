@@ -32,7 +32,7 @@ int PythonUUIDLogLevel = DPS_SERVER_LOGLEVEL_NOTICE;
 /**
  * \brief The module location defines for the DPS Cluster Database Handling API
  */
-#define PYTHON_MODULE_FILE_UUID "uuid"
+#define PYTHON_MODULE_FILE_UUID "dcs_uuid"
 
 /**
  * \brief The PYTHON Class that handles the DPS Cluster Database Requests
@@ -72,9 +72,9 @@ static  python_dps_uuid_t UUID_Interface;
  *
  * \addtogroup PythonInterface
  * @{
- * \defgroup DPSUUIDInterface DPS UUID Interface
+ * \defgroup DPSUUIDInterface DCS UUID Interface
  * @{
- * Handles Interaction between the DPS Server and DPS Cluster Database Objects.
+ * Handles Interaction between the DCS Server and DCS Cluster Database Objects.
  * The Gossip Protocol can use this Cluster Database Handler to store the Node
  * Attribute for each node in the DPS Cluster.
  */
@@ -264,7 +264,7 @@ dove_status python_init_UUID_interface(char *pythonpath)
 
 /*
  ******************************************************************************
- * dps_read_svc_app_uuid --                                    *//**
+ * dcs_read_svc_app_uuid --                                    *//**
  *
  * \brief This routine reads the UUID from the file and store it in a global
  * 	  variable.
@@ -272,7 +272,7 @@ dove_status python_init_UUID_interface(char *pythonpath)
  * \return dove_status
  *
  *****************************************************************************/
-dove_status dps_read_svc_app_uuid()
+dove_status dcs_read_svc_app_uuid()
 {
 	dove_status status = DOVE_STATUS_OK;
 	FILE *fp = NULL;

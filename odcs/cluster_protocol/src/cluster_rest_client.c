@@ -55,9 +55,9 @@ void dps_cluster_send_local_domains(ip_addr_t *nodes, uint32_t nodes_count,
 	char ipstr[INET6_ADDRSTRLEN];
 
 	do {
-		inet_ntop(dps_local_ip.family, dps_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
+		inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
 		/* form json string*/
-		js_res = dps_form_local_domains_json(ipstr,(int)dps_local_ip.port,domains);
+		js_res = dps_form_local_domains_json(ipstr,(int)dcs_local_ip.port,domains);
 
 		log_debug(PythonClusterDataLogLevel, "Domain Mapping [%s]",domains);
 		if(js_res == NULL)
@@ -72,12 +72,12 @@ void dps_cluster_send_local_domains(ip_addr_t *nodes, uint32_t nodes_count,
 		{
 			// send it synchronously
 			if(nodes[i].family == AF_INET &&
-			   nodes[i].ip4 == dps_local_ip.ip4)
+			   nodes[i].ip4 == dcs_local_ip.ip4)
 			{
 				continue;
 			}
 			else if(nodes[i].family == AF_INET6 &&
-			        !memcmp(nodes[i].ip6, dps_local_ip.ip6, 16))
+			        !memcmp(nodes[i].ip6, dcs_local_ip.ip6, 16))
 			{
 				continue;
 			}
@@ -799,8 +799,8 @@ dove_status dps_leader_create_domain(int domain_id, char *name)
 
 		for (i = 0; i < nodes_count; i++)
 		{
-			if (((nodes[i].family == AF_INET) && (nodes[i].ip4 == dps_local_ip.ip4)) ||
-			    (!memcmp(nodes[i].ip6, dps_local_ip.ip6, 16)))
+			if (((nodes[i].family == AF_INET) && (nodes[i].ip4 == dcs_local_ip.ip4)) ||
+			    (!memcmp(nodes[i].ip6, dcs_local_ip.ip6, 16)))
 			{
 				log_info(PythonClusterDataLogLevel,
 				         "Domain [%d] is going to be handled by the Local Node",
@@ -924,7 +924,7 @@ dove_status dps_leader_create_vn(int domain_id,int vnid,char *name)
 		}
 		DPS_DVGS_URI_GEN(uri,domain_id);
 		for (i = 0; i < (int)nodes_count; i++) {
-			if (ipnodes[i].ip4 == dps_local_ip.ip4) {
+			if (ipnodes[i].ip4 == dcs_local_ip.ip4) {
 				log_info(PythonClusterDataLogLevel,
 				         "VN [%d] handled by the LEADER",
 				         vnid);
@@ -972,97 +972,6 @@ End:
 		ipnodes = NULL;
 	}
 	return (dove_status)ret;
-}
-
-int dps_cluster_ipsubnet4_replication(char *dps_node, uint32_t crud,
-                                      uint32_t vnid, char *ip, char *mask,
-                                      char *gw, uint32_t mode)
-{
-	json_t *js_res = NULL;
-	struct evhttp_request *request = NULL;
-	char uri[256], mode_str[100];
-	int args = HTTP_OK;
-	int ret = 0;
-	
-	if (mode == DPS_SHARED_ADDR_SPACE)
-	{
-		strcpy(mode_str, "shared");
-	}
-	else
-	{
-		strcpy(mode_str, "dedicated");
-	}
-
-	/* Get the json string */
-	js_res = json_pack("{s:s, s:s, s:s, s:s}", 
-	                    "ip", ip,
-	                    "mask", mask,
-	                    "mode", mode_str,
-	                    "gateway", gw);
-
-	do
-	{
-		if(js_res == NULL){
-			log_alert(PythonClusterDataLogLevel,
-			          "No js_res,just return, not send anything!");
-			return -1;
-		}
-
-#if 0   
-		//Used for async
-		request = dps_rest_client_subnet4_replicate_request_new();
-#else
-		request = evhttp_request_new(dps_replicate_synch_response_handler, &args);
-#endif
-		if(request == NULL) {
-			log_alert(PythonClusterDataLogLevel,
-			          "Can not alloc the evhttp request");
-			break;
-		}
-
-		if (dps_rest_client_dove_controller_fill_evhttp(request,js_res) != DOVE_STATUS_OK)
-		{
-			break;
-		}
-
-		//set the uri
-		DOVE_CLUSTER_SUBNET4_URI_GEN(uri, vnid);
-
-		//send it asynchronously to Dove Controller
-		log_info(PythonClusterDataLogLevel,
-		         "DCS Node %s Port %d URI %s",
-		         dps_node, dps_rest_port, uri);
-
-#if 0
-		ret = dps_rest_client_dove_controller_send_asyncprocess(dps_node, uri, dps_rest_port, 
-		                                                        (crud ? EVHTTP_REQ_POST:EVHTTP_REQ_DELETE), 
-		                                                        request);
-#else
-		ret = dove_rest_request_and_syncprocess(dps_node, dps_rest_port, (crud ? EVHTTP_REQ_POST:EVHTTP_REQ_DELETE),
-		                                        uri, request, NULL, 3);
-#endif
-		if (ret)
-		{
-			log_info(PythonClusterDataLogLevel,
-			         "Return not success value %d, args %d", ret, args);
-			ret = -1;
-			break;
-		}
-		if ((args != HTTP_OK) && (args != 201))
-		{
-			log_info(PythonClusterDataLogLevel,
-			         "Return success value %d, args %d", ret, args);
-			ret = -1;
-			break;
-		}
-		
-	} while (0);
-
-	if (js_res)
-	{
-		json_decref(js_res);
-	}
-	return ret;
 }
 
 dove_status dps_node_get_ready(ip_addr_t *node,uint32_t domain)

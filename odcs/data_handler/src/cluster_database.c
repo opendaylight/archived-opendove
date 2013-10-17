@@ -4,7 +4,7 @@
 **                    DPS Client Server Protocol
 **/
 /*
-{  
+{
 * Copyright (c) 2010-2013 IBM Corporation
 * All rights reserved.
 *
@@ -39,8 +39,8 @@ ip_addr_t dps_cluster_leader;
 char dps_cluster_leader_ip_string_storage[INET6_ADDRSTRLEN+2];
 char *dps_cluster_leader_ip_string = dps_cluster_leader_ip_string_storage;
 
-char dps_local_ip_string_storage[INET6_ADDRSTRLEN+2];
-char *dps_local_ip_string = dps_local_ip_string_storage;
+char dcs_local_ip_string_storage[INET6_ADDRSTRLEN+2];
+char *dcs_local_ip_string = dcs_local_ip_string_storage;
 
 /**
  * \brief Flag to tell if the local Node is the Leader or NOT
@@ -252,6 +252,19 @@ static int fLocalActive = 1;
  */
 #define PYTHON_FUNC_CLUSTER_HEAVY_LOAD_THRESHOLD "Set_Heavy_Load_Value"
 
+/**
+ * \brief The module location defines for the DPS Utilities API
+ */
+#define PYTHON_MODULE_FILE_UTILITIES "Utilities"
+
+/**
+ * \brief The PYTHON Class that handles the DPS Encoding requests
+ */
+#define PYTHON_MODULE_CLASS_UTILITIES_ENCODING "Encoding"
+/*
+ * \brief The PYTHON function to encode string to base64 format
+ */
+#define PYTHON_FUNC_BASE64_ENCODE "base64_encode"
 
 /**
  * \brief The DPS controller handler function pointers data structure
@@ -404,10 +417,29 @@ typedef struct python_dps_cluster_db_s{
 	PyObject *Set_Heavy_Load_Value;
 }python_dps_cluster_db_t;
 
+/**
+ * \brief The DPS controller handler function pointers data structure
+ */
+typedef struct python_dps_utilities_s{
+	/**
+	 * \brief The DpsClientHandler Object Instance
+	 */
+	PyObject *instance;
+	/**
+	 * \brief The PYTHON function to encode input string to base64 format
+	 */
+	PyObject *Base64_Encoding;
+}python_dps_utilities_t;
+
 /*
  * \brief The Cluster Database Handler PYTHON Interface (Embed)
  */
 static python_dps_cluster_db_t Cluster_DB_Interface;
+
+/*
+ * \brief The DPS Utilities Handler PYTHON Interface (Embed)
+ */
+static python_dps_utilities_t Utilities_Interface;
 
 /*
  ******************************************************************************
@@ -415,9 +447,9 @@ static python_dps_cluster_db_t Cluster_DB_Interface;
  *
  * \addtogroup PythonInterface
  * @{
- * \defgroup DPSClusterDBInterface DPS Cluster Database Interface
+ * \defgroup DPSClusterDBInterface DCS Cluster Database Interface
  * @{
- * Handles Interaction between the DPS Server and DPS Cluster Database Objects.
+ * Handles Interaction between the DCS Server and DCS Cluster Database Objects.
  * The Gossip Protocol can use this Cluster Database Handler to store the Node
  * Attribute for each node in the DPS Cluster.
  */
@@ -497,7 +529,7 @@ dove_status dps_cluster_node_add(ip_addr_t *node_ip)
 
 /*
  ******************************************************************************
- * dps_cluster_node_local_update                                          *//**
+ * dcs_cluster_node_local_update                                          *//**
  *
  * \brief - This function can be used to update Local Node to cluster database
  *
@@ -508,7 +540,7 @@ dove_status dps_cluster_node_add(ip_addr_t *node_ip)
  *
  ******************************************************************************
  */
-dove_status dps_cluster_node_local_update(ip_addr_t *node_ip)
+dove_status dcs_cluster_node_local_update(ip_addr_t *node_ip)
 {
 	int status = DOVE_STATUS_NO_MEMORY;
 	PyObject *strret, *strargs;
@@ -516,9 +548,9 @@ dove_status dps_cluster_node_local_update(ip_addr_t *node_ip)
 
 	log_info(PythonClusterDataLogLevel, "Enter");
 
-	inet_ntop(node_ip->family, node_ip->ip6, dps_local_ip_string, INET6_ADDRSTRLEN);
+	inet_ntop(node_ip->family, node_ip->ip6, dcs_local_ip_string, INET6_ADDRSTRLEN);
 	log_notice(PythonClusterDataLogLevel,
-	           "Node IP %s, Port %d", dps_local_ip_string, node_ip->port);
+	           "Node IP %s, Port %d", dcs_local_ip_string, node_ip->port);
 
 	// Ensure the PYTHON Global Interpreter Lock
 	gstate = PyGILState_Ensure();
@@ -563,7 +595,7 @@ dove_status dps_cluster_node_local_update(ip_addr_t *node_ip)
 
 /*
  ******************************************************************************
- * dps_cluster_node_local_activate                                        *//**
+ * dcs_cluster_node_local_activate                                        *//**
  *
  * \brief - This function can be used to update set if the local node is active
  *
@@ -571,7 +603,7 @@ dove_status dps_cluster_node_local_update(ip_addr_t *node_ip)
  *
  ******************************************************************************
  */
-dove_status dps_cluster_node_local_activate(int factive)
+dove_status dcs_cluster_node_local_activate(int factive)
 {
 	PyObject *strargs, *strret;
 	PyGILState_STATE gstate;
@@ -2053,7 +2085,7 @@ dove_status dps_cluster_get_domainid_from_vnid(int vnid, int *domain_id)
 		if (strret == NULL)
 		{
 			log_warn(PythonDataHandlerLogLevel,
-			         "PyEval_CallObject IP_Subnet_GetAllIds returns NULL");
+			         "PyEval_CallObject Get_DomainID_From_VNID returns NULL");
 			break;
 		}
 		//@return: status, domain_id
@@ -2602,7 +2634,7 @@ PyObject *dps_domain_activate_on_node(PyObject *self, PyObject *args)
 		memcpy(remote_node.ip6, remote_ip, remote_ip_size);
 		remote_node.port_http = DPS_REST_HTTPD_PORT;
 		// Check if this is local node
-		if (!memcmp(remote_node.ip6, dps_local_ip.ip6, remote_ip_size))
+		if (!memcmp(remote_node.ip6, dcs_local_ip.ip6, remote_ip_size))
 		{
 			dps_controller_data_op_t data_op;
 			data_op.type = DPS_CONTROLLER_DOMAIN_ACTIVATE;
@@ -2611,7 +2643,7 @@ PyObject *dps_domain_activate_on_node(PyObject *self, PyObject *args)
 			ret = dps_controller_data_msg(&data_op);
 			if (ret == DOVE_STATUS_OK)
 			{
-				dps_cluster_exchange_domain_mapping_activate(&dps_local_ip);
+				dps_cluster_exchange_domain_mapping_activate(&dcs_local_ip);
 			}
 		}
 		else
@@ -2677,7 +2709,7 @@ PyObject *dps_domain_recover_on_node(PyObject *self, PyObject *args)
 		           "Requesting DCS Node %s to recreate Domain %d",
 		           str, domain_id);
 		// Check if this is local node
-		if (!memcmp(remote_node.ip6, dps_local_ip.ip6, remote_ip_size))
+		if (!memcmp(remote_node.ip6, dcs_local_ip.ip6, remote_ip_size))
 		{
 			dps_controller_data_op_t data_op;
 			data_op.type = DPS_CONTROLLER_DOMAIN_RECOVERY_START;
@@ -2743,7 +2775,7 @@ PyObject *dps_domain_deactivate_on_node(PyObject *self, PyObject *args)
 		memcpy(remote_node.ip6, remote_ip, remote_ip_size);
 		remote_node.port_http = DPS_REST_HTTPD_PORT;
 		// Check if this is local node
-		if (!memcmp(remote_node.ip6, dps_local_ip.ip6, remote_ip_size))
+		if (!memcmp(remote_node.ip6, dcs_local_ip.ip6, remote_ip_size))
 		{
 			//Do it on local node
 			dps_controller_data_op_t data_op;
@@ -3754,6 +3786,61 @@ PyObject *dps_cluster_reregister_endpoints(PyObject *self, PyObject *args)
 
 /*
  ******************************************************************************
+ * dps_base64_encode --                                    *//**
+ *
+ * \brief This routine is called to encode a string into base64 format.
+ *
+ * \param input_string - The string to be encoded
+ * \param encoded_string - The base64 representation of input string.
+ *
+ * \return dove_status
+ *
+ *****************************************************************************/
+dove_status dps_base64_encode(char *input_string, char *encoded_string)
+{
+    int status = DOVE_STATUS_OK;
+    PyGILState_STATE gstate;
+    PyObject *strargs, *strret;
+    char *enc_str;
+    int enc_str_size = 0;
+
+    log_debug(PythonClusterDataLogLevel, "Enter");
+    gstate = PyGILState_Ensure();
+    do
+    {
+        //def Domain_Delete(self, domain_id):
+        strargs = Py_BuildValue("(z#)", input_string,strlen(input_string));
+        if (strargs == NULL)
+        {
+            log_warn(PythonClusterDataLogLevel,
+                     "Cannot build Py_BuildValue for Base64_Encode");
+            status = DOVE_STATUS_UNKNOWN;
+            break;
+        }
+        // Invoke the Base64_Encoding call
+        strret = PyEval_CallObject(Utilities_Interface.Base64_Encoding, strargs);
+        Py_DECREF(strargs);
+        if (strret == NULL)
+        {
+            log_notice(PythonClusterDataLogLevel,
+                       "PyEval_CallObject for Domain_Exists returns NULL");
+            status = DOVE_STATUS_UNKNOWN;
+            break;
+        }
+
+        PyArg_Parse(strret, "z#", &enc_str, &enc_str_size);
+        memcpy(encoded_string,enc_str,enc_str_size);
+        Py_DECREF(strret);
+    }while(0);
+
+    PyGILState_Release(gstate);
+
+    log_debug(PythonClusterDataLogLevel, "Exit");
+    return status;
+}
+
+/*
+ ******************************************************************************
  * python_function_init --                                                *//**
  *
  * \brief This routine gets references to all functions in the PYTHON data
@@ -3775,6 +3862,8 @@ static dove_status python_functions_init(char *pythonpath)
 	log_info(PythonClusterDataLogLevel, "Enter");
 
 	memset(&Cluster_DB_Interface, 0, sizeof(python_dps_cluster_db_t));
+
+	memset(&Utilities_Interface, 0, sizeof(python_dps_utilities_t));
 	do
 	{
 		// Get handle to an instance of ClusterDatabase
@@ -4250,6 +4339,40 @@ static dove_status python_functions_init(char *pythonpath)
 			break;
 		}
 		status = DOVE_STATUS_OK;
+
+        // Get handle to an instance of Utilities
+        pyargs = Py_BuildValue("()");
+        if (pyargs == NULL)
+        {
+            log_emergency(PythonClusterDataLogLevel,
+                          "ERROR! Py_BuildValue () failed...\n");
+            status = DOVE_STATUS_NO_RESOURCES;
+            break;
+        }
+        status = python_lib_get_instance(pythonpath,
+                                         PYTHON_MODULE_FILE_UTILITIES,
+                                         PYTHON_MODULE_CLASS_UTILITIES_ENCODING,
+                                         pyargs,
+                                         &Utilities_Interface.instance);
+        Py_DECREF(pyargs);
+        if (status != DOVE_STATUS_OK)
+        {
+            break;
+        }
+
+		// Get handle to function Base64_Encode
+		Utilities_Interface.Base64_Encoding =
+			PyObject_GetAttrString(Utilities_Interface.instance,
+					PYTHON_FUNC_BASE64_ENCODE);
+		if (Utilities_Interface.Base64_Encoding == NULL)
+		{
+			log_emergency(PythonClusterDataLogLevel,
+			              "ERROR! PyObject_GetAttrString (%s) failed...\n",
+			              PYTHON_FUNC_BASE64_ENCODE);
+			status = DOVE_STATUS_NOT_FOUND;
+			break;
+		}
+
 	}while(0);
 
 	log_info(PythonClusterDataLogLevel, "Exit: %s",

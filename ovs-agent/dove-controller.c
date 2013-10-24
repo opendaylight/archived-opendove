@@ -61,8 +61,12 @@ VLOG_DEFINE_THIS_MODULE(controller);
 #define MAX_SWITCHES 16
 #define MAX_LISTENERS 16
 
+int dcLogLevel = 0;
+int dcLogModule = 1;
+int dcLogConsole = 1;
+
 struct switch_ {
-    struct dove_switch *dswitch;
+        struct dove_switch *dswitch;
 };
 
 /* -H, --hub: Learn the ports on which MAC addresses appear? */
@@ -95,6 +99,7 @@ static struct simap port_queues = SIMAP_INITIALIZER(&port_queues);
 /* --with-flows: Flows to send to switch. */
 static struct ofputil_flow_mod *default_flows;
 static size_t n_default_flows;
+static enum ofputil_protocol usable_protocols;
 
 /* --unixctl: Name of unixctl socket, or null to use the default. */
 static char *unixctl_path = NULL;
@@ -111,6 +116,7 @@ int dpsa_response(void* rsp);
 //			    DC_Address dstIp);
 
 static char * dpsIP;
+static char * dmcIP;
 
 static struct pollfd dps_fd;
 static poll_event_callback dps_cb;
@@ -194,7 +200,7 @@ main(int argc, char *argv[])
             }
         }
         if (retval) {
-            VLOG_ERR("%s: connect: %s", name, strerror(retval));
+            VLOG_ERR("%s: connect: %s", name, ovs_strerror(retval));
         }
     }
     if (n_switches == 0 && n_listeners == 0) {
@@ -274,6 +280,7 @@ new_switch(struct switch_ *sw, struct vconn *vconn)
     cfg.max_idle = set_up_flows ? max_idle : -1;
     cfg.default_flows = default_flows;
     cfg.n_default_flows = n_default_flows;
+    cfg.usable_protocols = usable_protocols;
     cfg.default_queue = default_queue;
     cfg.port_queues = &port_queues;
     cfg.mute = mute;
@@ -315,6 +322,7 @@ parse_options(int argc, char *argv[])
     };
     static struct option long_options[] = {
         {"dcs",         required_argument, NULL, 'd'},
+        {"dmc",         required_argument, NULL, 'D'},
         {"hub",         no_argument, NULL, 'H'},
         {"noflow",      no_argument, NULL, 'n'},
         {"normal",      no_argument, NULL, 'N'},
@@ -337,6 +345,7 @@ parse_options(int argc, char *argv[])
 
     for (;;) {
         int indexptr;
+        char *error;
         int c;
 
         c = getopt_long(argc, argv, short_options, long_options, &indexptr);
@@ -377,9 +386,13 @@ parse_options(int argc, char *argv[])
             }
             break;
 
-	case 'd':
-	  dpsIP = optarg;
-	  break;
+        case 'd':
+            dpsIP = optarg;
+            break;
+
+        case 'D':
+            dmcIP = optarg;
+            break;
 
         case 'q':
             default_queue = atoi(optarg);
@@ -390,8 +403,12 @@ parse_options(int argc, char *argv[])
             break;
 
         case OPT_WITH_FLOWS:
-            parse_ofp_flow_mod_file(optarg, OFPFC_ADD, &default_flows,
-                                    &n_default_flows);
+            error = parse_ofp_flow_mod_file(optarg, OFPFC_ADD, &default_flows,
+                                            &n_default_flows,
+                                            &usable_protocols);
+            if (error) {
+                ovs_fatal(0, "%s", error);
+            }
             break;
 
         case OPT_UNIXCTL:

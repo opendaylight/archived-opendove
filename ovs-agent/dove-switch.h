@@ -22,7 +22,6 @@
  * 
  */
 
-
 #ifndef DOVE_SWITCH_H
 #define DOVE_SWITCH_H 1
 
@@ -30,6 +29,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <netdb.h>
+#include "ofp-util.h"
 
 struct ofpbuf;
 struct rconn;
@@ -93,7 +93,8 @@ struct dove_switch_config {
      * to set up the flow table. */
     const struct ofputil_flow_mod *default_flows;
     size_t n_default_flows;
-
+    enum ofputil_protocol usable_protocols;
+    
     /* The OpenFlow queue to use by default.  Use UINT32_MAX to avoid
      * specifying a particular queue. */
     uint32_t default_queue;
@@ -122,6 +123,6 @@ void dove_update_cb(uint64_t vmID __attribute__((unused)),
 		    unsigned long domainID __attribute__((unused))
 		    , int status __attribute__((unused)));
 void dove_policy_cb( const DC_PolicyKey * key, const DC_Policy * result, int status, void * opaque );
-void vip_cb(DC_Address srcIp, void *opaque);
+void vip_cb(struct in_addr srcIp, struct in_addr gw, struct in_addr mask, void *opaque);
 
 #endif /* learning-switch.h */

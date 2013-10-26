@@ -27,6 +27,7 @@ import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailab
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
+import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 
 /**
  * Open DOVE Southbound REST APIs for DCS Service Appliance.<br>
@@ -87,12 +88,45 @@ public class OpenDoveDcsServiceApplianceSouthbound {
 
 
         if (sbInterface.applianceExists(dsaUUID) ) {
-             //  Copy the isDCS field from the Infinispan Cache if the Appliance Already exists.
+             //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
              OpenDoveServiceAppliance  dcsNode = sbInterface.getDoveServiceAppliance(dsaUUID);
+
+             //  If the isDCS field is set for the Service Appliance, do an Implicit Role Assignment
+             //  which will send the Cluster Details.
              Boolean isDCS  = dcsNode.get_isDCS();
              
-             appliance.set_isDCS(isDCS);
-             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
+             if (isDCS == true ) {
+                 OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
+                 Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsNode);
+
+                 if ( http_response == 200 || http_response == 204 ) {
+
+                    // Set the isDCS field.
+                    isDCS = true;
+                    dcsNode.set_isDCS(isDCS);
+
+                    if (sbInterface.applianceExists(dsaUUID) ) {
+                        sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
+                    }
+
+                    // Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State 
+                    sbRestClient.sendDcsClusterInfo();
+                 }
+             }
+             // Just Update the Timestamp
+/*
+             System.out.println("***************************canBeDCs field in DB:");
+             Boolean canBeDCS  = dcsNode.get_canBeDCS();
+             System.out.println(canBeDCS);
+             System.out.println(canBeDCS?"yes":"no");
+
+             System.out.println("***************************canBeDCs field in RCVD PKT:");
+             canBeDCS  = appliance.get_canBeDCS();
+             System.out.println(canBeDCS);
+             System.out.println(canBeDCS?"yes":"no");
+*/
+             dcsNode.setTimestamp(timestamp);
+             sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
            
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
              return Response.status(200).entity(appliance).build();
@@ -144,12 +178,15 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         appliance.setTimestamp(timestamp);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
-             //  Copy the isDCS field from the Infinispan Cache if the Appliance Already exists.
+             //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
              OpenDoveServiceAppliance  dcsNode = sbInterface.getDoveServiceAppliance(dsaUUID);
-             Boolean isDCS  = dcsNode.get_isDCS();
-             
-             appliance.set_isDCS(isDCS);
-             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
+             // Just Update the Timestamp & config_version
+             dcsNode.setTimestamp(timestamp);
+
+             Integer dcs_config_version = appliance.get_dcs_config_version();
+             dcsNode.set_dcs_config_version(dcs_config_version);
+
+             sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
         } else {
             /*
              * Heart-Beat will be accepted only for Registered Appliances

@@ -32,6 +32,8 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     List<OpenDoveNetwork> scopedNetworks;
     List<OpenDoveSubnet> scopedSubnets;
 
+    Integer domain_id;
+
     public OpenDoveDomain() {
         this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
         this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
@@ -39,6 +41,7 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     public OpenDoveDomain(String name) {
         this.uuid = java.util.UUID.randomUUID().toString();
+        this.domain_id = createVersion;
         this.name = name;
         this.tombstoneFlag = false;
         this.replicationFactor = 2;
@@ -53,6 +56,14 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Integer getDomainId() {
+        return domain_id;
+    }
+
+    public void setDomainId(Integer domain_id) {
+        this.domain_id = domain_id;
     }
 
     public String getName() {
@@ -87,8 +98,11 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
         scopedSubnets.remove(subnet);
     }
 
+    // changed from uuid to createVersion to make oDCS life easier.
     public String getSBDcsUri() {
-        return "/controller/sb/v2/opendove/odmc/domains/" + uuid;
+        //return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + createVersion;
+        this.domain_id = createVersion;
+        return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id;
     }
 
 }

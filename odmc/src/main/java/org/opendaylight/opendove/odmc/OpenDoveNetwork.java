@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedObject, IfOpenDGWTrackedObject {
@@ -31,7 +32,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     @XmlElement(name="name")
     String name;
 
-    @XmlElement(name="domain_id")
+    @XmlElement(name="domain_uuid")
     String domain_uuid;
 
     @XmlElement (name="type")
@@ -41,6 +42,10 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
 
     List<OpenDoveServiceAppliance> gateways;
 
+    OpenDoveDomain  scopingDomain;
+    Integer domain_id;
+
+
     public OpenDoveNetwork() {
         gateways = new ArrayList<OpenDoveServiceAppliance>();
     }
@@ -49,7 +54,9 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         this.uuid = java.util.UUID.randomUUID().toString();
         this.vnid = vnid;
         this.name = name;
+        this.scopingDomain = scopingDomain;
         this.domain_uuid = scopingDomain.getUUID();
+        this.domain_id = scopingDomain.getDomainId();
         this.tombstoneFlag = false;
         this.networkType = type;
         this.associatedOSNetworkUUID = oSNetworkUUID;
@@ -89,6 +96,14 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         this.domain_uuid = domain_uuid;
     }
 
+    public Integer getDomain_id() {
+        return domain_id;
+    }
+
+    public void setDomain_id(Integer domain_id) {
+        this.domain_id = domain_id;
+    }
+
     public Integer getNetworkType() {
         return networkType;
     }
@@ -106,7 +121,9 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public String getSBDcsUri() {
-        return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
+        //return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
+        this.domain_id = scopingDomain.getDomainId();
+        return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id + "/networks/" + vnid;
     }
 
     public boolean isTrackedByDGW() {

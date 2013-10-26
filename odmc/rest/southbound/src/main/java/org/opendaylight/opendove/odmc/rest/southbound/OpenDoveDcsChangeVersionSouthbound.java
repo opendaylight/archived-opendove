@@ -53,7 +53,6 @@ public class OpenDoveDcsChangeVersionSouthbound {
             ) {
         IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
 
-        System.out.println("********************** Inside getOdcsChange  ^^^^^^^^ ");
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

@@ -24,6 +24,8 @@ import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDCSList;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 
 /**
  * Open DOVE Northbound REST APIs for Domains.<br>
@@ -79,7 +81,7 @@ public class OpenDoveDomainNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showServiceAppliance(
+    public Response showDomain(
             @PathParam("domainUUID") String domainUUID
             ) {
         IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
@@ -139,14 +141,18 @@ public class OpenDoveDomainNorthbound {
     public Response showODCSList(
             @PathParam("domainUUID") String domainUUID
             ) {
-        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        if (sbInterface == null) {
+        IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveServiceApplianceCRU sbDSAInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        if (sbDomainInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExists(domainUUID))
+        if (!sbDomainInterface.domainExists(domainUUID))
             return Response.status(404).build();
-        return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
+        //return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
+          
+        OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbDSAInterface, sbDomainInterface);
+        return Response.status(200).entity(new OpenDoveDCSList(sbRestClient.getDomainDCSList(domainUUID))).build();
     }
 
     /**
@@ -180,7 +186,7 @@ public class OpenDoveDomainNorthbound {
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showServiceAppliances() {
+    public Response showDomains() {
         IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

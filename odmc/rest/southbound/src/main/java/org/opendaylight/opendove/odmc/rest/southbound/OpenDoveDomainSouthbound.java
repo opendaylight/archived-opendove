@@ -47,7 +47,7 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
 @Path("/domains")
 public class OpenDoveDomainSouthbound {
 
-    @Path("{domainUUID}")
+    @Path("/{domainUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -102,6 +102,40 @@ public class OpenDoveDomainSouthbound {
         return Response.status(200).entity(oDN).build();
     }
 
+    @Path("/bynumber/{domainID}/networks/{vnid}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showNetworkGivenDomainByNumber(
+            @PathParam("domainID") String domainID,
+            @PathParam("vnid") String vnid
+            ) {
+        IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbDomainInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        IfOpenDoveNetworkCRU sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        if (sbNetworkInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbDomainInterface.domainExistsByNumber(domainID))
+            return Response.status(404).build();
+        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid)))
+            return Response.status(404).build();
+        OpenDoveNetwork oDN = sbNetworkInterface.getNetworkByVnid(Integer.parseInt(vnid));
+        //SC: Commenting Temporarily for now..
+        //if (!domainUUID.equalsIgnoreCase(oDN.getDomain_uuid()))
+         //   return Response.status(404).build();
+        return Response.status(200).entity(oDN).build();
+    }
+
     @Path("{domainUUID}/policy/{policyUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
@@ -149,6 +183,28 @@ public class OpenDoveDomainSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomains())).build();
+    }
+    
+    @Path("/bynumber/{domainID}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showDomainByNumber(
+            @PathParam("domainID") String domainID
+            ) {
+        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.domainExistsByNumber(domainID))
+            return Response.status(404).build();
+        return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomainByNumber(domainID))).build();
     }
 }
 

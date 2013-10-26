@@ -26,9 +26,9 @@ import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveGWSessionStatsRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveGWStats;
+import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveVNIDStats;
-import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
 /**
@@ -127,7 +127,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
             return Response.status(400).build();
         dcsAppliance.set_isDGW(delta.get_isDGW());
 
-        OpenDoveSBRestClient sbRestClient = new OpenDoveSBRestClient();
+        OpenDoveRestClient sbRestClient = new OpenDoveRestClient();
         sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
 
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(odgwUUID))).build();

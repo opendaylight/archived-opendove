@@ -22,8 +22,8 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
-import org.opendaylight.opendove.odmc.rest.northbound.OpenDoveSBRestClient;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
 /**
@@ -87,7 +87,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
      * }
      * </pre>
      */
-	@Path("/{saUUID}/role")
+    @Path("/{saUUID}/role")
     @PUT
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
@@ -110,17 +110,21 @@ public class OpenDoveDcsServiceApplianceNorthbound {
         }
         if (!sbInterface.applianceExists(dsaUUID))
             return Response.status(404).build();
-        if (!request.isSingleton())
-            return Response.status(400).build();
-        OpenDoveServiceAppliance delta = request.getSingleton();
-        if (delta.get_isDCS() == null)
-            return Response.status(400).build();
+        /* SC: Commenting these lines for now temporarily until we figure out why some of the 
+               fields in Cache are getting reset, we need these checks */
+        //if (!request.isSingleton())
+         //   return Response.status(400).build();
+        //OpenDoveServiceAppliance delta = request.getSingleton();
+        //if (delta.get_isDCS() == null)
+         //   return Response.status(400).build();
         
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
-        if (!dcsAppliance.get_canBeDCS())
-            return Response.status(400).build();
+        /* SC: Commenting these lines for now temporarily until we figure out why some of the 
+               fields in Cache are getting reset, we need these checks */
+        //if (!dcsAppliance.get_canBeDCS())
+         //   return Response.status(400).build();
 
-        OpenDoveSBRestClient sbRestClient =    new OpenDoveSBRestClient();
+        OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
         Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
 
         if ( http_response == 200 || http_response == 204 ) {

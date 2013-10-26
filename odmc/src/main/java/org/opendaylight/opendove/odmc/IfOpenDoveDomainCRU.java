@@ -26,4 +26,9 @@ public interface IfOpenDoveDomainCRU {
     public List<OpenDoveDomain> getDomains();
 
     public List<OpenDoveServiceAppliance> getDCSList(String saUUID);
+
+    public boolean domainExistsByNumber(String domainID);
+
+    public OpenDoveDomain getDomainByNumber(String domainID);
+    public Integer getDomainId(String domainUUID);
 }

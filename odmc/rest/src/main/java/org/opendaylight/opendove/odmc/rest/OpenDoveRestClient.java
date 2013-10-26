@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.opendaylight.opendove.odmc.rest.northbound;
+package org.opendaylight.opendove.odmc.rest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,9 +16,13 @@ import java.util.Iterator;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONTokener;
+
 import org.opendaylight.controller.commons.httpclient.*;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 /**
@@ -38,9 +42,20 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
  *
  */
 
-public class OpenDoveSBRestClient {
+public class OpenDoveRestClient {
+    IfOpenDoveServiceApplianceCRU sbDSAInterface;
+    IfOpenDoveDomainCRU           sbDomainInterface;
 
-    public OpenDoveSBRestClient () {
+    public OpenDoveRestClient () {
+    }
+    
+    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRU iface) {
+    	sbDSAInterface = iface;
+    }
+
+    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRU iface1, IfOpenDoveDomainCRU iface2) {
+    	sbDSAInterface = iface1;
+        sbDomainInterface = iface2;
     }
 
     /*
@@ -100,8 +115,7 @@ public class OpenDoveSBRestClient {
 
         Integer  retVal = 1; // Success
 
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
-        List<OpenDoveServiceAppliance> oDCSs = sbInterface.getRoleAssignedDcsAppliances();
+        List<OpenDoveServiceAppliance> oDCSs = sbDSAInterface.getRoleAssignedDcsAppliances();
 
         Iterator<OpenDoveServiceAppliance> iterator = oDCSs.iterator();
 
@@ -128,7 +142,6 @@ public class OpenDoveSBRestClient {
             dcs_list.put(dcs);
         }
 
-        //String jsonList = dcs_list.toString();
         JSONObject jo;
         try {
               jo = new JSONObject().put("dps", dcs_list);
@@ -149,7 +162,6 @@ public class OpenDoveSBRestClient {
                  HTTPRequest request = new HTTPRequest();
                  request.setMethod("PUT");
                  request.setUri(uri);
-                 //request.setEntity(dcs_list.toString());
                  request.setEntity(jo.toString());
 
                  Map<String, List<String>> headers = new HashMap<String, List<String>>();
@@ -175,6 +187,96 @@ public class OpenDoveSBRestClient {
              }
         } // end of while.
         return retVal;
+    }
+    /*
+     *  REST Client Method for Providing DCS List for a Given Domain 
+     *  Return:
+     */
+
+    public List<OpenDoveServiceAppliance>  getDomainDCSList(String domainUUID) {
+
+        Integer dcs_rest_service_port = 0;
+        String  dsaIP = "";
+
+        /*
+         * Any DCS Node that has the Role Assigned flag set, will be able to answer this.
+         * Just pick up one Node and Send the REST Request.
+         * Sample Output from DCS
+         * {
+         *   dcslist:
+         *   [
+         *   	{
+         *          ip_family                : INTEGER (ex: 2)
+         *          ip                       : STRING  (ex: '1.2.3.4'
+         *          uuid                     : STRING  (ex: "aa-bb-ccccc")
+         *          dcs_rest_service_port    : INTEGER (ex: 1888)
+         *          dcs_raw_service_port     : INTEGER (ex: 902)
+         *      }
+         *   ]
+         *  }
+         */ 
+
+        /* Get Domain_id for domain_uuid  */
+        Integer domain_id = sbDomainInterface.getDomainId(domainUUID);
+        List<OpenDoveServiceAppliance> oDCSs = sbDSAInterface.getRoleAssignedDcsAppliances();
+
+        Iterator<OpenDoveServiceAppliance> iterator = oDCSs.iterator();
+
+        while (iterator.hasNext()) {
+            OpenDoveServiceAppliance appliance =  iterator.next();
+            dsaIP     = appliance.getIP();
+            dcs_rest_service_port = appliance.getDcsRestServicePort();
+
+            if ( dsaIP != null && dcs_rest_service_port != 0 ) {
+               break;
+            } 
+        }
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        try {
+             // execute HTTP request and verify response code
+             //String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odmc/odcs/odcslist?domain=" + domain_id;
+             String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odmc/odcs/domains/bynumber/" + domain_id + "/dcslist";
+             HTTPRequest request = new HTTPRequest();
+             request.setMethod("GET");  
+             request.setUri(uri);
+             System.out.println("4. *********** REST_CLIENT show-dcs list URI" + uri);
+             Map<String, List<String>> headers = new HashMap<String, List<String>>();
+             // String authString = "admin:admin";
+             // byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+             // String authStringEnc = new String(authEncBytes);
+             List<String> header = new ArrayList<String>();
+             // header.add("Basic "+authStringEnc);
+             // headers.put("Authorization", header);
+             // header = new ArrayList<String>();
+             //header.add("application/json");
+             headers.put("Content-Type", header);
+             headers.put("Accept", header);
+             request.setHeaders(headers);
+             HTTPResponse response = HTTPClient.sendRequest(request);
+             String dcsJsonList = response.getEntity();
+             JSONTokener jt = new JSONTokener(dcsJsonList);
+             JSONObject  json = new JSONObject(jt);
+             JSONArray arr = json.getJSONArray("dcslist");
+             for (int i = 0; i < arr.length(); i++)
+             {   
+                OpenDoveServiceAppliance dcs  = new OpenDoveServiceAppliance();
+                
+                Integer ip_family             = arr.getJSONObject(i).getInt("ip_family");
+                String ip                     = arr.getJSONObject(i).getString("ip");
+                String uuid                   = arr.getJSONObject(i).getString("uuid");
+                dcs_rest_service_port         = arr.getJSONObject(i).getInt("dcs_rest_service_port");
+                Integer dcs_raw_service_port  = arr.getJSONObject(i).getInt("dcs_raw_service_port");
+                dcs.setIPFamily(ip_family);  
+                dcs.setIP(ip); 
+                dcs.setUUID(uuid); 
+                dcs.setDcsRestServicePort(dcs_rest_service_port); 
+                dcs.setDcsRawServicePort(dcs_raw_service_port);
+                answer.add(dcs);
+             }
+        } catch (Exception e) {
+             return answer;
+        }
+        return answer;
     }
     /*
      *  REST Client Method for "DGW service-appliance Role Assignment"

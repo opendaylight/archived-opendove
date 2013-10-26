@@ -271,6 +271,12 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         return(OpenDoveDomain) (domainMap.get(domainUUID));
     }
 
+    public Integer getDomainId(String domainUUID) {
+        OpenDoveDomain domain = getDomain(domainUUID);
+        Integer   domain_id = domain.getDomainId();
+        return domain_id;
+    }
+
     public OpenDoveDomain getDomainByName(String name) {
         Iterator<OpenDoveObject> i = domainMap.values().iterator();
         while (i.hasNext()) {
@@ -301,12 +307,32 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         return answer;
     }
 
-    public List<OpenDoveServiceAppliance> getDCSList(String saUUID) {
+    public List<OpenDoveServiceAppliance> getDCSList(String domainUUID) {
         //TODO: FILL IN
         List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        //IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        //OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
+        //List<OpenDoveServiceAppliance> answer = sbRestClient.getDomainDCSList(domainUUID);
         return answer;
     }
 
+    public boolean domainExistsByNumber(String domainID) {
+        for (OpenDoveObject o: domainMap.values()) {
+            OpenDoveDomain domain = (OpenDoveDomain) o;
+            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString()))
+                return true;
+        }
+        return false;
+    }
+
+    public OpenDoveDomain getDomainByNumber(String domainID) {
+        for (OpenDoveObject o: domainMap.values()) {
+            OpenDoveDomain domain = (OpenDoveDomain) o;
+            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString()))
+                return domain;
+        }
+        return null;
+    }
     // code to support SB network interfaces (including URI)
 
     public boolean networkExists(String networkUUID) {
@@ -402,13 +428,13 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         return answer;
     }
 
-	public List<OpenDoveNVP> getStats(String queryIPAddr, String queryVNID,
-			String queryMAC) {
-		// TODO Fill in
+    public List<OpenDoveNVP> getStats(String queryIPAddr, String queryVNID,
+            String queryMAC) {
+        // TODO Fill in
         List<OpenDoveNVP> answer = new ArrayList<OpenDoveNVP>();
         return answer;
-	}
-	
+    }
+
     // IfSBDoveVGWVNIDMappingCRUD methods
 
     public boolean vgwVNIDMappingExists(String mappingUUID) {
@@ -437,9 +463,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         vgwVNIDMap.remove(mappingUUID);
     }
 
-	public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping delta) {
-		OpenDoveVGWVNIDMapping target = (OpenDoveVGWVNIDMapping) vgwVNIDMap.get(mappingUUID);
+    public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping delta) {
+        OpenDoveVGWVNIDMapping target = (OpenDoveVGWVNIDMapping) vgwVNIDMap.get(mappingUUID);
         overwrite(target, delta);
-		vgwVNIDMap.update(mappingUUID, target);		
-	}
+        vgwVNIDMap.update(mappingUUID, target);
+    }
 }

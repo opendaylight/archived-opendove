@@ -40,6 +40,7 @@ public class OpenDoveSouthboundRSApplication extends Application {
         classes.add(OpenDoveNetworkSubnetSouthbound.class);
         classes.add(OpenDovePolicySouthbound.class);
         classes.add(OpenDoveSubnetSouthbound.class);
+        classes.add(OpenDoveSwitchSouthbound.class);
         classes.add(OpenDoveVGWVNIDMappingSouthbound.class);
         return classes;
     }

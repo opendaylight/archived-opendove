@@ -166,7 +166,7 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
         Iterator<OpenDoveServiceAppliance> oDSAIterator = oldODN.getEGWs().iterator();
         String ip_low = null, ip_high = null;
         while (oDSAIterator.hasNext()) {
-            OpenDoveServiceAppliance oDSA = oDSAIterator.next();
+        	OpenDoveServiceAppliance oDSA = oDSAIterator.next();
             Integer snatPoolSize = controlBlock.getSnatPoolSize();
             Iterator<NeutronSubnet_IPAllocationPool> poolIterator = neutronSubnet.getAllocationPools().iterator();
             while (poolIterator.hasNext()) {

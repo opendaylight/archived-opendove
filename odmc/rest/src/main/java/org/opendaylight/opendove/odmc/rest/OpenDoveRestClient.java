@@ -8,22 +8,28 @@
 
 package org.opendaylight.opendove.odmc.rest;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONTokener;
 
-import org.opendaylight.controller.commons.httpclient.*;
+import org.opendaylight.controller.commons.httpclient.HTTPClient;
+import org.opendaylight.controller.commons.httpclient.HTTPRequest;
+import org.opendaylight.controller.commons.httpclient.HTTPResponse;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
-import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.eclipse.persistence.jaxb.UnmarshallerProperties;
 
 /**
  * Open DOVE REST Client Interface Class for  Service Appliances (DCS and DGW etc.).<br>
@@ -318,5 +324,78 @@ public class OpenDoveRestClient {
             return 400;
         }
     }
+
+	public OpenDoveSwitchStatsRequest getSwitchStats(String queryIPAddr, String queryVNID,
+			String queryMAC) {
+		HTTPRequest request = new HTTPRequest();
+		StringBuilder uri = new StringBuilder();
+		uri.append("http://");
+		uri.append(queryIPAddr);
+		uri.append(":1999/oVS/stats?vnid=");
+		uri.append(queryVNID);
+		if (queryMAC != null) {
+			uri.append("&mac=");
+			uri.append(queryMAC);
+		}
+		request.setUri(uri.toString());
+        request.setMethod("GET");
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        //  String authString = "admin:admin";
+        //  byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+        //  String authStringEnc = new String(authEncBytes);
+        List<String> header = new ArrayList<String>();
+        //  header.add("Basic "+authStringEnc);
+        //  headers.put("Authorization", header);
+        //  header = new ArrayList<String>();
+        header.add("application/json");
+        headers.put("Accept", header);
+        request.setHeaders(headers);
+        try {
+			HTTPResponse response = HTTPClient.sendRequest(request);
+			if (response.getStatus() < 200 && response.getStatus() > 299)
+				return null;
+			JAXBContext jc = JAXBContext.newInstance(OpenDoveSwitchStatsRequest.class);
+			Unmarshaller unmarshaller = jc.createUnmarshaller();
+			unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
+			unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
+			OpenDoveSwitchStatsRequest stats = (OpenDoveSwitchStatsRequest) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
+	        return stats;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public Integer deleteSwitchStats(String queryIPAddr, String queryVNID,
+			String queryMAC) {
+		HTTPRequest request = new HTTPRequest();
+		StringBuilder uri = new StringBuilder();
+		uri.append("http://");
+		uri.append(queryIPAddr);
+		uri.append(":1999/oVS/stats?vnid=");
+		uri.append(queryVNID);
+		if (queryMAC != null) {
+			uri.append("&mac=");
+			uri.append(queryMAC);
+		}
+		request.setUri(uri.toString());
+        request.setMethod("DELETE");
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        //  String authString = "admin:admin";
+        //  byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+        //  String authStringEnc = new String(authEncBytes);
+        // List<String> header = new ArrayList<String>();
+        //  header.add("Basic "+authStringEnc);
+        //  headers.put("Authorization", header);
+        //  header = new ArrayList<String>();
+        request.setHeaders(headers);
+        try {
+			HTTPResponse response = HTTPClient.sendRequest(request);
+			if (response != null)
+				return response.getStatus();
+			return 404;  // nothing found
+		}  catch (Exception e) {
+			return 504;
+		}
+	}
 }
 

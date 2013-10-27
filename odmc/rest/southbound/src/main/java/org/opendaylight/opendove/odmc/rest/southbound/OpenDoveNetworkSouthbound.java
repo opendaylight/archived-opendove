@@ -9,6 +9,7 @@
 package org.opendaylight.opendove.odmc.rest.southbound;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -24,6 +25,7 @@ import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveSubnet;
+import org.opendaylight.opendove.odmc.OpenDoveSwitch;
 import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 
 /**
@@ -82,6 +84,28 @@ public class OpenDoveNetworkSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         return Response.status(200).entity(new OpenDoveNetworkRequest(sbInterface.getNetworks())).build();
+    }
+
+    @Path("{vnid}/endpoint-register")
+    @PUT
+    @StatusCodes({
+        @ResponseCode(code = 204, condition = "No content"),
+        @ResponseCode(code = 401, condition = "Unauthorized"),
+        @ResponseCode(code = 404, condition = "Not Found"),
+        @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response askReRegister(
+            @PathParam("vnid") String vnid) {
+        IfOpenDoveNetworkCRU sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        if (sbNetworkInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid)))
+            return Response.status(404).build();
+        for (OpenDoveSwitch oSwitch: sbNetworkInterface.getNetworkByVnid(Integer.parseInt(vnid)).getHostingSwitches())
+        	oSwitch.setReRegister(true);
+        return Response.status(204).build();
+
     }
 
     @Path("{vnid}/subnets/{subnetUUID}")

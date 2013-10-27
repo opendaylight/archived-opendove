@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc.rest.southbound;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -147,7 +148,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-
     public Response procesDcsHeartbeat (
                                  @PathParam("dsaUUID") String dsaUUID,
                                  OpenDoveServiceAppliance appliance) {
@@ -195,6 +195,26 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         }
 
         return Response.status(200).entity(appliance).build();
+    }
+    
+    @Path("/leader")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+        @ResponseCode(code = 200, condition = "Operation successful"),
+        @ResponseCode(code = 404, condition = "No oDCS assigned"),
+        @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response getDCSSeed() {
+        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        OpenDoveServiceAppliance seed = sbInterface.getDCSSeed();
+        if (seed == null)
+        	return Response.status(404).build();
+    	return Response.status(200).entity(seed).build();
     }
 }
 

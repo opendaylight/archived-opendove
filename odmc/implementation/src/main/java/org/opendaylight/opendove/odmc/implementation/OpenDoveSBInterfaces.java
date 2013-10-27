@@ -34,11 +34,11 @@ import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
 import org.opendaylight.opendove.odmc.OpenDoveEGWFwdRule;
 import org.opendaylight.opendove.odmc.OpenDoveEGWSNATPool;
 import org.opendaylight.opendove.odmc.OpenDoveGwIpv4;
-import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveNetworkSubnetAssociation;
 import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDovePolicy;
 import org.opendaylight.opendove.odmc.OpenDoveSubnet;
+import org.opendaylight.opendove.odmc.OpenDoveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
     private void startUp() {
         allocateCache();
         retrieveCache();
-        OpenDoveNetwork.initRNG();
+        OpenDoveUtils.initRNG();
     }
 
     /**

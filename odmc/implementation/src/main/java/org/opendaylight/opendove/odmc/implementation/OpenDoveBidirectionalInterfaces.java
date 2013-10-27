@@ -13,7 +13,6 @@ import org.opendaylight.controller.clustering.services.CacheConfigException;
 import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
-import org.opendaylight.controller.networkconfig.neutron.NeutronNetwork;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
@@ -28,7 +27,10 @@ import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.OpenDoveSwitch;
+import org.opendaylight.opendove.odmc.OpenDoveUtils;
 import org.opendaylight.opendove.odmc.OpenDoveVGWVNIDMapping;
+import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
+import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchStatsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,6 +220,15 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         // IP Address Conflict
         return false;
     }
+    
+    public OpenDoveServiceAppliance getDCSSeed() {
+    	List<OpenDoveServiceAppliance> candidates = new ArrayList<OpenDoveServiceAppliance>();
+    	for (OpenDoveServiceAppliance appliance: doveServiceApplianceDB.values()) {
+    		if (appliance.get_isDCS())
+    			candidates.add(appliance);
+    	}
+    	return candidates.get(OpenDoveUtils.getNextInt() % candidates.size());
+    }
 
     // this method uses reflection to update an object from it's delta.
 
@@ -383,7 +394,7 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
     public int allocateVNID() {
         boolean done = false;
         while (!done) {
-            long candidateVNID = OpenDoveNetwork.getNext() & 0x0000000000FFFFFF;
+            long candidateVNID = OpenDoveUtils.getNextLong() & 0x0000000000FFFFFF;
             if (!networkExistsByVnid((int) candidateVNID))
                 return (int) candidateVNID;
         }
@@ -418,6 +429,12 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
     public void addSwitch(String switchUUID, OpenDoveSwitch oSwitch) {
         switchMap.putIfAbsent(switchUUID, oSwitch);
     }
+    
+    public void updateSwitch(String switchUUID, OpenDoveSwitch delta) {
+    	OpenDoveSwitch target = (OpenDoveSwitch) switchMap.get(switchUUID);
+    	overwrite(target, delta);
+    	switchMap.update(switchUUID, target);
+    }
 
     public List<OpenDoveSwitch> getSwitches() {
         List<OpenDoveSwitch> answer = new ArrayList<OpenDoveSwitch>();
@@ -428,12 +445,17 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         return answer;
     }
 
-    public List<OpenDoveNVP> getStats(String queryIPAddr, String queryVNID,
+    public OpenDoveSwitchStatsRequest getStats(String queryIPAddr, String queryVNID,
             String queryMAC) {
-        // TODO Fill in
-        List<OpenDoveNVP> answer = new ArrayList<OpenDoveNVP>();
-        return answer;
+    	OpenDoveRestClient client = new OpenDoveRestClient();
+    	return client.getSwitchStats(queryIPAddr, queryVNID, queryMAC);
     }
+    
+    public Integer deleteStats(String queryIPAddr, String queryVNID,
+            String queryMAC) {
+    	OpenDoveRestClient client = new OpenDoveRestClient();
+    	return client.deleteSwitchStats(queryIPAddr, queryVNID, queryMAC);
+    } 
 
     // IfSBDoveVGWVNIDMappingCRUD methods
 

@@ -11,8 +11,6 @@ package org.opendaylight.opendove.odmc;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -41,13 +39,15 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     String associatedOSNetworkUUID;
 
     List<OpenDoveServiceAppliance> gateways;
+    List<OpenDoveSwitch> hostingSwitches;
 
-    OpenDoveDomain  scopingDomain;
+	OpenDoveDomain  scopingDomain;
     Integer domain_id;
 
 
     public OpenDoveNetwork() {
         gateways = new ArrayList<OpenDoveServiceAppliance>();
+        hostingSwitches = new ArrayList<OpenDoveSwitch>();
     }
 
     public OpenDoveNetwork(String name, int vnid, OpenDoveDomain scopingDomain, int type, String oSNetworkUUID) {
@@ -61,6 +61,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         this.networkType = type;
         this.associatedOSNetworkUUID = oSNetworkUUID;
         gateways = new ArrayList<OpenDoveServiceAppliance>();
+        hostingSwitches = new ArrayList<OpenDoveSwitch>();
     }
 
     @Override
@@ -141,24 +142,30 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     public List<OpenDoveServiceAppliance> getEGWs() {
         return gateways;
     }
-
-    private static Random rng;
-
-    public static void initRNG() {
-        rng = new Random();    //TODO: need to seed this better
-    }
-
-    public static long getNext() {
-        return rng.nextLong();
-    }
-
+    
     public boolean networkUsesEGW(String gatewayUUID) {
         Iterator<OpenDoveServiceAppliance> iterator = gateways.iterator();
         while (iterator.hasNext()) {
-            OpenDoveServiceAppliance testDSA = iterator.next();
+        	OpenDoveServiceAppliance testDSA = iterator.next();
             if (testDSA.getUUID().equalsIgnoreCase(gatewayUUID))
                 return true;
         }
         return false;
     }
+
+    public List<OpenDoveSwitch> getHostingSwitches() {
+		return hostingSwitches;
+	}
+
+	public void setHostingSwitches(List<OpenDoveSwitch> hostingSwitches) {
+		this.hostingSwitches = hostingSwitches;
+	}
+
+	public OpenDoveDomain getScopingDomain() {
+		return scopingDomain;
+	}
+
+	public void setScopingDomain(OpenDoveDomain scopingDomain) {
+		this.scopingDomain = scopingDomain;
+	}
 }

@@ -192,7 +192,7 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
                 Integer vnid = doveNetwork.getVnid();
                 Iterator<OpenDoveServiceAppliance> egwIterator = doveNetwork.getEGWs().iterator();
                 while (egwIterator.hasNext()) {
-                    OpenDoveServiceAppliance egw = egwIterator.next();
+                	OpenDoveServiceAppliance egw = egwIterator.next();
                     // create EGWFwdRule object for each gateway, link to floatingIP and add
                     // FIXME: pip_max_str to what?
                     // FIXME: pip_min_str to what?

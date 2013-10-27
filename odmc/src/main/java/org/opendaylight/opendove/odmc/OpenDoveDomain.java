@@ -31,8 +31,10 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     List<OpenDoveNetwork> scopedNetworks;
     List<OpenDoveSubnet> scopedSubnets;
+    
+    String associatedOSTenantUUID;
 
-    Integer domain_id;
+	Integer domain_id;
 
     public OpenDoveDomain() {
         this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
@@ -104,5 +106,13 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
         this.domain_id = createVersion;
         return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id;
     }
+
+    public String getAssociatedOSTenantUUID() {
+		return associatedOSTenantUUID;
+	}
+
+	public void setAssociatedOSTenantUUID(String associatedOSTenantUUID) {
+		this.associatedOSTenantUUID = associatedOSTenantUUID;
+	}
 
 }

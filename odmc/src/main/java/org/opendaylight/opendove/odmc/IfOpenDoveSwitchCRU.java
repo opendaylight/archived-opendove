@@ -15,10 +15,15 @@ public interface IfOpenDoveSwitchCRU {
 
     public OpenDoveSwitch getSwitch(String switchUUID);
 
-    public void addSwitch(String switchUUID, OpenDoveSwitch domain);
+    public void addSwitch(String switchUUID, OpenDoveSwitch openDoveSwitch);
 
     public List<OpenDoveSwitch> getSwitches();
 
-    public List<OpenDoveNVP> getStats(String queryIPAddr, String queryVNID,
+    public Object getStats(String queryIPAddr, String queryVNID,
             String queryMAC);
+
+	public void updateSwitch(String uuid, OpenDoveSwitch target);
+
+	public Integer deleteStats(String queryIPAddr, String queryVNID,
+			String queryMAC);
 }

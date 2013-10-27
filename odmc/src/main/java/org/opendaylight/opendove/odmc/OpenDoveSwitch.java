@@ -23,15 +23,12 @@ public class OpenDoveSwitch extends OpenDoveObject {
     @XmlElement(name="timestamp")
     String timestamp;
 
+    Boolean reRegister;
+    
     public OpenDoveSwitch() {
-        uuid = java.util.UUID.randomUUID().toString();
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
+    public void setUUID(String uuid) {
         this.uuid = uuid;
     }
 
@@ -71,4 +68,12 @@ public class OpenDoveSwitch extends OpenDoveObject {
     public String getUUID() {
         return uuid;
     }
+
+	public Boolean getReRegister() {
+		return reRegister;
+	}
+
+	public void setReRegister(Boolean reRegister) {
+		this.reRegister = reRegister;
+	}
 }

@@ -79,6 +79,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
             } else {                                // map dedicated network
                 String domainName = "Neutron "+input.getTenantID();
                 OpenDoveDomain domain = createDoveDomain(domainName, input.getID(), domainDB, doveNetworkDB);
+                domain.setAssociatedOSTenantUUID(input.getTenantID());
                 int vnid = doveNetworkDB.allocateVNID();
                 String networkName = "Neutron "+input.getID();
                 OpenDoveNetwork doveNetwork = new OpenDoveNetwork(networkName, vnid, domain, 0, input.getID());
@@ -96,7 +97,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
             //create EXT MCAST network
             int vnid = doveNetworkDB.allocateVNID();
             String networkName = "Ext_MCast_"+vnid;
-            OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, domain, 1, netUUID);
+            OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, domain, 1, "");
             doveNetworkDB.addNetwork(extMCastNet.getUUID(), extMCastNet);
         } else
             domain = domainDB.getDomainByName(domainName);
@@ -258,6 +259,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                     //create dove tenant
                     String domainName = "Neutron "+neutronNetwork.getTenantID();
                     OpenDoveDomain domain = createDoveDomain(domainName, neutronNetwork.getID(), domainDB, networkDB);
+                    domain.setAssociatedOSTenantUUID(neutronNetwork.getTenantID());
                     int vnid = networkDB.allocateVNID();
                     //create dove network
                     String networkName = "Neutron "+neutronNetwork.getID();

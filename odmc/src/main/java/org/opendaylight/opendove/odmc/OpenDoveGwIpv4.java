@@ -132,7 +132,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         SubnetInfo info = util.getInfo();
         while (replicationFactor > 0 && oDSAs.size() > 0) {
             Integer count = oDSAs.size();
-            int index = ((int) OpenDoveNetwork.getNext()) % count;
+            int index = OpenDoveUtils.getNextInt() % count;
             OpenDoveServiceAppliance target = oDSAs.get(index);
             //if target doesn't have address in this subnet, assign one
             List<OpenDoveGwIpv4> gwIPs= gatewayIPDB.getGwIpv4Pool();

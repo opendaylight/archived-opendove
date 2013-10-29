@@ -44,6 +44,7 @@
             <plugin>
                 <groupId>org.codehaus.enunciate</groupId>
                 <artifactId>maven-enunciate-plugin</artifactId>
+                <version>{enunciate.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -73,12 +74,12 @@
             <dependency>
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>networkconfig.neutron</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>0.4.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>clustering.services</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>0.4.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.controller</groupId>
@@ -88,7 +89,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.0.1</version>
+            <version>3.3</version>
         </dependency>
     </dependencies>
 </project>

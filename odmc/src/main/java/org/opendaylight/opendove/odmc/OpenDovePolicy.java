@@ -181,6 +181,7 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
         if (!found) {
             OpenDovePolicy newPolicy = new OpenDovePolicy(newODN.getVnid(),
                     oldODN.getVnid(), newODN.getDomain_uuid(), traffic_type);
+            newPolicy.setTombstoneFlag(false);
             dovePolicyDB.addPolicy(newPolicy.getUUID(), newPolicy);
         }
     }

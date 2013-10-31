@@ -15,7 +15,6 @@ import org.opendaylight.controller.networkconfig.neutron.INeutronFloatingIPAware
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronPortAware;
-import org.opendaylight.controller.networkconfig.neutron.INeutronPortCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetCRUD;
@@ -29,7 +28,6 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
-import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;

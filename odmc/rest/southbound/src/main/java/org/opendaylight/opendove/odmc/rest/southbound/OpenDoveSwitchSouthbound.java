@@ -86,6 +86,7 @@ public class OpenDoveSwitchSouthbound {
         // Set the Timestamp, UUID and Registration flag
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         openDoveSwitch.setTimestamp(timestamp);
+        openDoveSwitch.setUUID(java.util.UUID.randomUUID().toString());
         openDoveSwitch.setReRegister(new Boolean(false));
         sbInterface.addSwitch(openDoveSwitch.getUUID(), openDoveSwitch);
 

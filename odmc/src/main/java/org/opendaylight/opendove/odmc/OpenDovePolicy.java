@@ -52,6 +52,7 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
         destinationVNID = dst_vnid;
         timeToLive = 1000;
         policyAction = 1;
+        policyType = 1;
         domainUUID = dom_UUID;
         trafficType = tType;
     }

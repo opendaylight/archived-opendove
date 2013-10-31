@@ -110,19 +110,17 @@ public class OpenDoveDcsServiceApplianceNorthbound {
         }
         if (!sbInterface.applianceExists(dsaUUID))
             return Response.status(404).build();
-        /* SC: Commenting these lines for now temporarily until we figure out why some of the 
-               fields in Cache are getting reset, we need these checks */
-        //if (!request.isSingleton())
-         //   return Response.status(400).build();
-        //OpenDoveServiceAppliance delta = request.getSingleton();
-        //if (delta.get_isDCS() == null)
-         //   return Response.status(400).build();
+
+        if (!request.isSingleton())
+           return Response.status(400).build();
+        OpenDoveServiceAppliance delta = request.getSingleton();
+        if (delta.get_isDCS() == null)
+           return Response.status(400).build();
         
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
-        /* SC: Commenting these lines for now temporarily until we figure out why some of the 
-               fields in Cache are getting reset, we need these checks */
-        //if (!dcsAppliance.get_canBeDCS())
-         //   return Response.status(400).build();
+
+        if (!dcsAppliance.get_canBeDCS())
+           return Response.status(400).build();
 
         OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
         Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);

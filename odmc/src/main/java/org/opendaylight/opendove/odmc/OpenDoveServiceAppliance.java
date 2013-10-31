@@ -89,20 +89,6 @@ public class OpenDoveServiceAppliance  {
     Boolean isDGW;
 
     public OpenDoveServiceAppliance () {
-        this.ip_family                    = 0;
-        this.ip                           = "";
-        this.uuid                         = "";
-        this.dcs_rest_service_port        = 0;
-        this.dgw_rest_service_port        = 0;
-        this.dcs_raw_service_port         = 0;
-        this.timestamp                    = "";
-        this.build_version                = "";
-        this.dcs_config_version           = 0;
-        this.dgw_config_version           = 0;
-        this.canBeDCS                     = false;
-        this.canBeDGW                     = false;
-        this.isDCS                        = false;
-        this.isDGW                        = false;
     }
 
     public Integer getIPFamily () {
@@ -211,6 +197,19 @@ public class OpenDoveServiceAppliance  {
        this.isDGW = isDGW;
     }
     public void initDefaults() {
-        // TODO Auto-generated method stub
+        ip_family                    = 0;
+        ip                           = "";
+        uuid                         = "";
+        dcs_rest_service_port        = 0;
+        dgw_rest_service_port        = 0;
+        dcs_raw_service_port         = 0;
+        timestamp                    = "";
+        build_version                = "";
+        dcs_config_version           = 0;
+        dgw_config_version           = 0;
+        canBeDCS                     = false;
+        canBeDGW                     = false;
+        isDCS                        = false;
+        isDGW                        = false;
     }
 }

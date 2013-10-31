@@ -61,7 +61,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response processDcsRegistration (OpenDoveServiceAppliance appliance) {
-        String dsaIP   = appliance.getIP();
         String dsaUUID = appliance.getUUID();
 
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
@@ -79,9 +78,8 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Registration from different UUID with an  IP that already exists in DMC Cache will 
          *  treated as a conflict, Registration will be rejected in this case.
          */
-        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
+        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
             return Response.status(409).build();
-        appliance.initDefaults();
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -115,17 +113,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                  }
              }
              // Just Update the Timestamp
-/*
-             System.out.println("***************************canBeDCs field in DB:");
-             Boolean canBeDCS  = dcsNode.get_canBeDCS();
-             System.out.println(canBeDCS);
-             System.out.println(canBeDCS?"yes":"no");
-
-             System.out.println("***************************canBeDCs field in RCVD PKT:");
-             canBeDCS  = appliance.get_canBeDCS();
-             System.out.println(canBeDCS);
-             System.out.println(canBeDCS?"yes":"no");
-*/
              dcsNode.setTimestamp(timestamp);
              sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
            
@@ -151,9 +138,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
     public Response procesDcsHeartbeat (
                                  @PathParam("dsaUUID") String dsaUUID,
                                  OpenDoveServiceAppliance appliance) {
-        String dsaIP   = appliance.getIP();
-        appliance.setUUID(dsaUUID);
-
         IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
 
         if (sbInterface == null) {
@@ -169,9 +153,8 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will 
          *  treated as a conflict
          */
-        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
+        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
             return Response.status(409).build();
-        appliance.initDefaults();
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -179,14 +162,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
 
         if (sbInterface.applianceExists(dsaUUID) ) {
              //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
-             OpenDoveServiceAppliance  dcsNode = sbInterface.getDoveServiceAppliance(dsaUUID);
-             // Just Update the Timestamp & config_version
-             dcsNode.setTimestamp(timestamp);
-
-             Integer dcs_config_version = appliance.get_dcs_config_version();
-             dcsNode.set_dcs_config_version(dcs_config_version);
-
-             sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
+             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
         } else {
             /*
              * Heart-Beat will be accepted only for Registered Appliances
@@ -194,7 +170,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             return Response.status(409).build();
         }
 
-        return Response.status(200).entity(appliance).build();
+        return Response.status(200).entity(sbInterface.getDoveServiceAppliance(dsaUUID)).build();
     }
     
     @Path("/leader")

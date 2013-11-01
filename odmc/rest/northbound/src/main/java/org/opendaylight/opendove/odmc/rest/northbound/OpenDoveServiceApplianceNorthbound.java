@@ -48,6 +48,96 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 public class OpenDoveServiceApplianceNorthbound {
 
     /**
+     * Returns all service appliances
+     *
+     * @param none
+     * 
+     * @return List of all service appliances
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances
+     *
+     * Response body in JSON:
+     * {
+     *   "service_appliances":  [ {
+     *     "ip_family": 4,
+     *     "ip": "10.10.10.1",
+     *     "uuid": "uuid",
+     *     "dcs_rest_service_port": 1888,
+     *     "dgw_rest_service_port": 1888,
+     *     "dcs_raw_service_port": 932,
+     *     "timestamp": "now",
+     *     "build_version": "openDSA-1",
+     *     "dcs_config_version": 60,
+     *     "canBeDCS": true,
+     *     "canBeDGW": true,
+     *     "isDCS": false,
+     *     "isDGW": false
+     *   } ]
+     * }
+     * </pre>
+     */
+	@GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceApplianceRequest.class)
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showServiceAppliances() {
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getAppliances())).build();
+    }
+	
+	/**
+     * Deletes a particular service appliance
+     *
+     * @param saUUID
+     *            Identifier of the service appliance
+     *
+     * @return none
+     *         </pre>
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances/uuid
+     *
+     * </pre>
+     */
+	@Path("{saUUID}")
+    @DELETE
+    @StatusCodes({
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response removeServiceAppliance(
+            @PathParam("saUUID") String saUUID
+            ) {
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.applianceExists(saUUID))
+            return Response.status(404).build();
+        OpenDoveServiceAppliance appliance = sbInterface.getDoveServiceAppliance(saUUID);
+        if (appliance.get_isDCS() || appliance.get_isDGW())
+        	throw new ResourceConflictException("cannot delete role assigned service appliance");
+        sbInterface.deleteServiceAppliance(saUUID);
+        return Response.status(204).build();
+    }
+	
+    /**
      * Returns a particular service appliance
      *
      * @param saUUID
@@ -104,93 +194,5 @@ public class OpenDoveServiceApplianceNorthbound {
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(saUUID))).build();
     }
 
-    /**
-     * Returns all service appliances
-     *
-     * @param none
-     * 
-     * @return List of all service appliances
-     *
-     *         <pre>
-     *
-     * Example:
-     *
-     * Request URL:
-     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances
-     *
-     * Response body in JSON:
-     * {
-     *   "service_appliances":  [ {
-     *     "ip_family": 4,
-     *     "ip": "10.10.10.1",
-     *     "uuid": "uuid",
-     *     "dcs_rest_service_port": 1888,
-     *     "dgw_rest_service_port": 1888,
-     *     "dcs_raw_service_port": 932,
-     *     "timestamp": "now",
-     *     "build_version": "openDSA-1",
-     *     "dcs_config_version": 60,
-     *     "canBeDCS": true,
-     *     "canBeDGW": true,
-     *     "isDCS": false,
-     *     "isDGW": false
-     *   } ]
-     * }
-     * </pre>
-     */
-	@DELETE
-    @StatusCodes({
-            @ResponseCode(code = 200, condition = "Operation successful"),
-            @ResponseCode(code = 204, condition = "No content"),
-            @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showServiceAppliances() {
-        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-        if (sbInterface == null) {
-            throw new ServiceUnavailableException("OpenDove SB Interface "
-                    + RestMessages.SERVICEUNAVAILABLE.toString());
-        }
-        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getAppliances())).build();
-    }
-	
-	/**
-     * Deletes a particular service appliance
-     *
-     * @param saUUID
-     *            Identifier of the service appliance
-     *         <pre>
-     *
-     * Example:
-     *
-     * Request URL:
-     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances/uuid
-     *
-     * </pre>
-     */
-	@Path("{saUUID}")
-    @GET
-    @Produces({ MediaType.APPLICATION_JSON })
-    @TypeHint(OpenDoveServiceApplianceRequest.class)
-    @StatusCodes({
-            @ResponseCode(code = 204, condition = "No content"),
-            @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 404, condition = "Not Found"),
-            @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response removeServiceAppliance(
-            @PathParam("saUUID") String saUUID
-            ) {
-        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-        if (sbInterface == null) {
-            throw new ServiceUnavailableException("OpenDove SB Interface "
-                    + RestMessages.SERVICEUNAVAILABLE.toString());
-        }
-        if (!sbInterface.applianceExists(saUUID))
-            return Response.status(404).build();
-        OpenDoveServiceAppliance appliance = sbInterface.getDoveServiceAppliance(saUUID);
-        if (appliance.get_isDCS() || appliance.get_isDGW())
-        	throw new ResourceConflictException("cannot delete role assigned service appliance");
-        sbInterface.deleteServiceAppliance(saUUID);
-        return Response.status(204).build();
-    }
 }
 

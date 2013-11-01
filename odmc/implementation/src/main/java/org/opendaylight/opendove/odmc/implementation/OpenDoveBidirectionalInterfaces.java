@@ -15,7 +15,7 @@ import org.opendaylight.controller.clustering.services.IClusterContainerServices
 import org.opendaylight.controller.clustering.services.IClusterServices;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfOpenDoveNetworkCRU,
-        IfOpenDoveDomainCRU, IfOpenDoveServiceApplianceCRU, IfSBDoveVGWVNIDMappingCRUD  {
+        IfOpenDoveDomainCRU, IfOpenDoveServiceApplianceCRUD, IfSBDoveVGWVNIDMappingCRUD  {
     private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
 
@@ -220,14 +220,24 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         // IP Address Conflict
         return false;
     }
-    
+
     public OpenDoveServiceAppliance getDCSSeed() {
-    	List<OpenDoveServiceAppliance> candidates = new ArrayList<OpenDoveServiceAppliance>();
-    	for (OpenDoveServiceAppliance appliance: doveServiceApplianceDB.values()) {
-    		if (appliance.get_isDCS())
-    			candidates.add(appliance);
-    	}
-    	return candidates.get(OpenDoveUtils.getNextInt() % candidates.size());
+        List<OpenDoveServiceAppliance> candidates = new ArrayList<OpenDoveServiceAppliance>();
+        for (OpenDoveServiceAppliance appliance: doveServiceApplianceDB.values()) {
+            if (appliance.get_isDCS())
+                candidates.add(appliance);
+        }
+        return candidates.get(OpenDoveUtils.getNextInt() % candidates.size());
+    }
+
+    public void deleteServiceAppliance(String saUUID) {
+        if (doveServiceApplianceDB.containsKey(saUUID)) {
+            OpenDoveServiceAppliance target = doveServiceApplianceDB.remove(saUUID);
+            for (OpenDoveObject o : networkMap.values()) {
+                OpenDoveNetwork network = (OpenDoveNetwork) o;
+                network.removeEGW(target);
+            }
+        }
     }
 
     // this method uses reflection to update an object from it's delta.
@@ -429,11 +439,11 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
     public void addSwitch(String switchUUID, OpenDoveSwitch oSwitch) {
         switchMap.putIfAbsent(switchUUID, oSwitch);
     }
-    
+
     public void updateSwitch(String switchUUID, OpenDoveSwitch delta) {
-    	OpenDoveSwitch target = (OpenDoveSwitch) switchMap.get(switchUUID);
-    	overwrite(target, delta);
-    	switchMap.update(switchUUID, target);
+        OpenDoveSwitch target = (OpenDoveSwitch) switchMap.get(switchUUID);
+        overwrite(target, delta);
+        switchMap.update(switchUUID, target);
     }
 
     public List<OpenDoveSwitch> getSwitches() {
@@ -447,15 +457,15 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
 
     public OpenDoveSwitchStatsRequest getStats(String queryIPAddr, String queryVNID,
             String queryMAC) {
-    	OpenDoveRestClient client = new OpenDoveRestClient();
-    	return client.getSwitchStats(queryIPAddr, queryVNID, queryMAC);
+        OpenDoveRestClient client = new OpenDoveRestClient();
+        return client.getSwitchStats(queryIPAddr, queryVNID, queryMAC);
     }
-    
+
     public Integer deleteStats(String queryIPAddr, String queryVNID,
             String queryMAC) {
-    	OpenDoveRestClient client = new OpenDoveRestClient();
-    	return client.deleteSwitchStats(queryIPAddr, queryVNID, queryMAC);
-    } 
+        OpenDoveRestClient client = new OpenDoveRestClient();
+        return client.deleteSwitchStats(queryIPAddr, queryVNID, queryMAC);
+    }
 
     // IfSBDoveVGWVNIDMappingCRUD methods
 
@@ -490,4 +500,5 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         overwrite(target, delta);
         vgwVNIDMap.update(mappingUUID, target);
     }
+
 }

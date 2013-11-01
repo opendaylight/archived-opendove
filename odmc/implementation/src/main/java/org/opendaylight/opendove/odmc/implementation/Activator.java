@@ -29,7 +29,7 @@ import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
@@ -119,7 +119,7 @@ public class Activator extends ComponentActivatorAbstractBase {
                             IfOpenDoveNetworkCRU.class.getName(),
                             IfOpenDoveDomainCRU.class.getName(),
                             IfSBDoveVGWVNIDMappingCRUD.class.getName(),
-                            IfOpenDoveServiceApplianceCRU.class.getName() }, null);
+                            IfOpenDoveServiceApplianceCRUD.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)

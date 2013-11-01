@@ -41,7 +41,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     List<OpenDoveServiceAppliance> gateways;
     List<OpenDoveSwitch> hostingSwitches;
 
-	OpenDoveDomain  scopingDomain;
+    OpenDoveDomain  scopingDomain;
     Integer domain_id;
 
 
@@ -139,14 +139,18 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         gateways.add(target);
     }
 
+    public void removeEGW(OpenDoveServiceAppliance target) {
+        gateways.remove(target);
+    }
+
     public List<OpenDoveServiceAppliance> getEGWs() {
         return gateways;
     }
-    
+
     public boolean networkUsesEGW(String gatewayUUID) {
         Iterator<OpenDoveServiceAppliance> iterator = gateways.iterator();
         while (iterator.hasNext()) {
-        	OpenDoveServiceAppliance testDSA = iterator.next();
+            OpenDoveServiceAppliance testDSA = iterator.next();
             if (testDSA.getUUID().equalsIgnoreCase(gatewayUUID))
                 return true;
         }
@@ -154,18 +158,18 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public List<OpenDoveSwitch> getHostingSwitches() {
-		return hostingSwitches;
-	}
+        return hostingSwitches;
+    }
 
-	public void setHostingSwitches(List<OpenDoveSwitch> hostingSwitches) {
-		this.hostingSwitches = hostingSwitches;
-	}
+    public void setHostingSwitches(List<OpenDoveSwitch> hostingSwitches) {
+        this.hostingSwitches = hostingSwitches;
+    }
 
-	public OpenDoveDomain getScopingDomain() {
-		return scopingDomain;
-	}
+    public OpenDoveDomain getScopingDomain() {
+        return scopingDomain;
+    }
 
-	public void setScopingDomain(OpenDoveDomain scopingDomain) {
-		this.scopingDomain = scopingDomain;
-	}
+    public void setScopingDomain(OpenDoveDomain scopingDomain) {
+        this.scopingDomain = scopingDomain;
+    }
 }

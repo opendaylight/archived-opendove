@@ -24,7 +24,7 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 
@@ -62,7 +62,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
         String dsaIP   = appliance.getIP();
         String dsaUUID = appliance.getUUID();
 
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
@@ -115,7 +115,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
         String dsaIP   = appliance.getIP();
         appliance.setUUID(dsaUUID);
 
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

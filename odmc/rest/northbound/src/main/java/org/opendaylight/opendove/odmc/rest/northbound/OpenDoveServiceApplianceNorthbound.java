@@ -8,21 +8,23 @@
 
 package org.opendaylight.opendove.odmc.rest.northbound;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceConflictException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 
 /**
@@ -92,7 +94,7 @@ public class OpenDoveServiceApplianceNorthbound {
     public Response showServiceAppliance(
             @PathParam("saUUID") String saUUID
             ) {
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -136,20 +138,59 @@ public class OpenDoveServiceApplianceNorthbound {
      * }
      * </pre>
      */
-	@GET
-    @Produces({ MediaType.APPLICATION_JSON })
+	@DELETE
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showServiceAppliances() {
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getAppliances())).build();
+    }
+	
+	/**
+     * Deletes a particular service appliance
+     *
+     * @param saUUID
+     *            Identifier of the service appliance
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/serviceAppliances/uuid
+     *
+     * </pre>
+     */
+	@Path("{saUUID}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceApplianceRequest.class)
+    @StatusCodes({
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response removeServiceAppliance(
+            @PathParam("saUUID") String saUUID
+            ) {
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.applianceExists(saUUID))
+            return Response.status(404).build();
+        OpenDoveServiceAppliance appliance = sbInterface.getDoveServiceAppliance(saUUID);
+        if (appliance.get_isDCS() || appliance.get_isDGW())
+        	throw new ResourceConflictException("cannot delete role assigned service appliance");
+        sbInterface.deleteServiceAppliance(saUUID);
+        return Response.status(204).build();
     }
 }
 

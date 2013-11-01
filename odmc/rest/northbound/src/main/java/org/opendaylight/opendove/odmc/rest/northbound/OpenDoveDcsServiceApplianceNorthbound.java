@@ -19,8 +19,10 @@ import javax.ws.rs.core.Response;
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
@@ -103,42 +105,49 @@ public class OpenDoveDcsServiceApplianceNorthbound {
             @PathParam("saUUID") String dsaUUID,
             OpenDoveServiceApplianceRequest request
             ) {
-        IfOpenDoveServiceApplianceCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
+        OpenDoveRestClient sbRestClient = new OpenDoveRestClient(sbInterface);
         if (!sbInterface.applianceExists(dsaUUID))
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("could not find service appliance");
 
         if (!request.isSingleton())
-           return Response.status(400).build();
-        OpenDoveServiceAppliance delta = request.getSingleton();
-        if (delta.get_isDCS() == null)
-           return Response.status(400).build();
+        	throw new BadRequestException("only single requests supported");
         
+        OpenDoveServiceAppliance delta = request.getSingleton();
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
-
+        if (delta.get_isDCS() == null)
+            throw new BadRequestException("request missing required field");
         if (!dcsAppliance.get_canBeDCS())
-           return Response.status(400).build();
+        	throw new BadRequestException("target can not meet request");
+        
+        if (delta.get_isDCS()) {
+            // set role
+            Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
 
-        OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
-        Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
+            if ( http_response > 199 || http_response < 300 ) {
+                sbInterface.updateDoveServiceAppliance(dsaUUID, delta);
 
-        if ( http_response == 200 || http_response == 204 ) {
+                /* Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State */
+                sbRestClient.sendDcsClusterInfo();
+                return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
+            } else
+            	return Response.status(http_response).build();
+        } else {
+        	Integer http_response = sbRestClient.unassignDcsServiceApplianceRole(dcsAppliance);
+        	
+            if ( http_response > 199 || http_response < 300 ) {
+                sbInterface.updateDoveServiceAppliance(dsaUUID, delta);
 
-           // Set the isDCS field.
-           Boolean isDCS = true;
-           dcsAppliance.set_isDCS(isDCS);
-
-           if (sbInterface.applianceExists(dsaUUID) ) {
-               sbInterface.updateDoveServiceAppliance(dsaUUID, dcsAppliance);
-           }
-
-           /* Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State */
-           sbRestClient.sendDcsClusterInfo();
+                /* Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State */
+                sbRestClient.sendDcsClusterInfo();
+                return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
+            } else
+            	return Response.status(http_response).build();
         }
-        return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
     }
 }
 

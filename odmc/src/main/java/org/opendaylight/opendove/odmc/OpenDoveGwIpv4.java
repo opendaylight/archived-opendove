@@ -124,7 +124,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         return "/controller/sb/v2/opendove/odmc/odgw-ipv4/" + uuid;
     }
 
-    public static void assignEGWs(IfOpenDoveServiceApplianceCRU serviceApplianceDB, IfSBDoveGwIpv4CRUD gatewayIPDB,
+    public static void assignEGWs(IfOpenDoveServiceApplianceCRUD serviceApplianceDB, IfSBDoveGwIpv4CRUD gatewayIPDB,
             NeutronSubnet neutronSubnet, OpenDoveNeutronControlBlock controlBlock, OpenDoveNetwork network) {
         Integer replicationFactor = controlBlock.getEgwReplicationFactor();
         List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();

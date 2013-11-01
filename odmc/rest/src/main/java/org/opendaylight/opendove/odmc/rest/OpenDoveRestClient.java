@@ -19,6 +19,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONTokener;
@@ -26,8 +27,12 @@ import org.codehaus.jettison.json.JSONTokener;
 import org.opendaylight.controller.commons.httpclient.HTTPClient;
 import org.opendaylight.controller.commons.httpclient.HTTPRequest;
 import org.opendaylight.controller.commons.httpclient.HTTPResponse;
+import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
+import org.opendaylight.controller.northbound.commons.exception.InternalServerErrorException;
+import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.eclipse.persistence.jaxb.UnmarshallerProperties;
 
@@ -49,35 +54,51 @@ import org.eclipse.persistence.jaxb.UnmarshallerProperties;
  */
 
 public class OpenDoveRestClient {
-    IfOpenDoveServiceApplianceCRU sbDSAInterface;
+    IfOpenDoveServiceApplianceCRUD sbDSAInterface;
     IfOpenDoveDomainCRU           sbDomainInterface;
 
     public OpenDoveRestClient () {
     }
     
-    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRU iface) {
+    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface) {
     	sbDSAInterface = iface;
     }
 
-    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRU iface1, IfOpenDoveDomainCRU iface2) {
+    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface1, IfOpenDoveDomainCRU iface2) {
     	sbDSAInterface = iface1;
         sbDomainInterface = iface2;
     }
 
     /*
-     *  REST Client Method for "DCS service-appliance Role Assignment"
+     *  REST Client Methods for "DCS service-appliance Role Assignment"
      */
 
     public Integer assignDcsServiceApplianceRole(OpenDoveServiceAppliance appliance) {
-
+    	JSONObject jo;
+		try {
+			jo = new JSONObject().put("action", "start");
+			return sendJSONObject(jo, appliance);
+		} catch (JSONException e) {
+            throw new InternalServerErrorException("Could not set up JSON object for southbound communication");
+		}
+    }
+    
+    public Integer unassignDcsServiceApplianceRole(OpenDoveServiceAppliance appliance) {
+    	JSONObject jo;
+		try {
+			jo = new JSONObject().put("action", "stop");
+			return sendJSONObject(jo, appliance);
+		} catch (JSONException e) {
+            throw new InternalServerErrorException("Could not set up JSON object for southbound communication");
+		}
+    }
+    
+    public Integer sendJSONObject(JSONObject jo, OpenDoveServiceAppliance appliance) {
         String  dsaIP   = appliance.getIP();
         Integer dcs_rest_service_port = appliance.getDcsRestServicePort();
 
 
         try {
-            String action = "start";
-            JSONObject jo = new JSONObject().put("action", action);
-
             // execute HTTP request and verify response code
             String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odcs/role";
             HTTPRequest request = new HTTPRequest();
@@ -100,7 +121,7 @@ public class OpenDoveRestClient {
             HTTPResponse response = HTTPClient.sendRequest(request);
             return response.getStatus();
         } catch (Exception e) {
-            return 400;
+            throw new BadRequestException("Could not complete SB request for role manipulation");
         }
     }
     /*

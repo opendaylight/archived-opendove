@@ -47,8 +47,8 @@ public class OpenDoveCRUDInterfaces {
         return answer;
     }
 
-    public static IfOpenDoveServiceApplianceCRU getIfDoveServiceApplianceCRU(Object o) {
-        IfOpenDoveServiceApplianceCRU answer = (IfOpenDoveServiceApplianceCRU) ServiceHelper.getGlobalInstance(IfOpenDoveServiceApplianceCRU.class, o);
+    public static IfOpenDoveServiceApplianceCRUD getIfDoveServiceApplianceCRUD(Object o) {
+        IfOpenDoveServiceApplianceCRUD answer = (IfOpenDoveServiceApplianceCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveServiceApplianceCRUD.class, o);
         return answer;
     }
 

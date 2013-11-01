@@ -26,7 +26,7 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronRouter;
 import org.opendaylight.controller.networkconfig.neutron.NeutronRouter_Interface;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
@@ -162,7 +162,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             neutronNetwork, sharedDomain, network);
                     subnetDB.addSubnet(subnet.getUUID(), subnet);
                     //assign egws
-                    IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
                     IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
                     OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, network);
                 }
@@ -269,7 +269,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             domain, doveNetwork);
                     subnetDB.addSubnet(subnet.getUUID(), subnet);
                     //assign egw to network
-                    IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
                     IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
                     OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, doveNetwork);
                 }
@@ -343,7 +343,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
         if (neutronNetwork.isRouterExternal()) {
-            IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+            IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
             List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
             Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
             while (iterator.hasNext()) {
@@ -387,7 +387,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             OpenDoveSubnet oDS = i.next();
                             if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(oldNeutronSubnet.getID()) &&
                                     oDS.getDomainUUID() == oldODN.getDomain_uuid()) {
-                                IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+                                IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
                                 IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
                                 OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, oldODN);
                                 OpenDoveEGWSNATPool.configureEGWSNATPool(neutronSubnet, snatPoolDB,
@@ -400,7 +400,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             OpenDoveSubnet oDS = i.next();
                             if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(neutronSubnet.getID()) &&
                                     oDS.getDomainUUID() == newODN.getDomain_uuid()) {
-                                IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+                                IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
                                 IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
                                 OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, oldNeutronSubnet, controlBlock, newODN);
                                 OpenDoveEGWSNATPool.configureEGWSNATPool(oldNeutronSubnet, snatPoolDB,
@@ -525,7 +525,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                 OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
                 if ((!negate && controlBlock.getDomainSeparation()) ||
                         (negate && !controlBlock.getDomainSeparation())) {
-                    IfOpenDoveServiceApplianceCRU serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
                     List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
                     Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
                     while (iterator.hasNext()) {

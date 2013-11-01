@@ -10,7 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.List;
 
-public interface IfOpenDoveServiceApplianceCRU {
+public interface IfOpenDoveServiceApplianceCRUD {
     public boolean dsaIPExists(String ip);
 
     public OpenDoveServiceAppliance getDoveServiceAppliance(String dsaUUID);
@@ -25,5 +25,7 @@ public interface IfOpenDoveServiceApplianceCRU {
     public boolean updateDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance input);
 
 	public OpenDoveServiceAppliance getDCSSeed();
+
+	public void deleteServiceAppliance(String saUUID);
 
 }

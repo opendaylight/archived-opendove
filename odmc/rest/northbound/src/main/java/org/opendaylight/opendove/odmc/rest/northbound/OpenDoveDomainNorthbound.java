@@ -24,7 +24,7 @@ import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDCSList;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
-import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 
 /**
@@ -142,7 +142,7 @@ public class OpenDoveDomainNorthbound {
             @PathParam("domainUUID") String domainUUID
             ) {
         IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        IfOpenDoveServiceApplianceCRU sbDSAInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbDSAInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
         if (sbDomainInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -151,7 +151,7 @@ public class OpenDoveDomainNorthbound {
             return Response.status(404).build();
         //return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
           
-        OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbDSAInterface, sbDomainInterface);
+        OpenDoveRestClient sbRestClient = new OpenDoveRestClient(sbDSAInterface, sbDomainInterface);
         return Response.status(200).entity(new OpenDoveDCSList(sbRestClient.getDomainDCSList(domainUUID))).build();
     }
 

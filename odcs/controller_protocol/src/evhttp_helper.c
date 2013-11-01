@@ -303,9 +303,14 @@ int helper_evhttp_get_id_from_uri(const char *uri, int *domain_id, int *vn_id)
         match = true;
         if (!strcmp(prev_token, "domains"))
         {
-            *domain_id = strtoul(token, &endptr, 10);
+            if (!strcmp(token, "bynumber"))
+            {
+                prev_token = token;
+                token = strtok_r(NULL, TOKEN_DELIMITER, &saveptr);
+                *domain_id = strtoul(token, &endptr, 10);
+            }
         }
-        else if (!strcmp(prev_token, "dvgs"))
+        else if (!strcmp(prev_token, "networks"))
         {
             *vn_id = strtoul(token, &endptr, 10);
         }

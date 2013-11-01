@@ -23,9 +23,10 @@
 #ifndef _CONTROLLER_REST_API_H_
 #define _CONTROLLER_REST_API_H_
 #define DPS_DOMAINS_URI "/api/dove/dps/domains"
-#define DPS_DOMAIN_URI "/api/dove/dps/domains/*"
+#define DPS_DOMAIN_URI "/controller/sb/v2/opendove/odmc/domains/bynumber/*"
 #define DPS_DVGS_URI "/api/dove/dps/domains/*/dvgs"
-#define DPS_DVG_URI "/api/dove/dps/domains/*/dvgs/*"
+//#define DPS_DVG_URI "/api/dove/dps/domains/*/dvgs/*"
+#define DPS_DVG_URI "/controller/sb/v2/opendove/odmc/domains/bynumber/*/networks/*"
 #define DPS_POLICIES_URI "/api/dove/dps/domains/*/policies"
 #define DPS_POLICY_URI "/api/dove/dps/domains/*/policies/*"
 #define DPS_EXTERNAL_GATEWAYS_URI "/api/dove/dps/vns/*/ipv4-external-gateways"
@@ -42,12 +43,14 @@
 
 #define DPS_CLUSTER_LEADER_URI 	"/api/dove/dps/cluster/leader"
 #define DPS_APPLIANCE_REGISTRATION_URI 	"/controller/sb/v2/opendove/odmc/odcs"
-#define DPS_DOMAIN_TO_NODE_MAPPING_URI "/api/dove/dps/domains/*/dcslist"
+#define DPS_DOMAIN_TO_NODE_MAPPING_URI "/controller/sb/v2/opendove/odmc/odcs/domains/bynumber/*/dcslist"
 #define DPS_CONTROLLER_LOCATION_UPDATE_URI "/api/dove/dps/dmc"
 #define DOVE_CONTROLLER_DSA_SYSLOG_URI "/api/dove/sys/event-logs"
 
 /* ODCS URI definitions */
 #define ODCS_SERVICE_ROLE_ASSIGNMENT_URI "/controller/sb/v2/opendove/odcs/role"
+#define ODCS_DVG_IPV4SUBNET_URI "/controller/sb/v2/opendove/odmc/networks/*/subnets/*"
+#define ODCS_POLICY_URI "/controller/sb/v2/opendove/odmc/domains/bynumber/*/policy/*"
 
 /*Trevor: 2013-01-15 DPS Debug URI for DMC  */
 

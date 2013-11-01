@@ -633,9 +633,10 @@ dove_status dcs_set_service_role(uint32_t action)
 				         "Local IP not yet set. Not point in sending query");
 				break;
 			}
-
-			log_notice(RESTHandlerLogLevel, "DCS: Sending Appliance Registration");
-			dps_appliance_registration();
+			if(get_dps_appliance_registration_needed()) {
+				log_notice(RESTHandlerLogLevel, "DCS: Sending Appliance Registration");
+				dps_appliance_registration();
+			}
 			/*if (action)
 			{
 				log_notice(RESTHandlerLogLevel,
@@ -940,7 +941,6 @@ int dcs_initialize(int udp_port, int rest_port, int fDebugCli, int fExitOnCtrlC,
 
 		if (fDebugCli)
 		{
-			dcs_set_service_role(1);
 			// Initialize the CLI Thread PYTHON Interface. This will
 			// start the CLI Thread
 			status = python_lib_embed_cli_thread_start(fExitOnCtrlC);

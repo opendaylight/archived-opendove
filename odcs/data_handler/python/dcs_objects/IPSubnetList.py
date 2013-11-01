@@ -117,6 +117,7 @@ class IPSubnetList:
             for subnet in subnet_list:
                 if (subnet.ip_value & subnet.mask_value) == (ip_val & subnet.mask_value):
                     return DOVEStatus.DOVE_STATUS_OK, subnet.ip_value, subnet.mask_value, subnet.mode, subnet.ip_gateway
+            return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
         except Exception:
             return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
 
@@ -149,6 +150,7 @@ class IPSubnetList:
             for subnet in subnet_list:
                 if (subnet.ip_value & subnet.mask_value) == (ip_val & subnet_mask):
                     return DOVEStatus.DOVE_STATUS_OK, subnet.ip_value, subnet.mask_value, subnet.mode, subnet.ip_gateway
+            return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
         except Exception:
             return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
 

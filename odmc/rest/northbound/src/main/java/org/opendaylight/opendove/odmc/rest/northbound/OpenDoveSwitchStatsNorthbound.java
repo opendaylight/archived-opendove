@@ -22,7 +22,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchStatsRequest;
 
@@ -84,7 +84,7 @@ public class OpenDoveSwitchStatsNorthbound {
             @QueryParam("vnid") String queryVNID,
             @QueryParam("mac") String queryMAC
             ) {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -132,7 +132,7 @@ public class OpenDoveSwitchStatsNorthbound {
             @QueryParam("vnid") String queryVNID,
             @QueryParam("mac") String queryMAC
             ) {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

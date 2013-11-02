@@ -10,7 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.List;
 
-public interface IfOpenDoveDomainCRU {
+public interface IfOpenDoveDomainCRUD {
     public boolean domainExists(String domainUUID);
 
     public boolean domainExistsByName(String name);
@@ -30,5 +30,6 @@ public interface IfOpenDoveDomainCRU {
     public boolean domainExistsByNumber(String domainID);
 
     public OpenDoveDomain getDomainByNumber(String domainID);
-    public Integer getDomainId(String domainUUID);
+    
+    public void removeDomain(String domainUUID);
 }

@@ -17,13 +17,13 @@ public class OpenDoveCRUDInterfaces {
         return answer;
     }
 
-    public static IfOpenDoveDomainCRU getIfDoveDomainCRU(Object o) {
-        IfOpenDoveDomainCRU answer = (IfOpenDoveDomainCRU) ServiceHelper.getGlobalInstance(IfOpenDoveDomainCRU.class, o);
+    public static IfOpenDoveDomainCRUD getIfDoveDomainCRU(Object o) {
+        IfOpenDoveDomainCRUD answer = (IfOpenDoveDomainCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveDomainCRUD.class, o);
         return answer;
     }
 
-    public static IfOpenDoveNetworkCRU getIfDoveNetworkCRU(Object o) {
-        IfOpenDoveNetworkCRU answer = (IfOpenDoveNetworkCRU) ServiceHelper.getGlobalInstance(IfOpenDoveNetworkCRU.class, o);
+    public static IfOpenDoveNetworkCRUD getIfDoveNetworkCRU(Object o) {
+        IfOpenDoveNetworkCRUD answer = (IfOpenDoveNetworkCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveNetworkCRUD.class, o);
         return answer;
     }
 
@@ -72,8 +72,8 @@ public class OpenDoveCRUDInterfaces {
         return answer;
     }
 
-	public static IfOpenDoveSwitchCRU getIfOpenDoveSwitchCRU(Object o) {
-		IfOpenDoveSwitchCRU answer = (IfOpenDoveSwitchCRU) ServiceHelper.getGlobalInstance(IfOpenDoveSwitchCRU.class, o);
+	public static IfOpenDoveSwitchCRUD getIfOpenDoveSwitchCRU(Object o) {
+		IfOpenDoveSwitchCRUD answer = (IfOpenDoveSwitchCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveSwitchCRUD.class, o);
         return answer;
 	}
 }

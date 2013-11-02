@@ -8,8 +8,11 @@
 
 package org.opendaylight.opendove.odmc.implementation;
 
+import io.netty.util.HashedWheelTimer;
 import java.util.Hashtable;
 import java.util.Dictionary;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.felix.dm.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +25,12 @@ import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.sal.core.ComponentActivatorAbstractBase;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
@@ -38,6 +41,8 @@ import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 public class Activator extends ComponentActivatorAbstractBase {
     protected static final Logger logger = LoggerFactory
     .getLogger(Activator.class);
+    private HashedWheelTimer scheduler;
+    private OpenDoveGC openDoveGC;
 
     /**
      * Function called when the activator starts just after some
@@ -46,16 +51,20 @@ public class Activator extends ComponentActivatorAbstractBase {
      *
      */
     public void init() {
-
+    	openDoveGC = new OpenDoveGC();
+        scheduler = new HashedWheelTimer(1000, TimeUnit.MILLISECONDS);
+    	openDoveGC.setTimer(scheduler);
+    	scheduler.newTimeout(openDoveGC, 5000, TimeUnit.MILLISECONDS);
+    	scheduler.start();
     }
-
+    
     /**
      * Function called when the activator stops just before the
      * cleanup done by ComponentActivatorAbstractBase
      *
      */
     public void destroy() {
-
+    	scheduler.stop();
     }
 
     /**
@@ -115,11 +124,12 @@ public class Activator extends ComponentActivatorAbstractBase {
         }
         if (imp.equals(OpenDoveBidirectionalInterfaces.class)) {
             c.setInterface(
-                    new String[] { IfOpenDoveSwitchCRU.class.getName(),
-                            IfOpenDoveNetworkCRU.class.getName(),
-                            IfOpenDoveDomainCRU.class.getName(),
+                    new String[] { IfOpenDoveSwitchCRUD.class.getName(),
+                            IfOpenDoveNetworkCRUD.class.getName(),
+                            IfOpenDoveDomainCRUD.class.getName(),
                             IfSBDoveVGWVNIDMappingCRUD.class.getName(),
-                            IfOpenDoveServiceApplianceCRUD.class.getName() }, null);
+                            IfOpenDoveServiceApplianceCRUD.class.getName(),
+                            OpenDoveBidirectionalInterfaces.class.getName() }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");
             c.add(createContainerServiceDependency(containerName)
@@ -135,7 +145,8 @@ public class Activator extends ComponentActivatorAbstractBase {
                             IfSBDoveEGWSNATPoolCRUD.class.getName(),
                             IfSBDoveEGWFwdRuleCRUD.class.getName(),
                             IfSBOpenDoveChangeVersionR.class.getName(),
-                            IfSBDoveNetworkSubnetAssociationCRUD.class.getName()
+                            IfSBDoveNetworkSubnetAssociationCRUD.class.getName(),
+                            OpenDoveSBInterfaces.class.getName()
                             }, null);
             Dictionary<String, String> props = new Hashtable<String, String>();
             props.put("salListenerName", "opendove");

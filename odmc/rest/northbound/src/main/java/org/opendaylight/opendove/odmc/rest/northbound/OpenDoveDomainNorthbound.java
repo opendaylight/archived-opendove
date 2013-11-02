@@ -20,7 +20,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDCSList;
 import org.opendaylight.opendove.odmc.rest.OpenDoveDomainRequest;
@@ -84,7 +84,7 @@ public class OpenDoveDomainNorthbound {
     public Response showDomain(
             @PathParam("domainUUID") String domainUUID
             ) {
-        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -141,7 +141,7 @@ public class OpenDoveDomainNorthbound {
     public Response showODCSList(
             @PathParam("domainUUID") String domainUUID
             ) {
-        IfOpenDoveDomainCRU sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRUD sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         IfOpenDoveServiceApplianceCRUD sbDSAInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
         if (sbDomainInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
@@ -187,7 +187,7 @@ public class OpenDoveDomainNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showDomains() {
-        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

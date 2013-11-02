@@ -13,10 +13,10 @@ import org.opendaylight.controller.clustering.services.CacheConfigException;
 import org.opendaylight.controller.clustering.services.CacheExistException;
 import org.opendaylight.controller.clustering.services.IClusterContainerServices;
 import org.opendaylight.controller.clustering.services.IClusterServices;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
@@ -34,8 +34,8 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchStatsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfOpenDoveNetworkCRU,
-        IfOpenDoveDomainCRU, IfOpenDoveServiceApplianceCRUD, IfSBDoveVGWVNIDMappingCRUD  {
+public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, IfOpenDoveNetworkCRUD,
+        IfOpenDoveDomainCRUD, IfOpenDoveServiceApplianceCRUD, IfSBDoveVGWVNIDMappingCRUD  {
     private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
 
@@ -292,12 +292,6 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         return(OpenDoveDomain) (domainMap.get(domainUUID));
     }
 
-    public Integer getDomainId(String domainUUID) {
-        OpenDoveDomain domain = getDomain(domainUUID);
-        Integer   domain_id = domain.getDomainId();
-        return domain_id;
-    }
-
     public OpenDoveDomain getDomainByName(String name) {
         Iterator<OpenDoveObject> i = domainMap.values().iterator();
         while (i.hasNext()) {
@@ -354,6 +348,11 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         }
         return null;
     }
+
+    public void removeDomain(String domainUUID) {
+        domainMap.remove(domainUUID);
+    }
+
     // code to support SB network interfaces (including URI)
 
     public boolean networkExists(String networkUUID) {
@@ -396,7 +395,7 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
 
     public void addNetwork(String networkUUID, OpenDoveNetwork network) {
         networkMap.putIfAbsent(networkUUID, network);
-        IfOpenDoveDomainCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         if (sbInterface != null)
             sbInterface.addNetworkToDomain(network.getDomain_uuid(), network);
     }
@@ -424,6 +423,14 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
         //TODO: FILL IN
         List<OpenDoveEndpoint> answer = new ArrayList<OpenDoveEndpoint>();
         return answer;
+    }
+
+    public void removeNetwork(String networkUUID) {
+        networkMap.remove(networkUUID);
+    }
+
+    public void updateNetwork(String networkUUID) {
+    	networkMap.update(networkUUID, networkMap.get(networkUUID));
     }
 
     // IfOpenDoveSwitchCRU
@@ -465,6 +472,10 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRU, IfO
             String queryMAC) {
         OpenDoveRestClient client = new OpenDoveRestClient();
         return client.deleteSwitchStats(queryIPAddr, queryVNID, queryMAC);
+    }
+
+    public void removeSwitch(String switchUUID) {
+        switchMap.remove(switchUUID);
     }
 
     // IfSBDoveVGWVNIDMappingCRUD methods

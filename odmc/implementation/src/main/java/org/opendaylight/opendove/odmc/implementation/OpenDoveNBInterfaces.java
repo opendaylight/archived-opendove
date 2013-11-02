@@ -84,16 +84,6 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
 
     @SuppressWarnings("deprecation")
     private void destroyCache() {
-        if (this.clusterContainerService == null) {
-            logger.error("un-initialized clusterMger, can't destroy cache");
-            return;
-        }
-        logger.debug("Destroying Cache for HostTracker");
-        this.clusterContainerService.destroyCache("openDoveNeutronSubnets");
-        this.clusterContainerService.destroyCache("openDoveNeutronPorts");
-        this.clusterContainerService.destroyCache("openDoveNeutronRouters");
-        this.clusterContainerService.destroyCache("openDoveNeutronFloatingIPs");
-        this.clusterContainerService.destroyCache("openDoveNeutronSystem");
     }
 
     private void startUp() {

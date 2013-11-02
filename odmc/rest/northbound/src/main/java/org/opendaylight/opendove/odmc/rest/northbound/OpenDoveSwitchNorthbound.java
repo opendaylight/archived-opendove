@@ -21,7 +21,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchRequest;
 
@@ -84,7 +84,7 @@ public class OpenDoveSwitchNorthbound {
     public Response showSwtich(
             @PathParam("switchUUID") String switchUUID
             ) {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -129,7 +129,7 @@ public class OpenDoveSwitchNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showServiceAppliances() {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

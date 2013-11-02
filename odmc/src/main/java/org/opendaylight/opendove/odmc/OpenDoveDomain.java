@@ -91,6 +91,10 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     public void addNetwork(OpenDoveNetwork network) {
         scopedNetworks.add(network);
     }
+    
+    public void removeNetwork(OpenDoveNetwork network) {
+    	scopedNetworks.remove(network);
+    }
 
     public void addSubnet(OpenDoveSubnet subnet) {
         scopedSubnets.add(subnet);

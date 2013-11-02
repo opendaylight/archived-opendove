@@ -155,6 +155,12 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         OpenDoveUtils.initRNG();
     }
 
+    //method to return the object database
+    
+    public ConcurrentMap<Integer,OpenDoveObject> getObjectDB() {
+    	return objectDB;
+    }
+    
     /**
      * Function called by the dependency manager when all the required
      * dependencies are satisfied

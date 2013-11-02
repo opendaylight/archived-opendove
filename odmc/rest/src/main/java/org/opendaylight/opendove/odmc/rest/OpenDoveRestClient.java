@@ -31,9 +31,10 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
 import org.opendaylight.controller.northbound.commons.exception.InternalServerErrorException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
+import org.opendaylight.opendove.odmc.OpenDoveDomain;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
 import org.eclipse.persistence.jaxb.UnmarshallerProperties;
 
 /**
@@ -55,7 +56,7 @@ import org.eclipse.persistence.jaxb.UnmarshallerProperties;
 
 public class OpenDoveRestClient {
     IfOpenDoveServiceApplianceCRUD sbDSAInterface;
-    IfOpenDoveDomainCRU           sbDomainInterface;
+    IfOpenDoveDomainCRUD           sbDomainInterface;
 
     public OpenDoveRestClient () {
     }
@@ -64,7 +65,7 @@ public class OpenDoveRestClient {
     	sbDSAInterface = iface;
     }
 
-    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface1, IfOpenDoveDomainCRU iface2) {
+    public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface1, IfOpenDoveDomainCRUD iface2) {
     	sbDSAInterface = iface1;
         sbDomainInterface = iface2;
     }
@@ -222,6 +223,7 @@ public class OpenDoveRestClient {
 
     public List<OpenDoveServiceAppliance>  getDomainDCSList(String domainUUID) {
 
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
         Integer dcs_rest_service_port = 0;
         String  dsaIP = "";
 
@@ -244,7 +246,10 @@ public class OpenDoveRestClient {
          */ 
 
         /* Get Domain_id for domain_uuid  */
-        Integer domain_id = sbDomainInterface.getDomainId(domainUUID);
+        OpenDoveDomain domain = sbDomainInterface.getDomain(domainUUID);
+        if (domain == null)
+        	return answer;
+        Integer domain_id = Integer.valueOf(domain.getUUID());
         List<OpenDoveServiceAppliance> oDCSs = sbDSAInterface.getRoleAssignedDcsAppliances();
 
         Iterator<OpenDoveServiceAppliance> iterator = oDCSs.iterator();
@@ -258,7 +263,6 @@ public class OpenDoveRestClient {
                break;
             } 
         }
-        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
         try {
              // execute HTTP request and verify response code
              //String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odmc/odcs/odcslist?domain=" + domain_id;

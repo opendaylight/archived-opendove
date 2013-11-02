@@ -20,7 +20,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveEndpointRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
@@ -84,7 +84,7 @@ public class OpenDoveNetworksNorthbound {
     public Response showServiceAppliance(
             @PathParam("networkUUID") String networkUUID
             ) {
-        IfOpenDoveNetworkCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -132,7 +132,7 @@ public class OpenDoveNetworksNorthbound {
     public Response showOVSEndpoints(
             @PathParam("networkUUID") String networkUUID
             ) {
-        IfOpenDoveNetworkCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -177,7 +177,7 @@ public class OpenDoveNetworksNorthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response showServiceAppliances() {
-        IfOpenDoveNetworkCRU sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

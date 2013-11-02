@@ -10,7 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.List;
 
-public interface IfOpenDoveSwitchCRU {
+public interface IfOpenDoveSwitchCRUD {
     public boolean switchExists(String switchUUID);
 
     public OpenDoveSwitch getSwitch(String switchUUID);
@@ -22,8 +22,10 @@ public interface IfOpenDoveSwitchCRU {
     public Object getStats(String queryIPAddr, String queryVNID,
             String queryMAC);
 
-	public void updateSwitch(String uuid, OpenDoveSwitch target);
+    public void updateSwitch(String uuid, OpenDoveSwitch target);
 
-	public Integer deleteStats(String queryIPAddr, String queryVNID,
-			String queryMAC);
+    public Integer deleteStats(String queryIPAddr, String queryVNID,
+            String queryMAC);
+
+    public void removeSwitch(String uuid);
 }

@@ -28,8 +28,8 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronCRUDInterfaces;
 import org.opendaylight.controller.networkconfig.neutron.NeutronPort;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
-import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
-import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
+import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveSwitch;
@@ -65,7 +65,7 @@ public class OpenDoveSwitchSouthbound {
         @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
         @ResponseCode(code = 500, condition = "Internal Error") })
     public Response processRegistration (OpenDoveSwitch openDoveSwitch) {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
@@ -108,7 +108,7 @@ public class OpenDoveSwitchSouthbound {
             @PathParam("switchUUID") String switchUUID,
             OpenDoveSwitch openDoveSwitch) {
 
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
@@ -150,7 +150,7 @@ public class OpenDoveSwitchSouthbound {
     public Response getByPort(
     		@PathParam("switchUUID") String switchUUID,
     		@PathParam("portUUID") String portUUID) {
-        IfOpenDoveSwitchCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
 
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
@@ -167,7 +167,7 @@ public class OpenDoveSwitchSouthbound {
     	
     	NeutronPort nPort = sbNeutronPortInterface.getPort(portUUID);
     	
-        IfOpenDoveNetworkCRU sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbNetworkInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

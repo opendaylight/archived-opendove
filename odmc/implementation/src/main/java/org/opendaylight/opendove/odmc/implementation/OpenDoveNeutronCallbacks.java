@@ -27,10 +27,10 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronRouter_Interface
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
-import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRU;
+import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.IfSBDovePolicyCRUD;
 import org.opendaylight.opendove.odmc.IfSBDoveSubnetCRUD;
@@ -62,8 +62,8 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
     public void neutronNetworkCreated(NeutronNetwork input) {
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
-        IfOpenDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        IfOpenDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveDomainCRUD domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveNetworkCRUD doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (!input.isRouterExternal()) {            // don't map router external networks
             if (input.isShared()) {                    // map shared network
                 OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
@@ -87,7 +87,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     private OpenDoveDomain createDoveDomain(String domainName, String netUUID,
-            IfOpenDoveDomainCRU domainDB, IfOpenDoveNetworkCRU doveNetworkDB) {
+            IfOpenDoveDomainCRUD domainDB, IfOpenDoveNetworkCRUD doveNetworkDB) {
         OpenDoveDomain domain;
         if (!domainDB.domainExistsByName(domainName)) { // look up domain
             domain = new OpenDoveDomain(domainName); // if doesn't exist, create
@@ -122,7 +122,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public void neutronNetworkDeleted(NeutronNetwork network) {
-        IfOpenDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         // mark open dove networks for deletion
         // no need to release EGW and SNAT pools for networks here - before the network can be removed,
         // the router interface has to be removed (which tears down policies and SNAT pools) and
@@ -130,8 +130,10 @@ INeutronRouterAware, INeutronFloatingIPAware {
         Iterator<OpenDoveNetwork> i = doveNetworkDB.getNetworks().iterator();
         while (i.hasNext()) {
             OpenDoveNetwork oDN = i.next();
-            if (oDN.getNeutronNetwork().equalsIgnoreCase(network.getID()))
+            if (oDN.getNeutronNetwork().equalsIgnoreCase(network.getID())) {
                 oDN.setTombstoneFlag(true);
+                doveNetworkDB.updateNetwork(oDN.getUUID());
+            }
         }
     }
 
@@ -143,8 +145,8 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public void neutronSubnetCreated(NeutronSubnet neutronSubnet) {
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
-        IfOpenDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        IfOpenDoveNetworkCRU networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveDomainCRUD domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveNetworkCRUD networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         IfSBDoveSubnetCRUD subnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         IfSBDoveNetworkSubnetAssociationCRUD networkSubnetAssociationDB =
             OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
@@ -213,7 +215,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public void neutronSubnetDeleted(NeutronSubnet subnet) {
-        IfOpenDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveDomainCRUD domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
         IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         // mark open dove networks for deletion
         Iterator<OpenDoveSubnet> i = doveSubnetDB.getSubnets().iterator();
@@ -241,8 +243,8 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public void neutronPortCreated(NeutronPort port) {
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
-        IfOpenDoveDomainCRU domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        IfOpenDoveNetworkCRU networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveDomainCRUD domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        IfOpenDoveNetworkCRUD networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         IfSBDoveSubnetCRUD subnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         IfSBDoveNetworkSubnetAssociationCRUD networkSubnetAssociationDB =
             OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
@@ -363,7 +365,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
         String networkName = "Neutron " + neutronNetwork.getID();
         IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
-        IfOpenDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         OpenDoveNetwork newODN = doveNetworkDB.getNetworkByName(networkName);
         IfSBDovePolicyCRUD dovePolicyDB = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
         IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
@@ -431,7 +433,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
         String networkUUID = "Neutron " + neutronNetwork.getID();
         IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
-        IfOpenDoveNetworkCRU doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfOpenDoveNetworkCRUD doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         OpenDoveNetwork newODN = doveNetworkDB.getNetworkByName(networkUUID);
         IfSBDovePolicyCRUD dovePolicyDB = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
         IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);

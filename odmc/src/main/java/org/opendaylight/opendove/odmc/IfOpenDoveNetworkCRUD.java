@@ -10,7 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.List;
 
-public interface IfOpenDoveNetworkCRU {
+public interface IfOpenDoveNetworkCRUD {
     public boolean networkExists(String networkUUID);
 
     public boolean networkExistsByVnid(int vnid);
@@ -27,6 +27,9 @@ public interface IfOpenDoveNetworkCRU {
 
     public List<OpenDoveNetwork> getNetworks();
 
-	public List<OpenDoveEndpoint> getEndpoints(String saUUID);
+    public List<OpenDoveEndpoint> getEndpoints(String saUUID);
 
+    public void removeNetwork(String networkUUID);
+
+    public void updateNetwork(String uuid);
 }

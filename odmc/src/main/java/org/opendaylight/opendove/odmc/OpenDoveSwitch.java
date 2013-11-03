@@ -17,7 +17,7 @@ public class OpenDoveSwitch extends OpenDoveObject {
     @XmlElement(name="tunnelip")
     String tunnelIP;
 
-    @XmlElement(name="mgmtip")
+    @XmlElement(name="managementip")
     String mgmtIP;
 
     @XmlElement(name="timestamp")

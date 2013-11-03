@@ -18,12 +18,14 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
 import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
@@ -93,6 +95,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
     @PUT
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceApplianceRequest.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),

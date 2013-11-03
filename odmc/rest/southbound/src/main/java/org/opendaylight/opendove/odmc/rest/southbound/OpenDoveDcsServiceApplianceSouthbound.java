@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc.rest.southbound;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -23,7 +24,10 @@ import java.util.Calendar;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceConflictException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -36,13 +40,13 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
  * <br>
  * <br>
  * Authentication scheme [for now]: <b>HTTP Basic</b><br>
- * Authentication realm : <b>opendaylight</b><br>
- * Transport : <b>HTTP and HTTPS</b><br>
+ * Authentication realm: <b>opendaylight</b><br>
+ * Transport: <b>HTTP and HTTPS</b><br>
  * <br>
  * HTTPS Authentication is disabled by default. Administrator can enable it in
  * tomcat-server.xml after adding a proper keystore / SSL certificate from a
  * trusted authority.<br>
- * More info :
+ * More info:
  * http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html#Configuration
  *
  */
@@ -50,11 +54,60 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 @Path("/odcs")
 public class OpenDoveDcsServiceApplianceSouthbound {
 
-    /*
-     *  REST Handler Function for DCS <==> DMC Registration
+    /**
+     * Registers an oDCS with the oDMC
+     *
+     * @param input
+     *            oDCS information in JSON format
+     * @return registered oDCS information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs
+     * 
+     * Request body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "build_version": "",
+     *   "dcs_config_version": 0,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": true,
+     *   "canBeDGW": false,
+     *   "isDCS": false,
+     *   "isDGW": false
+     * }
+     *
+     * Response body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "timestamp": "Thu Oct 03 13:50:01 PDT 2013",
+     *   "build_version": "",
+     *   "dcs_config_version": 0,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": true,
+     *   "canBeDGW": false,
+     *   "isDCS": false,
+     *   "isDGW": false
+     * }
+     * </pre>
      */
     @POST
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceAppliance.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 201, condition = "Registration Accepted"),
@@ -79,7 +132,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  treated as a conflict, Registration will be rejected in this case.
          */
         if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -125,12 +178,51 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         return Response.status(201).entity(appliance).build();
     }
 
-    /*
-     *  REST Handler Function for DCS Heart-Beat
+    /**
+     * oDCS Heartbeat method to oDMC
+     *
+     * @param input
+     *            updated oDCS information in JSON format (uses patch semantics)
+     * @return updated oDCS information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs/1
+     * 
+     * Request body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "dcs_config_version": 1
+     * }
+     *
+     * Response body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "timestamp": "Thu Oct 03 14:00:01 PDT 2013",
+     *   "build_version": "",
+     *   "dcs_config_version": 1,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": true,
+     *   "canBeDGW": false,
+     *   "isDCS": true,
+     *   "isDGW": false
+     * }
+     * </pre>
      */
     @Path("/{dsaUUID}")
     @PUT
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceAppliance.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
@@ -154,7 +246,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  treated as a conflict
          */
         if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -167,15 +259,49 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             /*
              * Heart-Beat will be accepted only for Registered Appliances
              */
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
         }
 
         return Response.status(200).entity(sbInterface.getDoveServiceAppliance(dsaUUID)).build();
     }
-    
+
+    /**
+     * Get oDCS seed information
+     *
+     * @param input
+     *            none
+     * @return oDCS information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs/leader
+     *
+     * Response body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "timestamp": "Thu Oct 03 14:00:01 PDT 2013",
+     *   "build_version": "",
+     *   "dcs_config_version": 1,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": true,
+     *   "canBeDGW": false,
+     *   "isDCS": true,
+     *   "isDGW": false
+     * }
+     * </pre>
+     */
     @Path("/leader")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceAppliance.class)
     @StatusCodes({
         @ResponseCode(code = 200, condition = "Operation successful"),
         @ResponseCode(code = 404, condition = "No oDCS assigned"),
@@ -189,7 +315,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         }
         OpenDoveServiceAppliance seed = sbInterface.getDCSSeed();
         if (seed == null)
-        	return Response.status(404).build();
+        	throw new ResourceNotFoundException("No oDCS has been assigned");
     	return Response.status(200).entity(seed).build();
     }
 }

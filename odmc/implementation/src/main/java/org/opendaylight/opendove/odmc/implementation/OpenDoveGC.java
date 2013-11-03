@@ -40,31 +40,33 @@ public class OpenDoveGC implements TimerTask {
 	}
 
 	public void run(Timeout arg0) throws Exception {
-		ConcurrentMap<Integer, OpenDoveObject> internalCache =
-				openDoveSBInterfaces.getObjectDB();
-		List<OpenDoveServiceAppliance> oDSAs = openDoveBidirectionalInterfaces.getAppliances();
-		for (Integer i: OpenDoveConcurrentBackedMap.getOrderedBackingKeys(internalCache)) {
-			OpenDoveObject o = internalCache.get(i);
-			if (o != null) {
-				if (o.getTombstoneFlag()) {
-					boolean purge = true;
-					for (OpenDoveServiceAppliance oDSA: oDSAs) {
-						if (oDSA.get_isDCS()) {
-							if (oDSA.get_dcs_config_version() < i)
-								purge = false;
-						}
-						if (oDSA.get_isDGW()) {
-							if (oDSA.get_dgw_config_version() < i)
-								purge = false;
-						}
-					}
-					if (purge) {
-						cleanObjectReferences(o);
-						internalCache.remove(i);
-					}
-				}
-			}
-		}
+        if (openDoveSBInterfaces != null && openDoveBidirectionalInterfaces != null) {
+            ConcurrentMap<Integer, OpenDoveObject> internalCache =
+                    openDoveSBInterfaces.getObjectDB();
+            List<OpenDoveServiceAppliance> oDSAs = openDoveBidirectionalInterfaces.getAppliances();
+            for (Integer i: OpenDoveConcurrentBackedMap.getOrderedBackingKeys(internalCache)) {
+                OpenDoveObject o = internalCache.get(i);
+                if (o != null) {
+                    if (o.getTombstoneFlag()) {
+                        boolean purge = true;
+                        for (OpenDoveServiceAppliance oDSA: oDSAs) {
+                            if (oDSA.get_isDCS()) {
+                                if (oDSA.get_dcs_config_version() < i)
+                                    purge = false;
+                            }
+                            if (oDSA.get_isDGW()) {
+                                if (oDSA.get_dgw_config_version() < i)
+                                    purge = false;
+                            }
+                        }
+                        if (purge) {
+                            cleanObjectReferences(o);
+                            internalCache.remove(i);
+                        }
+                    }
+                }
+            }
+        }
     	timer.newTimeout(this, 5000, TimeUnit.MILLISECONDS);
 	}
 

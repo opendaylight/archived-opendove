@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc.rest.southbound;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -22,7 +23,9 @@ import java.util.Calendar;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceConflictException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -48,11 +51,60 @@ import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 @Path("/odgw")
 public class OpenDoveDgwServiceApplianceSouthbound {
 
-    /*
-     *  REST Handler Function for DGW <==> DMC Registration
+    /**
+     * Registers an oDGW with the oDMC
+     *
+     * @param input
+     *            oDGW information in JSON format
+     * @return registered oDGW information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odgw
+     * 
+     * Request body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "build_version": "",
+     *   "dcs_config_version": 0,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": false,
+     *   "canBeDGW": true,
+     *   "isDCS": false,
+     *   "isDGW": false
+     * }
+     *
+     * Response body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "timestamp": "Thu Oct 03 13:50:01 PDT 2013",
+     *   "build_version": "",
+     *   "dcs_config_version": 0,
+     *   "dgw_config_version": 0,
+     *   "canBeDCS": false,
+     *   "canBeDGW": true,
+     *   "isDCS": false,
+     *   "isDGW": false
+     * }
+     * </pre>
      */
     @POST
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceAppliance.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 201, condition = "Registration Accepted"),
@@ -79,7 +131,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  treated as a conflict, Registration will be rejected in this case.
          */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
         appliance.initDefaults();
 
         // Set the Timestamp
@@ -98,12 +150,51 @@ public class OpenDoveDgwServiceApplianceSouthbound {
         return Response.status(201).entity(appliance).build();
     }
 
-    /*
-     *  REST Handler Function for DGW Heart-Beat
+    /**
+     * oDGW Heartbeat method to oDMC
+     *
+     * @param input
+     *            updated oDGW information in JSON format (uses patch semantics)
+     * @return updated oDGW information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odgw/1
+     * 
+     * Request body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "dgw_config_version": 1
+     * }
+     *
+     * Response body in JSON:
+     * { 
+     *   "ip_family": 0,
+     *   "ip": "1.1.1.1",
+     *   "uuid": "1",
+     *   "dcs_rest_service_port": 0,
+     *   "dgw_rest_service_port": 0,
+     *   "dcs_raw_service_port": 0,
+     *   "timestamp": "Thu Oct 03 14:00:01 PDT 2013",
+     *   "build_version": "",
+     *   "dcs_config_version": 0,
+     *   "dgw_config_version": 1,
+     *   "canBeDCS": false,
+     *   "canBeDGW": true,
+     *   "isDCS": false,
+     *   "isDGW": true
+     * }
+     * </pre>
      */
     @Path("/{dsaUUID}")
     @PUT
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceAppliance.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
@@ -131,7 +222,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  treated as a conflict
          */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
         appliance.initDefaults();
 
         // Set the Timestamp
@@ -144,7 +235,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
             /*
              * Heart-Beat will be accepted only for Registered Appliances
              */
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
         }
 
         return Response.status(200).entity(appliance).build();

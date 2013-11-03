@@ -17,10 +17,13 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBOpenDoveChangeVersionR;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.OpenDoveChange;
 
 /**
  * Open DOVE Southbound REST APIs for DCS Change Version.<br>
@@ -41,10 +44,32 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 
 @Path("/odcs/changeversion")
 public class OpenDoveDcsChangeVersionSouthbound {
-
+    /**
+     * Reports a change set to the oDCS
+     *
+     * @param changeVersion
+     *            integer change version to retrieve
+     * @return method, URI, and next change version to retrieve
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs/changeversion/1
+     *
+     * Response body in JSON:
+     * {
+     *   "next_change": 2,
+     *   "uri": "/controller/sb/v2/opendove/odmc/domains/bynumber/1",
+     *   "method": "GET"
+     * }
+     * </pre>
+     */
     @Path("/{changeVersion}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveChange.class)
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content") })
@@ -61,12 +86,11 @@ public class OpenDoveDcsChangeVersionSouthbound {
         try {
             i_changeVersion = Integer.parseInt(changeVersion);
         } catch (Exception e) {
-            return Response.status(500).build();
+            throw new BadRequestException("Non integer change version");
         }
         if (sbInterface.versionExists(i_changeVersion) == 204 )
             return Response.status(204).build();
         return Response.status(200).entity(sbInterface.getNextOdcsChange(i_changeVersion)).build();
     }
-
 }
 

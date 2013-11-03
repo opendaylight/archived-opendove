@@ -52,7 +52,17 @@
             <plugin>
                 <groupId>org.codehaus.enunciate</groupId>
                 <artifactId>maven-enunciate-plugin</artifactId>
-                <version>{enunciate.version}</version>
+                <version>${enunciate.version}</version>
+          <configuration>
+            <configFile>enunciate.xml</configFile>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>docs</goal>
+              </goals>
+            </execution>
+          </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>

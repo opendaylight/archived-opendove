@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc.rest.southbound;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -23,10 +24,13 @@ import java.util.Calendar;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
+import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.networkconfig.neutron.INeutronPortCRUD;
 import org.opendaylight.controller.networkconfig.neutron.NeutronCRUDInterfaces;
 import org.opendaylight.controller.networkconfig.neutron.NeutronPort;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceConflictException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
@@ -54,15 +58,47 @@ import org.opendaylight.opendove.odmc.OpenDoveSwitch;
 @Path("/switch")
 public class OpenDoveSwitchSouthbound {
 
-    /*
-     *  REST Handler Function for oVS <==> DMC Registration
+    /**
+     * Registers an opendove switch with the oDMC
+     *
+     * @param input
+     *            opendove switch information in JSON format
+     * @return registered opendove switch information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/switch
+     * 
+     * Request body in JSON:
+     * {
+     *   "name": "test_switch",
+     *   "tunnelip": "5.5.5.5",
+     *   "managementip": "6.6.6.6"
+     * }
+     *
+     * Response body in JSON:
+     * {
+     *   "change_version" : 13,
+     *   "create_version" : 13,
+     *   "id" : "5086a907-3107-4cda-8e99-6b67675634b2",
+     *   "name" : "test_switch",
+     *   "tunnelip" : "5.5.5.5",
+     *   "managementip" : "6.6.6.6",
+     *   "timestamp" : "Sun Nov 03 09:03:51 CST 2013"
+     * }
+     * </pre>
      */
     @POST
+    @Consumes({ MediaType.APPLICATION_JSON })
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveSwitch.class)
     @StatusCodes({
-        @ResponseCode(code = 200, condition = "Operation successful"),
         @ResponseCode(code = 201, condition = "Registration Accepted"),
-        @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
+        @ResponseCode(code = 204, condition = "Switch previously registered, no endpoint registration needed"),
+        @ResponseCode(code = 205, condition = "Switch previously registered, endpoint registration required"),
         @ResponseCode(code = 500, condition = "Internal Error") })
     public Response processRegistration (OpenDoveSwitch openDoveSwitch) {
         IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
@@ -87,21 +123,42 @@ public class OpenDoveSwitchSouthbound {
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         openDoveSwitch.setTimestamp(timestamp);
         openDoveSwitch.setUUID(java.util.UUID.randomUUID().toString());
+        openDoveSwitch.setTombstoneFlag(new Boolean(false));
         openDoveSwitch.setReRegister(new Boolean(false));
         sbInterface.addSwitch(openDoveSwitch.getUUID(), openDoveSwitch);
 
         return Response.status(201).entity(openDoveSwitch).build();
     }
 
-    /*
-     *  REST Handler Function for DCS Heart-Beat
+    /**
+     * Heartbeat method for an opendove switch
+     *
+     * @param input
+     *            updated opendove switch information in JSON format
+     * @return none
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/sb/v2/opendove/odmc/switch/5086a907-3107-4cda-8e99-6b67675634b2
+     * 
+     * Request body in JSON:
+     * {
+     *   "name": "test_switch",
+     *   "tunnelip": "5.5.5.5",
+     *   "managementip": "6.6.6.6"
+     * }
+     *
+     * </pre>
      */
     @Path("/{switchUUID}")
     @PUT
-    @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
-        @ResponseCode(code = 200, condition = "Operation successful"),
-        @ResponseCode(code = 409, condition = "Service Appliance IP Address Conflict"),
+        @ResponseCode(code = 204, condition = "No endpoint registration needed"),
+        @ResponseCode(code = 205, condition = "Endpoint registration required"),
+        @ResponseCode(code = 409, condition = "Switch not registered"),
         @ResponseCode(code = 500, condition = "Internal Error") })
 
     public Response procesHeartbeat (
@@ -120,17 +177,17 @@ public class OpenDoveSwitchSouthbound {
          *  treated as a change in IP Address, Infinispan Cache will be updated in this
          *  case.
          *
-         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will
+         *  Heart-Beat from non-existent in DMC Cache will
          *  treated as a conflict
          */
         if (!sbInterface.switchExists(switchUUID))
-            return Response.status(409).build();
+        	throw new ResourceConflictException("Heartbeat not accepted from unregistered switch");
 
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         openDoveSwitch.setTimestamp(timestamp);
 
         sbInterface.updateSwitch(switchUUID, openDoveSwitch);
-        OpenDoveSwitch target = sbInterface.getSwitch(openDoveSwitch.getUUID());
+        OpenDoveSwitch target = sbInterface.getSwitch(switchUUID);
         if (target.getReRegister()) {
             target.setReRegister(false);
             sbInterface.updateSwitch(openDoveSwitch.getUUID(), target);
@@ -138,14 +195,45 @@ public class OpenDoveSwitchSouthbound {
         } else
             return Response.status(204).build();
     }
-     
+
+    /**
+     * Map openstack port to opendove vnid
+     *
+     * @param switchUUID
+     *            UUID of switch making request
+     * @param portUUID
+     *            openstack neutron port UUID
+     * @return opendove network information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://127.0.0.1:8080/controller/sb/v2/opendove/odmc/switch/473931b4-0f79-4139-8af2-87dc100be0de/getVNIDbyPort/100f1214-0000-0000-0000-000000000001
+     * 
+     * Response body in JSON
+     * {
+     *   "is_tombstone" : false,
+     *   "change_version" : 5,
+     *   "create_version" : 5,
+     *   "id" : "892dab23-94c9-4676-94c9-89da84b8cdf1",
+     *   "network_id" : 13586458,
+     *   "name" : "Neutron 0d051418-0f12-0b00-0000-000000000001",
+     *   "domain_uuid" : "e47a1688-ed1d-4163-a3c6-c8be30c714ea",
+     *   "type" : 0
+     * }
+     *
+     * </pre>
+     */
     @Path("/{switchUUID}/getVNIDbyPort/{portUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveNetwork.class)
     @StatusCodes({
         @ResponseCode(code = 204, condition = "No content"),
         @ResponseCode(code = 401, condition = "Unauthorized"),
-        @ResponseCode(code = 404, condition = "Not Found"),
+        @ResponseCode(code = 404, condition = "some Resource Not Found"),
         @ResponseCode(code = 500, condition = "Internal Error") })
     public Response getByPort(
     		@PathParam("switchUUID") String switchUUID,
@@ -158,12 +246,12 @@ public class OpenDoveSwitchSouthbound {
         }
 
         if (!sbInterface.switchExists(switchUUID))
-            return Response.status(404).build();
+        	throw new ResourceNotFoundException("Switch does not exist");
         OpenDoveSwitch oSwitch = sbInterface.getSwitch(switchUUID);
     	
     	INeutronPortCRUD sbNeutronPortInterface = NeutronCRUDInterfaces.getINeutronPortCRUD(this);
     	if (!sbNeutronPortInterface.portExists(portUUID))
-    		return Response.status(404).build();
+        	throw new ResourceNotFoundException("Port does not exist");
     	
     	NeutronPort nPort = sbNeutronPortInterface.getPort(portUUID);
     	
@@ -180,7 +268,7 @@ public class OpenDoveSwitchSouthbound {
     			return Response.status(200).entity(network).build();
     		}
         }
-    	return Response.status(404).build();
+    	throw new ResourceNotFoundException("No OpenDove Network found for port");
     }
 }
 

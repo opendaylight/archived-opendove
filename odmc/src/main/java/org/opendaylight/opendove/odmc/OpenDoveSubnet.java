@@ -3,13 +3,18 @@ package org.opendaylight.opendove.odmc;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 import org.opendaylight.controller.networkconfig.neutron.NeutronNetwork;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 public class OpenDoveSubnet extends OpenDoveObject {
     @XmlElement(name="id")
     String uuid;
@@ -58,11 +63,11 @@ public class OpenDoveSubnet extends OpenDoveObject {
             ans.append(residual[length]);
             octet++;
         }
-        while (octet < 5) {
-            if (octet < 4)
+        while (octet < 4) {
+            ans.append("0");
+            if (octet < 3)
                 ans.append(".");
             octet++;
-            ans.append("0");
         }
         return ans.toString();
     }

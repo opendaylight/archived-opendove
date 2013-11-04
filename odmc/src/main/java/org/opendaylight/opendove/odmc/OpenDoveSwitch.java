@@ -24,7 +24,7 @@ public class OpenDoveSwitch extends OpenDoveObject {
     String timestamp;
 
     Boolean reRegister;
-    
+
     public OpenDoveSwitch() {
     }
 
@@ -69,11 +69,44 @@ public class OpenDoveSwitch extends OpenDoveObject {
         return uuid;
     }
 
-	public Boolean getReRegister() {
-		return reRegister;
-	}
+    public Boolean getReRegister() {
+        return reRegister;
+    }
 
-	public void setReRegister(Boolean reRegister) {
-		this.reRegister = reRegister;
-	}
+    public void setReRegister(Boolean reRegister) {
+        this.reRegister = reRegister;
+    }
+
+    public boolean overwrite(OpenDoveSwitch delta) {
+        boolean answer = false;  // whether we need to update the change version number or not
+        if (delta.getName() != null) {
+            if (!getName().equalsIgnoreCase(delta.getName())) {
+                setName(delta.getName());
+                answer = true;
+            }
+        }
+        if (delta.getTunnelIP() != null) {
+            if (!getTunnelIP().equalsIgnoreCase(delta.getTunnelIP())) {
+                setTunnelIP(delta.getTunnelIP());
+                answer = true;
+            }
+        }
+        if (delta.getMgmtIP() != null) {
+            if (!getMgmtIP().equalsIgnoreCase(delta.getMgmtIP())) {
+                setMgmtIP(delta.getMgmtIP());
+                answer = true;
+            }
+        }
+        if (delta.getTimestamp() != null) {
+            if (!getTimestamp().equalsIgnoreCase(delta.getTimestamp())) {
+                setTimestamp(delta.getTimestamp());
+            }
+        }
+        if (delta.getReRegister() != null) {
+            if (getReRegister() != delta.getReRegister()) {
+                setReRegister(delta.getReRegister());
+            }
+        }
+        return answer;
+    }
 }

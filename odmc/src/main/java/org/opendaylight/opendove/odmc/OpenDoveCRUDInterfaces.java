@@ -53,10 +53,10 @@ public class OpenDoveCRUDInterfaces {
     }
 
     public static IfSBDoveGwIpv4CRUD getIfSBDoveGwIpv4CRUD(Object o) {
-    	IfSBDoveGwIpv4CRUD answer = (IfSBDoveGwIpv4CRUD) ServiceHelper.getGlobalInstance(IfSBDoveGwIpv4CRUD.class, o);
+        IfSBDoveGwIpv4CRUD answer = (IfSBDoveGwIpv4CRUD) ServiceHelper.getGlobalInstance(IfSBDoveGwIpv4CRUD.class, o);
         return answer;
     }
-    
+
     public static IfSBDoveEGWSNATPoolCRUD getIfDoveEGWSNATPoolCRUD(Object o) {
         IfSBDoveEGWSNATPoolCRUD answer = (IfSBDoveEGWSNATPoolCRUD) ServiceHelper.getGlobalInstance(IfSBDoveEGWSNATPoolCRUD.class, o);
         return answer;
@@ -68,12 +68,12 @@ public class OpenDoveCRUDInterfaces {
     }
 
     public static IfSBDoveVGWVNIDMappingCRUD getIfSBDoveVGWVNIDMappingCRUD(Object o) {
-    	IfSBDoveVGWVNIDMappingCRUD answer = (IfSBDoveVGWVNIDMappingCRUD) ServiceHelper.getGlobalInstance(IfSBDoveVGWVNIDMappingCRUD.class, o);
+        IfSBDoveVGWVNIDMappingCRUD answer = (IfSBDoveVGWVNIDMappingCRUD) ServiceHelper.getGlobalInstance(IfSBDoveVGWVNIDMappingCRUD.class, o);
         return answer;
     }
 
-	public static IfOpenDoveSwitchCRUD getIfOpenDoveSwitchCRU(Object o) {
-		IfOpenDoveSwitchCRUD answer = (IfOpenDoveSwitchCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveSwitchCRUD.class, o);
+    public static IfOpenDoveSwitchCRUD getIfOpenDoveSwitchCRU(Object o) {
+        IfOpenDoveSwitchCRUD answer = (IfOpenDoveSwitchCRUD) ServiceHelper.getGlobalInstance(IfOpenDoveSwitchCRUD.class, o);
         return answer;
-	}
+    }
 }

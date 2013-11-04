@@ -42,7 +42,7 @@ import org.opendaylight.opendove.odmc.OpenDoveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyCRUD, IfSBDoveGwIpv4CRUD, 
+public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyCRUD, IfSBDoveGwIpv4CRUD,
     IfSBDoveEGWSNATPoolCRUD, IfSBDoveEGWFwdRuleCRUD, IfSBOpenDoveChangeVersionR, IfSBDoveNetworkSubnetAssociationCRUD {
     private static final Logger logger = LoggerFactory.getLogger(OpenDoveSBInterfaces.class);
     private String containerName = null;
@@ -156,11 +156,11 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
     }
 
     //method to return the object database
-    
+
     public ConcurrentMap<Integer,OpenDoveObject> getObjectDB() {
-    	return objectDB;
+        return objectDB;
     }
-    
+
     /**
      * Function called by the dependency manager when all the required
      * dependencies are satisfied
@@ -380,8 +380,10 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         policyMap.remove(policyUUID);
     }
 
-    public void updatePolicy(OpenDovePolicy policy) {
-        policyMap.update(policy.getUUID(), policy);
+    public void updatePolicy(OpenDovePolicy policy, OpenDovePolicy delta) {
+        if (policy.overwrite(delta)) {
+            policyMap.update(policy.getUUID(), policy);
+        }
     }
 
     // IfSBDoveEGWSNATPool CRUD Methods

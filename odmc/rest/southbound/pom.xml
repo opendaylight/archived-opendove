@@ -137,7 +137,7 @@
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>networkconfig.neutron</artifactId>
             <version>0.4.1-SNAPSHOT</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>org.codehaus.enunciate</groupId>
             <artifactId>enunciate-core-annotations</artifactId>

@@ -10,8 +10,8 @@
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
         <enunciate.version>1.26.2</enunciate.version>
     </properties>
-    
-    
+
+
     <repositories>
         <repository>
             <id>opendaylight-release</id>
@@ -134,7 +134,7 @@
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>networkconfig.neutron</artifactId>
             <version>0.4.1-SNAPSHOT</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>org.codehaus.enunciate</groupId>
             <artifactId>enunciate-core-annotations</artifactId>

@@ -71,7 +71,7 @@ public class OpenDoveSwitchSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/switch
-     * 
+     *
      * Request body in JSON:
      * {
      *   "name": "test_switch",
@@ -118,7 +118,7 @@ public class OpenDoveSwitchSouthbound {
             } else
                 return Response.status(204).entity(openDoveSwitch).build();
         }
-        
+
         // Set the Timestamp, UUID and Registration flag
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         openDoveSwitch.setTimestamp(timestamp);
@@ -143,7 +143,7 @@ public class OpenDoveSwitchSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/switch/5086a907-3107-4cda-8e99-6b67675634b2
-     * 
+     *
      * Request body in JSON:
      * {
      *   "name": "test_switch",
@@ -181,7 +181,7 @@ public class OpenDoveSwitchSouthbound {
          *  treated as a conflict
          */
         if (!sbInterface.switchExists(switchUUID))
-        	throw new ResourceConflictException("Heartbeat not accepted from unregistered switch");
+            throw new ResourceConflictException("Heartbeat not accepted from unregistered switch");
 
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         openDoveSwitch.setTimestamp(timestamp);
@@ -211,7 +211,7 @@ public class OpenDoveSwitchSouthbound {
      *
      * Request URL:
      * http://127.0.0.1:8080/controller/sb/v2/opendove/odmc/switch/473931b4-0f79-4139-8af2-87dc100be0de/getVNIDbyPort/100f1214-0000-0000-0000-000000000001
-     * 
+     *
      * Response body in JSON
      * {
      *   "is_tombstone" : false,
@@ -236,8 +236,8 @@ public class OpenDoveSwitchSouthbound {
         @ResponseCode(code = 404, condition = "some Resource Not Found"),
         @ResponseCode(code = 500, condition = "Internal Error") })
     public Response getByPort(
-    		@PathParam("switchUUID") String switchUUID,
-    		@PathParam("portUUID") String portUUID) {
+            @PathParam("switchUUID") String switchUUID,
+            @PathParam("portUUID") String portUUID) {
         IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
 
         if (sbInterface == null) {
@@ -246,29 +246,29 @@ public class OpenDoveSwitchSouthbound {
         }
 
         if (!sbInterface.switchExists(switchUUID))
-        	throw new ResourceNotFoundException("Switch does not exist");
+            throw new ResourceNotFoundException("Switch does not exist");
         OpenDoveSwitch oSwitch = sbInterface.getSwitch(switchUUID);
-    	
-    	INeutronPortCRUD sbNeutronPortInterface = NeutronCRUDInterfaces.getINeutronPortCRUD(this);
-    	if (!sbNeutronPortInterface.portExists(portUUID))
-        	throw new ResourceNotFoundException("Port does not exist");
-    	
-    	NeutronPort nPort = sbNeutronPortInterface.getPort(portUUID);
-    	
+
+        INeutronPortCRUD sbNeutronPortInterface = NeutronCRUDInterfaces.getINeutronPortCRUD(this);
+        if (!sbNeutronPortInterface.portExists(portUUID))
+            throw new ResourceNotFoundException("Port does not exist");
+
+        NeutronPort nPort = sbNeutronPortInterface.getPort(portUUID);
+
         IfOpenDoveNetworkCRUD sbNetworkInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         if (sbNetworkInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-    	for (OpenDoveNetwork network : sbNetworkInterface.getNetworks()) {
-    		if (network.getNeutronNetwork().equalsIgnoreCase(nPort.getNetworkUUID()) &&
-    				network.getScopingDomain().getAssociatedOSTenantUUID().equalsIgnoreCase(nPort.getTenantID())) {
-    			if (!network.getHostingSwitches().contains(oSwitch))
-    				network.getHostingSwitches().add(oSwitch);
-    			return Response.status(200).entity(network).build();
-    		}
+        for (OpenDoveNetwork network : sbNetworkInterface.getNetworks()) {
+            if (network.getNeutronNetwork().equalsIgnoreCase(nPort.getNetworkUUID()) &&
+                    network.getScopingDomain().getAssociatedOSTenantUUID().equalsIgnoreCase(nPort.getTenantID())) {
+                if (!network.getHostingSwitches().contains(oSwitch))
+                    network.getHostingSwitches().add(oSwitch);
+                return Response.status(200).entity(network).build();
+            }
         }
-    	throw new ResourceNotFoundException("No OpenDove Network found for port");
+        throw new ResourceNotFoundException("No OpenDove Network found for port");
     }
 }
 

@@ -71,7 +71,7 @@ public class OpenDoveDomainNorthbound {
      * }
      * </pre>
      */
-	@Path("{domainUUID}")
+    @Path("{domainUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @TypeHint(OpenDoveDomainRequest.class)
@@ -128,7 +128,7 @@ public class OpenDoveDomainNorthbound {
      * }
      * </pre>
      */
-	@Path("{domainUUID}/odcs-list")
+    @Path("{domainUUID}/odcs-list")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @TypeHint(OpenDoveDCSList.class)
@@ -150,7 +150,7 @@ public class OpenDoveDomainNorthbound {
         if (!sbDomainInterface.domainExists(domainUUID))
             return Response.status(404).build();
         //return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
-          
+
         OpenDoveRestClient sbRestClient = new OpenDoveRestClient(sbDSAInterface, sbDomainInterface);
         return Response.status(200).entity(new OpenDoveDCSList(sbRestClient.getDomainDCSList(domainUUID))).build();
     }
@@ -159,7 +159,7 @@ public class OpenDoveDomainNorthbound {
      * Lists domains
      *
      * @param none
-     * 
+     *
      * @return List of domains
      *
      *         <pre>

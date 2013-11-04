@@ -24,8 +24,8 @@ public interface IfOpenDoveServiceApplianceCRUD {
     public boolean dsaIPConflict(String ip, String uuid);
     public boolean updateDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance input);
 
-	public OpenDoveServiceAppliance getDCSSeed();
+    public OpenDoveServiceAppliance getDCSSeed();
 
-	public void deleteServiceAppliance(String saUUID);
+    public void deleteServiceAppliance(String saUUID);
 
 }

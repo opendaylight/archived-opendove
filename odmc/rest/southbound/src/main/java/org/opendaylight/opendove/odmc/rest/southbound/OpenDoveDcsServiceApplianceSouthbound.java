@@ -67,9 +67,9 @@ public class OpenDoveDcsServiceApplianceSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs
-     * 
+     *
      * Request body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -86,7 +86,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
      * }
      *
      * Response body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -127,12 +127,12 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Registration from Same UUID with a different IP will be accepted - It will be
          *  treated as a change in IP Address, Infinispan Cache will be updated in this
          *  case.
-         *  
-         *  Registration from different UUID with an  IP that already exists in DMC Cache will 
+         *
+         *  Registration from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict, Registration will be rejected in this case.
          */
         if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
-        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+            throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -146,7 +146,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
              //  If the isDCS field is set for the Service Appliance, do an Implicit Role Assignment
              //  which will send the Cluster Details.
              Boolean isDCS  = dcsNode.get_isDCS();
-             
+
              if (isDCS == true ) {
                  OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
                  Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsNode);
@@ -161,14 +161,14 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                         sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
                     }
 
-                    // Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State 
+                    // Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State
                     sbRestClient.sendDcsClusterInfo();
                  }
              }
              // Just Update the Timestamp
              dcsNode.setTimestamp(timestamp);
              sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
-           
+
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
              return Response.status(200).entity(appliance).build();
         } else {
@@ -191,16 +191,16 @@ public class OpenDoveDcsServiceApplianceSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs/1
-     * 
+     *
      * Request body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "dcs_config_version": 1
      * }
      *
      * Response body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -241,12 +241,12 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Heart-Beat from Same UUID with a different IP will be accepted - It will be
          *  treated as a change in IP Address, Infinispan Cache will be updated in this
          *  case.
-         *  
-         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will 
+         *
+         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict
          */
         if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
-        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+            throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
@@ -259,7 +259,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
             /*
              * Heart-Beat will be accepted only for Registered Appliances
              */
-        	throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
+            throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
         }
 
         return Response.status(200).entity(sbInterface.getDoveServiceAppliance(dsaUUID)).build();
@@ -280,7 +280,7 @@ public class OpenDoveDcsServiceApplianceSouthbound {
      * http://localhost:8080/controller/sb/v2/opendove/odmc/odcs/leader
      *
      * Response body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -315,8 +315,8 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         }
         OpenDoveServiceAppliance seed = sbInterface.getDCSSeed();
         if (seed == null)
-        	throw new ResourceNotFoundException("No oDCS has been assigned");
-    	return Response.status(200).entity(seed).build();
+            throw new ResourceNotFoundException("No oDCS has been assigned");
+        return Response.status(200).entity(seed).build();
     }
 }
 

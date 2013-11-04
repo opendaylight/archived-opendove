@@ -25,7 +25,6 @@ import org.opendaylight.controller.northbound.commons.exception.ResourceNotFound
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
-import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
@@ -100,9 +99,9 @@ public class OpenDoveDcsServiceApplianceNorthbound {
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
-            @ResponseCode(code = 409, condition = "DCS is in a Conflicted State"), 
+            @ResponseCode(code = 409, condition = "DCS is in a Conflicted State"),
             @ResponseCode(code = 404, condition = "Not Found"),
-            @ResponseCode(code = 500, condition = "Internal Error") 
+            @ResponseCode(code = 500, condition = "Internal Error")
             })
     public Response nbAssignDcsServiceApplianceRole(
             @PathParam("saUUID") String dsaUUID,
@@ -118,15 +117,15 @@ public class OpenDoveDcsServiceApplianceNorthbound {
             throw new ResourceNotFoundException("could not find service appliance");
 
         if (!request.isSingleton())
-        	throw new BadRequestException("only single requests supported");
-        
+            throw new BadRequestException("only single requests supported");
+
         OpenDoveServiceAppliance delta = request.getSingleton();
         OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(dsaUUID);
         if (delta.get_isDCS() == null)
             throw new BadRequestException("request missing required field");
         if (!dcsAppliance.get_canBeDCS())
-        	throw new BadRequestException("target can not meet request");
-        
+            throw new BadRequestException("target can not meet request");
+
         if (delta.get_isDCS()) {
             // set role
             Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
@@ -138,10 +137,10 @@ public class OpenDoveDcsServiceApplianceNorthbound {
                 sbRestClient.sendDcsClusterInfo();
                 return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
             } else
-            	return Response.status(http_response).build();
+                return Response.status(http_response).build();
         } else {
-        	Integer http_response = sbRestClient.unassignDcsServiceApplianceRole(dcsAppliance);
-        	
+            Integer http_response = sbRestClient.unassignDcsServiceApplianceRole(dcsAppliance);
+
             if ( http_response > 199 || http_response < 300 ) {
                 sbInterface.updateDoveServiceAppliance(dsaUUID, delta);
 
@@ -149,7 +148,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
                 sbRestClient.sendDcsClusterInfo();
                 return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(dsaUUID))).build();
             } else
-            	return Response.status(http_response).build();
+                return Response.status(http_response).build();
         }
     }
 }

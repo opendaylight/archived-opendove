@@ -11,7 +11,6 @@ package org.opendaylight.opendove.odmc.rest.northbound;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -92,7 +91,7 @@ public class OpenDoveSwitchStatsNorthbound {
         OpenDoveSwitchStatsRequest answer = (OpenDoveSwitchStatsRequest)
                 sbInterface.getStats(queryIPAddr, queryVNID, queryMAC);
         if (answer == null) {
-        	return Response.status(204).build();
+            return Response.status(204).build();
         }
         return Response.status(200).entity(answer).build();
     }
@@ -117,7 +116,7 @@ public class OpenDoveSwitchStatsNorthbound {
      * Response body in JSON:
      *          none
      * </pre>
-     */    
+     */
 //    @Path("/ip/{ip}/vnid/{vnid}/mac/{mac}")
     @DELETE
     @Produces({ MediaType.APPLICATION_JSON })

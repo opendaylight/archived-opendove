@@ -13,7 +13,7 @@ import java.util.List;
 public interface IfSBDoveGwIpv4CRUD {
 
     public boolean gwIpv4Exists(String ipv4UUID);
-    
+
     public void addGwIpv4(String ipv4UUID, OpenDoveGwIpv4 ipv4);
 
     public OpenDoveGwIpv4 getGwIpv4(String ipv4UUID);

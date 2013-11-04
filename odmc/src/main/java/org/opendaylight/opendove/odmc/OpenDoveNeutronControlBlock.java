@@ -8,6 +8,8 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.lang.reflect.Method;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -54,5 +56,30 @@ public class OpenDoveNeutronControlBlock {
 
     public void setEgwReplicationFactor(Integer egwReplicationFactor) {
         this.egwReplicationFactor = egwReplicationFactor;
+    }
+
+    public boolean overwrite(OpenDoveNeutronControlBlock delta) {
+        Method[] methods = this.getClass().getMethods();
+
+        for(Method toMethod: methods){
+            if(toMethod.getDeclaringClass().equals(this.getClass())
+                    && toMethod.getName().startsWith("set")){
+
+                String toName = toMethod.getName();
+                String fromName = toName.replace("set", "get");
+
+                try {
+                    Method fromMethod = delta.getClass().getMethod(fromName);
+                    Object value = fromMethod.invoke(delta, (Object[])null);
+                    if(value != null){
+                        toMethod.invoke(this, value);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 }

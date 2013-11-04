@@ -24,22 +24,22 @@ import io.netty.util.Timer;
 import io.netty.util.TimerTask;
 
 public class OpenDoveGC implements TimerTask {
-	private Timer timer;
-	private OpenDoveBidirectionalInterfaces openDoveBidirectionalInterfaces;
-	private OpenDoveSBInterfaces openDoveSBInterfaces;
+    private Timer timer;
+    private OpenDoveBidirectionalInterfaces openDoveBidirectionalInterfaces;
+    private OpenDoveSBInterfaces openDoveSBInterfaces;
 
-	public OpenDoveGC() {
-	    openDoveBidirectionalInterfaces = (OpenDoveBidirectionalInterfaces) ServiceHelper.getGlobalInstance(
-	    		OpenDoveBidirectionalInterfaces.class, this);
-	    openDoveSBInterfaces = (OpenDoveSBInterfaces) ServiceHelper.getGlobalInstance(
-	    		OpenDoveSBInterfaces.class, this);
-	}
-	
-	public void setTimer(Timer t) {
-		timer = t;
-	}
+    public OpenDoveGC() {
+        openDoveBidirectionalInterfaces = (OpenDoveBidirectionalInterfaces) ServiceHelper.getGlobalInstance(
+                OpenDoveBidirectionalInterfaces.class, this);
+        openDoveSBInterfaces = (OpenDoveSBInterfaces) ServiceHelper.getGlobalInstance(
+                OpenDoveSBInterfaces.class, this);
+    }
 
-	public void run(Timeout arg0) throws Exception {
+    public void setTimer(Timer t) {
+        timer = t;
+    }
+
+    public void run(Timeout arg0) throws Exception {
         if (openDoveSBInterfaces != null && openDoveBidirectionalInterfaces != null) {
             ConcurrentMap<Integer, OpenDoveObject> internalCache =
                     openDoveSBInterfaces.getObjectDB();
@@ -67,54 +67,54 @@ public class OpenDoveGC implements TimerTask {
                 }
             }
         }
-    	timer.newTimeout(this, 5000, TimeUnit.MILLISECONDS);
-	}
+        timer.newTimeout(this, 5000, TimeUnit.MILLISECONDS);
+    }
 
-	private void cleanObjectReferences(OpenDoveObject o) {
-		if (o instanceof OpenDoveDomain) {
-			for (OpenDoveNetwork oDN: openDoveBidirectionalInterfaces.getNetworks()) {
-				oDN.removeScopingDomain((OpenDoveDomain) o);
-			}
-			openDoveBidirectionalInterfaces.removeDomain(o.getUUID());
-		}
-		if (o instanceof OpenDoveEGWFwdRule) {
-			openDoveSBInterfaces.removeEgwFwdRule(o.getUUID());
-		}
-		if (o instanceof OpenDoveEGWSNATPool) {
-			openDoveSBInterfaces.removeEgwSNATPool(o.getUUID());
-		}
-		if (o instanceof OpenDoveGwIpv4) {
-			openDoveSBInterfaces.removeGwIpv4(o.getUUID());
-		}
-		if (o instanceof OpenDoveNetwork) {
-			for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {
-				oDD.removeNetwork((OpenDoveNetwork) o);
-				//TODO: if domain only has one EXT_MCAST network left, tombstone the EXT_MCAST network
-				//TODO: if domain has no networks left, tombstone it
-			}
-			openDoveBidirectionalInterfaces.removeNetwork(o.getUUID());
-		}
-		if (o instanceof OpenDoveNetworkSubnetAssociation) {
-			openDoveSBInterfaces.removeNetworkSubnetAssociation(o.getUUID());
-		}
-		if (o instanceof OpenDovePolicy) {
-			openDoveSBInterfaces.removePolicy(o.getUUID());
-		}
-		if (o instanceof OpenDoveSubnet) {
-			for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {
-				oDD.removeSubnet((OpenDoveSubnet) o);
-			}
-			openDoveSBInterfaces.removeSubnet(o.getUUID());
-		}
-		if (o instanceof OpenDoveSwitch) {
-			for (OpenDoveNetwork oDN: openDoveBidirectionalInterfaces.getNetworks()) {
-				oDN.removeHostingSwitch((OpenDoveSwitch) o);
-			}
-			openDoveBidirectionalInterfaces.removeSwitch(o.getUUID());
-		}
-		if (o instanceof OpenDoveVGWVNIDMapping) {
-			openDoveBidirectionalInterfaces.removeVgwVNIDMapping(o.getUUID());
-		}
-	}
+    private void cleanObjectReferences(OpenDoveObject o) {
+        if (o instanceof OpenDoveDomain) {
+            for (OpenDoveNetwork oDN: openDoveBidirectionalInterfaces.getNetworks()) {
+                oDN.removeScopingDomain((OpenDoveDomain) o);
+            }
+            openDoveBidirectionalInterfaces.removeDomain(o.getUUID());
+        }
+        if (o instanceof OpenDoveEGWFwdRule) {
+            openDoveSBInterfaces.removeEgwFwdRule(o.getUUID());
+        }
+        if (o instanceof OpenDoveEGWSNATPool) {
+            openDoveSBInterfaces.removeEgwSNATPool(o.getUUID());
+        }
+        if (o instanceof OpenDoveGwIpv4) {
+            openDoveSBInterfaces.removeGwIpv4(o.getUUID());
+        }
+        if (o instanceof OpenDoveNetwork) {
+            for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {
+                oDD.removeNetwork((OpenDoveNetwork) o);
+                //TODO: if domain only has one EXT_MCAST network left, tombstone the EXT_MCAST network
+                //TODO: if domain has no networks left, tombstone it
+            }
+            openDoveBidirectionalInterfaces.removeNetwork(o.getUUID());
+        }
+        if (o instanceof OpenDoveNetworkSubnetAssociation) {
+            openDoveSBInterfaces.removeNetworkSubnetAssociation(o.getUUID());
+        }
+        if (o instanceof OpenDovePolicy) {
+            openDoveSBInterfaces.removePolicy(o.getUUID());
+        }
+        if (o instanceof OpenDoveSubnet) {
+            for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {
+                oDD.removeSubnet((OpenDoveSubnet) o);
+            }
+            openDoveSBInterfaces.removeSubnet(o.getUUID());
+        }
+        if (o instanceof OpenDoveSwitch) {
+            for (OpenDoveNetwork oDN: openDoveBidirectionalInterfaces.getNetworks()) {
+                oDN.removeHostingSwitch((OpenDoveSwitch) o);
+            }
+            openDoveBidirectionalInterfaces.removeSwitch(o.getUUID());
+        }
+        if (o instanceof OpenDoveVGWVNIDMapping) {
+            openDoveBidirectionalInterfaces.removeVgwVNIDMapping(o.getUUID());
+        }
+    }
 
 }

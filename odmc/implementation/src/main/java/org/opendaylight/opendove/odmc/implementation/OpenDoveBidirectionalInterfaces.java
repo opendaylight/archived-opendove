@@ -1,6 +1,5 @@
 package org.opendaylight.opendove.odmc.implementation;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.EnumSet;
@@ -227,7 +226,7 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
                 candidates.add(appliance);
         }
         if (candidates.size() < 1)
-        	return null;
+            return null;
         return candidates.get(Math.abs(OpenDoveUtils.getNextInt()) % candidates.size());
     }
 
@@ -241,36 +240,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         }
     }
 
-    // this method uses reflection to update an object from it's delta.
-
-    private boolean overwrite(Object target, Object delta) {
-        Method[] methods = target.getClass().getMethods();
-
-        for(Method toMethod: methods){
-            if(toMethod.getDeclaringClass().equals(target.getClass())
-                    && toMethod.getName().startsWith("set")){
-
-                String toName = toMethod.getName();
-                String fromName = toName.replace("set", "get");
-
-                try {
-                    Method fromMethod = delta.getClass().getMethod(fromName);
-                    Object value = fromMethod.invoke(delta, (Object[])null);
-                    if(value != null){
-                        toMethod.invoke(target, value);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     public boolean updateDoveServiceAppliance(String dsaUUID, OpenDoveServiceAppliance input) {
         OpenDoveServiceAppliance target = doveServiceApplianceDB.get(dsaUUID);
-        return overwrite(target, input);
+        return target.overwrite(input);
     }
 
     // code to support domain interfaces (including URI)
@@ -431,7 +403,7 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     }
 
     public void updateNetwork(String networkUUID) {
-    	networkMap.update(networkUUID, networkMap.get(networkUUID));
+        networkMap.update(networkUUID, networkMap.get(networkUUID));
     }
 
     // IfOpenDoveSwitchCRU
@@ -450,8 +422,8 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     public void updateSwitch(String switchUUID, OpenDoveSwitch delta) {
         OpenDoveSwitch target = (OpenDoveSwitch) switchMap.get(switchUUID);
-        overwrite(target, delta);
-        switchMap.update(switchUUID, target);
+        if (target.overwrite(delta))
+            switchMap.update(switchUUID, target);
     }
 
     public List<OpenDoveSwitch> getSwitches() {
@@ -509,8 +481,8 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping delta) {
         OpenDoveVGWVNIDMapping target = (OpenDoveVGWVNIDMapping) vgwVNIDMap.get(mappingUUID);
-        overwrite(target, delta);
-        vgwVNIDMap.update(mappingUUID, target);
+        if (target.overwrite(delta))
+            vgwVNIDMap.update(mappingUUID, target);
     }
 
 }

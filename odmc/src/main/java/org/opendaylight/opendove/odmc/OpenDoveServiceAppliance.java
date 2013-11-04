@@ -9,6 +9,8 @@
 package org.opendaylight.opendove.odmc;
 
 
+import java.lang.reflect.Method;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -32,14 +34,6 @@ import javax.xml.bind.annotation.XmlRootElement;
         {"isDCS",                     BOOLEAN             },
         {"isDGW",                     BOOLEAN             },
 */
-
-
-interface ServiceApplianceType
-{
-    public static final int NONE  = 0;
-    public static final int DCS   = 1;
-    public static final int DGW   = 2;
-}
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
@@ -117,27 +111,27 @@ public class OpenDoveServiceAppliance  {
 
     public Integer getDcsRestServicePort () {
        return dcs_rest_service_port;
-    } 
+    }
 
     public void setDcsRestServicePort (Integer dcs_rest_service_port) {
        this.dcs_rest_service_port = dcs_rest_service_port;
-    } 
+    }
 
     public Integer getDgwRestServicePort () {
        return dgw_rest_service_port;
-    } 
+    }
 
     public void setDgwRestServicePort (Integer dgw_rest_service_port) {
        this.dgw_rest_service_port = dgw_rest_service_port;
-    } 
+    }
 
     public Integer getDcsRawServicePort () {
        return dcs_raw_service_port;
-    } 
+    }
 
     public void setDcsRawServicePort (Integer dcs_raw_service_port) {
        this.dcs_raw_service_port = dcs_raw_service_port;
-    } 
+    }
 
     public String getTimestamp() {
         return timestamp;
@@ -152,7 +146,7 @@ public class OpenDoveServiceAppliance  {
     public void set_build_version(String build_version) {
        this.build_version =  build_version;
     }
-  
+
     public Integer get_dcs_config_version () {
        return dcs_config_version;
     }
@@ -196,6 +190,7 @@ public class OpenDoveServiceAppliance  {
     public void set_isDGW ( Boolean isDGW) {
        this.isDGW = isDGW;
     }
+
     public void initDefaults() {
         ip_family                    = 0;
         ip                           = "";
@@ -211,5 +206,29 @@ public class OpenDoveServiceAppliance  {
         canBeDGW                     = false;
         isDCS                        = false;
         isDGW                        = false;
+    }
+
+    public boolean overwrite(OpenDoveServiceAppliance delta) {
+        Method[] methods = this.getClass().getMethods();
+        for(Method toMethod: methods){
+            if(toMethod.getDeclaringClass().equals(this.getClass())
+                    && toMethod.getName().startsWith("set")){
+
+                String toName = toMethod.getName();
+                String fromName = toName.replace("set", "get");
+
+                try {
+                    Method fromMethod = delta.getClass().getMethod(fromName);
+                    Object value = fromMethod.invoke(delta, (Object[])null);
+                    if(value != null){
+                        toMethod.invoke(this, value);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 }

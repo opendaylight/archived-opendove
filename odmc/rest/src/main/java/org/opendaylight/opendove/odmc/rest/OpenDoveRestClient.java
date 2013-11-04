@@ -27,10 +27,8 @@ import org.codehaus.jettison.json.JSONTokener;
 import org.opendaylight.controller.commons.httpclient.HTTPClient;
 import org.opendaylight.controller.commons.httpclient.HTTPRequest;
 import org.opendaylight.controller.commons.httpclient.HTTPResponse;
-import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
 import org.opendaylight.controller.northbound.commons.exception.InternalServerErrorException;
-import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
@@ -60,13 +58,13 @@ public class OpenDoveRestClient {
 
     public OpenDoveRestClient () {
     }
-    
+
     public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface) {
-    	sbDSAInterface = iface;
+        sbDSAInterface = iface;
     }
 
     public OpenDoveRestClient(IfOpenDoveServiceApplianceCRUD iface1, IfOpenDoveDomainCRUD iface2) {
-    	sbDSAInterface = iface1;
+        sbDSAInterface = iface1;
         sbDomainInterface = iface2;
     }
 
@@ -75,25 +73,25 @@ public class OpenDoveRestClient {
      */
 
     public Integer assignDcsServiceApplianceRole(OpenDoveServiceAppliance appliance) {
-    	JSONObject jo;
-		try {
-			jo = new JSONObject().put("action", "start");
-			return sendJSONObject(jo, appliance);
-		} catch (JSONException e) {
+        JSONObject jo;
+        try {
+            jo = new JSONObject().put("action", "start");
+            return sendJSONObject(jo, appliance);
+        } catch (JSONException e) {
             throw new InternalServerErrorException("Could not set up JSON object for southbound communication");
-		}
+        }
     }
-    
+
     public Integer unassignDcsServiceApplianceRole(OpenDoveServiceAppliance appliance) {
-    	JSONObject jo;
-		try {
-			jo = new JSONObject().put("action", "stop");
-			return sendJSONObject(jo, appliance);
-		} catch (JSONException e) {
+        JSONObject jo;
+        try {
+            jo = new JSONObject().put("action", "stop");
+            return sendJSONObject(jo, appliance);
+        } catch (JSONException e) {
             throw new InternalServerErrorException("Could not set up JSON object for southbound communication");
-		}
+        }
     }
-    
+
     public Integer sendJSONObject(JSONObject jo, OpenDoveServiceAppliance appliance) {
         String  dsaIP   = appliance.getIP();
         Integer dcs_rest_service_port = appliance.getDcsRestServicePort();
@@ -126,11 +124,11 @@ public class OpenDoveRestClient {
         }
     }
     /*
-     *  REST Client Method for Providing DCS Cluster Nodes Details to All DCS Nodes that are 
+     *  REST Client Method for Providing DCS Cluster Nodes Details to All DCS Nodes that are
      *  in Role Assigned State
      *  Return:
      *    1: for Success, if o-DMC receives HTTP_OK(200) from all the Nodes
-     *   -1: failure for All other cases. 
+     *   -1: failure for All other cases.
      */
 
     public Integer sendDcsClusterInfo() {
@@ -177,7 +175,7 @@ public class OpenDoveRestClient {
               retVal = -1;
               return retVal;
         }
-        
+
         iterator = oDCSs.iterator();
 
         while (iterator.hasNext()) {
@@ -208,7 +206,7 @@ public class OpenDoveRestClient {
 
                  if ( (response.getStatus() != 200)  || (response.getStatus() != 204)) {
                      retVal = -1;
-                 } 
+                 }
              } catch (Exception e) {
                  retVal =  -1;
                  return retVal;
@@ -217,7 +215,7 @@ public class OpenDoveRestClient {
         return retVal;
     }
     /*
-     *  REST Client Method for Providing DCS List for a Given Domain 
+     *  REST Client Method for Providing DCS List for a Given Domain
      *  Return:
      */
 
@@ -234,7 +232,7 @@ public class OpenDoveRestClient {
          * {
          *   dcslist:
          *   [
-         *   	{
+         *       {
          *          ip_family                : INTEGER (ex: 2)
          *          ip                       : STRING  (ex: '1.2.3.4'
          *          uuid                     : STRING  (ex: "aa-bb-ccccc")
@@ -243,12 +241,12 @@ public class OpenDoveRestClient {
          *      }
          *   ]
          *  }
-         */ 
+         */
 
         /* Get Domain_id for domain_uuid  */
         OpenDoveDomain domain = sbDomainInterface.getDomain(domainUUID);
         if (domain == null)
-        	return answer;
+            return answer;
         Integer domain_id = Integer.valueOf(domain.getUUID());
         List<OpenDoveServiceAppliance> oDCSs = sbDSAInterface.getRoleAssignedDcsAppliances();
 
@@ -261,14 +259,14 @@ public class OpenDoveRestClient {
 
             if ( dsaIP != null && dcs_rest_service_port != 0 ) {
                break;
-            } 
+            }
         }
         try {
              // execute HTTP request and verify response code
              //String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odmc/odcs/odcslist?domain=" + domain_id;
              String uri = "http://" + dsaIP + ":" + dcs_rest_service_port + "/controller/sb/v2/opendove/odmc/odcs/domains/bynumber/" + domain_id + "/dcslist";
              HTTPRequest request = new HTTPRequest();
-             request.setMethod("GET");  
+             request.setMethod("GET");
              request.setUri(uri);
              System.out.println("4. *********** REST_CLIENT show-dcs list URI" + uri);
              Map<String, List<String>> headers = new HashMap<String, List<String>>();
@@ -289,18 +287,18 @@ public class OpenDoveRestClient {
              JSONObject  json = new JSONObject(jt);
              JSONArray arr = json.getJSONArray("dcslist");
              for (int i = 0; i < arr.length(); i++)
-             {   
+             {
                 OpenDoveServiceAppliance dcs  = new OpenDoveServiceAppliance();
-                
+
                 Integer ip_family             = arr.getJSONObject(i).getInt("ip_family");
                 String ip                     = arr.getJSONObject(i).getString("ip");
                 String uuid                   = arr.getJSONObject(i).getString("uuid");
                 dcs_rest_service_port         = arr.getJSONObject(i).getInt("dcs_rest_service_port");
                 Integer dcs_raw_service_port  = arr.getJSONObject(i).getInt("dcs_raw_service_port");
-                dcs.setIPFamily(ip_family);  
-                dcs.setIP(ip); 
-                dcs.setUUID(uuid); 
-                dcs.setDcsRestServicePort(dcs_rest_service_port); 
+                dcs.setIPFamily(ip_family);
+                dcs.setIP(ip);
+                dcs.setUUID(uuid);
+                dcs.setDcsRestServicePort(dcs_rest_service_port);
                 dcs.setDcsRawServicePort(dcs_raw_service_port);
                 answer.add(dcs);
              }
@@ -315,7 +313,7 @@ public class OpenDoveRestClient {
 
     public Integer assignDgwServiceApplianceRole(OpenDoveServiceAppliance appliance) {
 
-        
+
         String  dsaIP   = appliance.getIP();
         Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
 
@@ -350,19 +348,19 @@ public class OpenDoveRestClient {
         }
     }
 
-	public OpenDoveSwitchStatsRequest getSwitchStats(String queryIPAddr, String queryVNID,
-			String queryMAC) {
-		HTTPRequest request = new HTTPRequest();
-		StringBuilder uri = new StringBuilder();
-		uri.append("http://");
-		uri.append(queryIPAddr);
-		uri.append(":1999/oVS/stats?vnid=");
-		uri.append(queryVNID);
-		if (queryMAC != null) {
-			uri.append("&mac=");
-			uri.append(queryMAC);
-		}
-		request.setUri(uri.toString());
+    public OpenDoveSwitchStatsRequest getSwitchStats(String queryIPAddr, String queryVNID,
+            String queryMAC) {
+        HTTPRequest request = new HTTPRequest();
+        StringBuilder uri = new StringBuilder();
+        uri.append("http://");
+        uri.append(queryIPAddr);
+        uri.append(":1999/oVS/stats?vnid=");
+        uri.append(queryVNID);
+        if (queryMAC != null) {
+            uri.append("&mac=");
+            uri.append(queryMAC);
+        }
+        request.setUri(uri.toString());
         request.setMethod("GET");
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
         //  String authString = "admin:admin";
@@ -376,33 +374,33 @@ public class OpenDoveRestClient {
         headers.put("Accept", header);
         request.setHeaders(headers);
         try {
-			HTTPResponse response = HTTPClient.sendRequest(request);
-			if (response.getStatus() < 200 && response.getStatus() > 299)
-				return null;
-			JAXBContext jc = JAXBContext.newInstance(OpenDoveSwitchStatsRequest.class);
-			Unmarshaller unmarshaller = jc.createUnmarshaller();
-			unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
-			unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
-			OpenDoveSwitchStatsRequest stats = (OpenDoveSwitchStatsRequest) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
-	        return stats;
-		} catch (Exception e) {
-			return null;
-		}
-	}
+            HTTPResponse response = HTTPClient.sendRequest(request);
+            if (response.getStatus() < 200 && response.getStatus() > 299)
+                return null;
+            JAXBContext jc = JAXBContext.newInstance(OpenDoveSwitchStatsRequest.class);
+            Unmarshaller unmarshaller = jc.createUnmarshaller();
+            unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
+            unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
+            OpenDoveSwitchStatsRequest stats = (OpenDoveSwitchStatsRequest) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
+            return stats;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-	public Integer deleteSwitchStats(String queryIPAddr, String queryVNID,
-			String queryMAC) {
-		HTTPRequest request = new HTTPRequest();
-		StringBuilder uri = new StringBuilder();
-		uri.append("http://");
-		uri.append(queryIPAddr);
-		uri.append(":1999/oVS/stats?vnid=");
-		uri.append(queryVNID);
-		if (queryMAC != null) {
-			uri.append("&mac=");
-			uri.append(queryMAC);
-		}
-		request.setUri(uri.toString());
+    public Integer deleteSwitchStats(String queryIPAddr, String queryVNID,
+            String queryMAC) {
+        HTTPRequest request = new HTTPRequest();
+        StringBuilder uri = new StringBuilder();
+        uri.append("http://");
+        uri.append(queryIPAddr);
+        uri.append(":1999/oVS/stats?vnid=");
+        uri.append(queryVNID);
+        if (queryMAC != null) {
+            uri.append("&mac=");
+            uri.append(queryMAC);
+        }
+        request.setUri(uri.toString());
         request.setMethod("DELETE");
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
         //  String authString = "admin:admin";
@@ -414,13 +412,13 @@ public class OpenDoveRestClient {
         //  header = new ArrayList<String>();
         request.setHeaders(headers);
         try {
-			HTTPResponse response = HTTPClient.sendRequest(request);
-			if (response != null)
-				return response.getStatus();
-			return 404;  // nothing found
-		}  catch (Exception e) {
-			return 504;
-		}
-	}
+            HTTPResponse response = HTTPClient.sendRequest(request);
+            if (response != null)
+                return response.getStatus();
+            return 404;  // nothing found
+        }  catch (Exception e) {
+            return 504;
+        }
+    }
 }
 

@@ -60,7 +60,7 @@ public class OpenDovePolicySouthbound {
      * http://127.0.0.1:8080/controller/sb/v2/opendove/odmc/policies/72787da8-f332-4f70-9221-e676cb0e09f6
      *
      * Response body in JSON:
-     * 
+     *
      * {
      *   "policy" : {
      *     "is_tombstone" : false,
@@ -76,7 +76,7 @@ public class OpenDovePolicySouthbound {
      *     "traffic_type" : 0
      *   }
      * }
-     * 
+     *
      * </pre>
      */
     @Path("{policyUUID}")

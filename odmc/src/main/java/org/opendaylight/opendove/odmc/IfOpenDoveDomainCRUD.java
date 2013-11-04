@@ -30,6 +30,6 @@ public interface IfOpenDoveDomainCRUD {
     public boolean domainExistsByNumber(String domainID);
 
     public OpenDoveDomain getDomainByNumber(String domainID);
-    
+
     public void removeDomain(String domainUUID);
 }

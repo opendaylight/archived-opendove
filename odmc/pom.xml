@@ -10,7 +10,7 @@
     <packaging>bundle</packaging>
     <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
-        <enunciate.version>1.26.2</enunciate.version>
+        <checkstyle.version>2.10</checkstyle.version>
     </properties>
 
     <repositories>
@@ -41,11 +41,29 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.enunciate</groupId>
-                <artifactId>maven-enunciate-plugin</artifactId>
-                <version>{enunciate.version}</version>
-            </plugin>
+              <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.version}</version>
+        <executions>
+          <execution>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <failsOnError>true</failsOnError>
+          <configLocation>checkstyle.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectory>${project.basedir}</sourceDirectory>
+          <includes>**\/*.java,**\/*.xml,**\/*.ini,**\/*.sh,**\/*.bat</includes>
+          <excludes>**\/target\/,**\/bin\/</excludes>
+        </configuration>
+      </plugin>
+
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -91,5 +109,10 @@
             <artifactId>commons-net</artifactId>
             <version>3.0.1</version>
         </dependency>
+          <dependency>
+            <groupId>org.opendaylight.controller</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+          </dependency>
     </dependencies>
 </project>

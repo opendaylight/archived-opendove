@@ -64,9 +64,9 @@ public class OpenDoveDgwServiceApplianceSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/odgw
-     * 
+     *
      * Request body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -83,7 +83,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
      * }
      *
      * Response body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -126,12 +126,12 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  Registration from Same UUID with a different IP will be accepted - It will be
          *  treated as a change in IP Address, Infinispan Cache will be updated in this
          *  case.
-         *  
-         *  Registration from different UUID with an  IP that already exists in DMC Cache will 
+         *
+         *  Registration from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict, Registration will be rejected in this case.
          */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
-        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+            throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
         appliance.initDefaults();
 
         // Set the Timestamp
@@ -140,7 +140,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
 
         if (sbInterface.applianceExists(dsaUUID) ) {
              sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
-           
+
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
              return Response.status(200).entity(appliance).build();
         } else {
@@ -163,16 +163,16 @@ public class OpenDoveDgwServiceApplianceSouthbound {
      *
      * Request URL:
      * http://localhost:8080/controller/sb/v2/opendove/odmc/odgw/1
-     * 
+     *
      * Request body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "dgw_config_version": 1
      * }
      *
      * Response body in JSON:
-     * { 
+     * {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "uuid": "1",
@@ -217,12 +217,12 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  Heart-Beat from Same UUID with a different IP will be accepted - It will be
          *  treated as a change in IP Address, Infinispan Cache will be updated in this
          *  case.
-         *  
-         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will 
+         *
+         *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict
          */
         if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
-        	throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+            throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
         appliance.initDefaults();
 
         // Set the Timestamp
@@ -235,7 +235,7 @@ public class OpenDoveDgwServiceApplianceSouthbound {
             /*
              * Heart-Beat will be accepted only for Registered Appliances
              */
-        	throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
+            throw new ResourceConflictException("Heartbeat only accepted from Registered Appliances");
         }
 
         return Response.status(200).entity(appliance).build();

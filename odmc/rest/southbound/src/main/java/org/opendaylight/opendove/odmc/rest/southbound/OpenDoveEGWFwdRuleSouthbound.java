@@ -20,7 +20,6 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
-import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.rest.OpenDoveEGWFwdRuleRequest;
 
@@ -56,7 +55,7 @@ public class OpenDoveEGWFwdRuleSouthbound {
     public Response showRule(
             @PathParam("ruleUUID") String ruleUUID
             ) {
-    	IfSBDoveEGWFwdRuleCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveEGWFwdRuleCRUD(this);
+        IfSBDoveEGWFwdRuleCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveEGWFwdRuleCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -74,7 +73,7 @@ public class OpenDoveEGWFwdRuleSouthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
     public Response listPolicies() {
-    	IfSBDoveEGWFwdRuleCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveEGWFwdRuleCRUD(this);
+        IfSBDoveEGWFwdRuleCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveEGWFwdRuleCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());

@@ -12,8 +12,8 @@ public class OpenDoveUtils {
     public static long getNextLong() {
         return rng.nextLong();
     }
-    
+
     public static int getNextInt() {
-    	return rng.nextInt();
+        return rng.nextInt();
     }
 }

@@ -31,35 +31,35 @@ public class OpenDoveEndpoint {
 
     public OpenDoveEndpoint() { }
 
-	public String getHostIP() {
-		return hostIP;
-	}
+    public String getHostIP() {
+        return hostIP;
+    }
 
-	public void setHostIP(String hostIP) {
-		this.hostIP = hostIP;
-	}
+    public void setHostIP(String hostIP) {
+        this.hostIP = hostIP;
+    }
 
-	public String getMac() {
-		return mac;
-	}
+    public String getMac() {
+        return mac;
+    }
 
-	public void setMac(String mac) {
-		this.mac = mac;
-	}
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
 
-	public String getVirtIP() {
-		return virtIP;
-	}
+    public String getVirtIP() {
+        return virtIP;
+    }
 
-	public void setVirtIP(String virtIP) {
-		this.virtIP = virtIP;
-	}
+    public void setVirtIP(String virtIP) {
+        this.virtIP = virtIP;
+    }
 
-	public String getPhysIP() {
-		return physIP;
-	}
+    public String getPhysIP() {
+        return physIP;
+    }
 
-	public void setPhysIP(String physIP) {
-		this.physIP = physIP;
-	}
+    public void setPhysIP(String physIP) {
+        this.physIP = physIP;
+    }
 }

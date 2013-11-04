@@ -44,7 +44,7 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkRequest;
 
 @Path("/networks")
 public class OpenDoveNetworksNorthbound {
-    
+
     /**
      * Returns a particular network
      *
@@ -146,7 +146,7 @@ public class OpenDoveNetworksNorthbound {
      * Lists networks
      *
      * @param none
-     * 
+     *
      * @return List of networks
      *
      *         <pre>

@@ -58,9 +58,9 @@ public class OpenDoveSubnetSouthbound {
      *
      * Request URL:
      * http://127.0.0.1:8080/controller/sb/v2/opendove/odmc/subnets/8f8226a9-1443-480f-abbc-43ba9f37d223
-     * 
+     *
      * Response body in JSON:
-     * 
+     *
      * {
      *   "subnet" : {
      *     "is_tombstone" : false,
@@ -75,7 +75,7 @@ public class OpenDoveSubnetSouthbound {
      *     "network_ids" : [ "8f53683e-da75-486a-a53a-32c3804a282f" ]
      *   }
      * }
-     *  
+     *
      * </pre>
      */
     @Path("{subnetUUID}")
@@ -116,7 +116,7 @@ public class OpenDoveSubnetSouthbound {
      * http://localhost:8080/controller/sb/v2/opendove/odmc/subnets
      *
      * Response body in JSON:
-     * 
+     *
      * {
      *   "subnets" : [ {
      *     "is_tombstone" : false,
@@ -144,7 +144,7 @@ public class OpenDoveSubnetSouthbound {
      *     "associatedOSSubnetUUID" : "13150214-0513-1400-0000-000000000002"
    } ]
 }
-     * 
+     *
      * </pre>
      */
     @GET

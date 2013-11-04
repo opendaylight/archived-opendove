@@ -61,4 +61,21 @@ public class OpenDoveVGWVNIDMapping extends OpenDoveObject implements IfOpenDGWT
     public String getSBDgwUri() {
         return "/controller/sb/v2/opendove/odmc/vlan-gws/"+uuid;
     }
+
+    public boolean overwrite(OpenDoveVGWVNIDMapping delta) {
+        boolean answer = false; // whether we need to bump change version number or not
+        if (delta.getVnid() != null) {
+            if (getVnid() != delta.getVnid()) {
+                setVnid(delta.getVnid());
+                answer = true;
+            }
+        }
+        if (delta.getGatewayUUID() != null) {
+            if (!getGatewayUUID().equalsIgnoreCase(delta.getGatewayUUID())) {
+                setGatewayUUID(delta.getGatewayUUID());
+                answer = true;
+            }
+        }
+        return answer;
+    }
 }

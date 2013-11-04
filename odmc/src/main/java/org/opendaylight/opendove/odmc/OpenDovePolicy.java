@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 
@@ -152,9 +153,10 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
             if (policy.getSourceVNID() == newODN.getVnid() &&
                     policy.getDestinationVNID() == oldODN.getVnid() &&
                     policy.getPolicyAction() == 1 && policy.getTrafficType() == traffic_type) {
-                policy.setPolicyAction(0);
+                OpenDovePolicy delta = new OpenDovePolicy();
+                delta.setPolicyAction(0);
                 found = true;
-                dovePolicyDB.updatePolicy(policy);
+                dovePolicyDB.updatePolicy(policy, delta);
             }
         }
     }
@@ -177,9 +179,10 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
             if (policy.getSourceVNID() == newODN.getVnid() &&
                     policy.getDestinationVNID() == oldODN.getVnid() &&
                     policy.getPolicyAction() == 0 && policy.getTrafficType() == traffic_type) {
-                policy.setPolicyAction(1);
+                OpenDovePolicy delta = new OpenDovePolicy();
+                delta.setPolicyAction(1);
                 found = true;
-                dovePolicyDB.updatePolicy(policy);
+                dovePolicyDB.updatePolicy(policy, delta);
             }
         }
         if (!found) {
@@ -188,5 +191,30 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
             newPolicy.setTombstoneFlag(false);
             dovePolicyDB.addPolicy(newPolicy.getUUID(), newPolicy);
         }
+    }
+
+    public boolean overwrite(OpenDovePolicy delta) {
+        Method[] methods = this.getClass().getMethods();
+
+        for(Method toMethod: methods){
+            if(toMethod.getDeclaringClass().equals(this.getClass())
+                    && toMethod.getName().startsWith("set")){
+
+                String toName = toMethod.getName();
+                String fromName = toName.replace("set", "get");
+
+                try {
+                    Method fromMethod = delta.getClass().getMethod(fromName);
+                    Object value = fromMethod.invoke(delta, (Object[])null);
+                    if(value != null){
+                        toMethod.invoke(this, value);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

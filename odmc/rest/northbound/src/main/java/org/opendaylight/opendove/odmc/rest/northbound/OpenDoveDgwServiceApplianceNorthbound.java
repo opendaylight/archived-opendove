@@ -132,7 +132,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
 
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(odgwUUID))).build();
     }
-    
+
     /**
      * Gets statistics for a gateway
      *
@@ -150,8 +150,8 @@ public class OpenDoveDgwServiceApplianceNorthbound {
      * Response body in JSON:
      * {
      *     "ovl_to_ext_leave_bytes": "count",
-     *     "ovl_to_ext_leave_pkts": "count", 
-     *     "ovl_to_ext_leave_bps": "count", 
+     *     "ovl_to_ext_leave_pkts": "count",
+     *     "ovl_to_ext_leave_bps": "count",
      *     "ovl_to_ext_leave_pps": "count",
      *     "ext_to_ovl_enter_bytes": "count",
      *     "ext_to_ovl_enter_pkts": "count",
@@ -181,7 +181,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
             ) {
         return Response.status(501).build();
     }
-    
+
     /**
      * Gets session statistics for a gateway
      *
@@ -254,8 +254,8 @@ public class OpenDoveDgwServiceApplianceNorthbound {
      * {
      *     "net_id": "vnid",
      *     "ovl_to_ext_leave_bytes": "count",
-     *     "ovl_to_ext_leave_pkts": "count", 
-     *     "ovl_to_ext_leave_bps": "count", 
+     *     "ovl_to_ext_leave_pkts": "count",
+     *     "ovl_to_ext_leave_bps": "count",
      *     "ovl_to_ext_leave_pps": "count",
      *     "ext_to_ovl_enter_bytes": "count",
      *     "ext_to_ovl_enter_pkts": "count",

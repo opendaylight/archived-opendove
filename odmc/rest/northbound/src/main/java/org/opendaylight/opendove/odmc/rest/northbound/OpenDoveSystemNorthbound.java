@@ -16,7 +16,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
@@ -47,7 +46,7 @@ import org.opendaylight.opendove.odmc.OpenDoveNeutronControlBlock;
 @Path("/system")
 public class OpenDoveSystemNorthbound {
 
-	/**
+    /**
      * Returns the system control block
      *
      * @param none
@@ -103,7 +102,7 @@ public class OpenDoveSystemNorthbound {
      * {
      *    "domain_separation": true
      * }
-     * 
+     *
      * Response body in JSON:
      * {
      *    "domain_separation": true,

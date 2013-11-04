@@ -94,7 +94,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             return Response.status(404).build();
         return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
     }
-    
+
     /**
      * Returns the list of VNID to VLAN mappings
      *
@@ -134,7 +134,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
         }
         return Response.status(200).entity(new OpenDoveVGWVNIDMappingRequest(sbInterface.getVgwVNIDMappings())).build();
     }
-    
+
     /**
      * Creates a new VNID to VLAN mappings
      *
@@ -157,7 +157,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      *     "gatewayUUID": "uuid2"
      *   }
      * }
-     * 
+     *
      * Response body in JSON:
      * {
      *   "vnid_mapping_rule": {
@@ -184,8 +184,8 @@ public class OpenDoveVGWVNIDMappingNorthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (input.isSingleton()) {
-        	OpenDoveVGWVNIDMapping singleton = input.getSingleton();
-        	singleton.setUUID(java.util.UUID.randomUUID().toString());
+            OpenDoveVGWVNIDMapping singleton = input.getSingleton();
+            singleton.setUUID(java.util.UUID.randomUUID().toString());
             sbInterface.addVgwVNIDMapping(singleton.getUUID(), singleton);
         } else {
             /*
@@ -218,7 +218,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      *     "net_id": 110200,
      *   }
      * }
-     * 
+     *
      * Response body in JSON:
      * {
      *   "vnid_mapping_rule": {
@@ -283,7 +283,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      * http://localhost:8080/controller/nb/v2/opendove/odmc/vlan-gws/uuid
      *
      * Request body in JSON: none
-     * 
+     *
      * Response body in JSON: none
      * </pre>
      */

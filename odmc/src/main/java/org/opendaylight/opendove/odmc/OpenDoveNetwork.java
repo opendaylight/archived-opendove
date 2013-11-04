@@ -164,9 +164,9 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     public void addHostingSwitch(OpenDoveSwitch s) {
         hostingSwitches.add(s);
     }
-    
+
     public void removeHostingSwitch(OpenDoveSwitch s) {
-    	hostingSwitches.remove(s);
+        hostingSwitches.remove(s);
     }
 
     public OpenDoveDomain getScopingDomain() {
@@ -176,9 +176,9 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     public void setScopingDomain(OpenDoveDomain d) {
         scopingDomain = d;
     }
-    
+
     public void removeScopingDomain(OpenDoveDomain d) {
-    	if (scopingDomain.equals(d))
-    		scopingDomain = null;
+        if (scopingDomain.equals(d))
+            scopingDomain = null;
     }
 }

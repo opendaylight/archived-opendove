@@ -21,5 +21,5 @@ public interface IfSBDovePolicyCRUD {
 
     public void removePolicy(String policyUUID);
 
-    public void updatePolicy(OpenDovePolicy policy);
+    public void updatePolicy(OpenDovePolicy policy, OpenDovePolicy delta);
 }

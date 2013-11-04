@@ -9,8 +9,6 @@
 package org.opendaylight.opendove.odmc;
 
 import java.util.Iterator;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -166,7 +164,7 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
         Iterator<OpenDoveServiceAppliance> oDSAIterator = oldODN.getEGWs().iterator();
         String ip_low = null, ip_high = null;
         while (oDSAIterator.hasNext()) {
-        	OpenDoveServiceAppliance oDSA = oDSAIterator.next();
+            OpenDoveServiceAppliance oDSA = oDSAIterator.next();
             Integer snatPoolSize = controlBlock.getSnatPoolSize();
             Iterator<NeutronSubnet_IPAllocationPool> poolIterator = neutronSubnet.getAllocationPools().iterator();
             while (poolIterator.hasNext()) {
@@ -210,17 +208,6 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
         return ans;
     }
 
-    static private String convertLongToIPv4String(Long i) {
-        StringBuilder ans = new StringBuilder();
-        while (i > 255) {
-            ans.insert(0, i % 256);
-            i >>= 8;
-            ans.insert(0, ".");
-        }
-        ans.insert(0, i);
-        return ans.toString();
-    }
-
     public static void removeEGWSNATPool(NeutronSubnet neutronSubnet,
             IfSBDoveEGWSNATPoolCRUD snatPoolDB,
             OpenDoveNeutronControlBlock controlBlock, OpenDoveNetwork oldODN) {
@@ -229,14 +216,8 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
             OpenDoveEGWSNATPool snatPool = iterator.next();
             if (oldODN.networkUsesEGW(snatPool.getGatewayUUID()) &&
                     snatPool.getVnid() == oldODN.getVnid()) {
-                long minPool = convertIPv4StringToLong(snatPool.getMinIP());
-                long maxPool = convertIPv4StringToLong(snatPool.getMaxIP());
-                long i;
-                for (i=minPool; i<=maxPool; i++) {
-                    neutronSubnet.releaseIP(convertLongToIPv4String(i));
-                }
                 snatPool.setTombstoneFlag(true);
-              snatPoolDB.updateSNATPool(snatPool.getUUID(), snatPool);
+                snatPoolDB.updateSNATPool(snatPool.getUUID(), snatPool);
             }
         }
     }

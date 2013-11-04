@@ -8,7 +8,6 @@
 
 package org.opendaylight.opendove.odmc.implementation;
 
-import java.lang.reflect.Method;
 import java.util.Dictionary;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentMap;
@@ -135,39 +134,12 @@ public class OpenDoveNBInterfaces implements IfNBSystemRU {
     void stop() {
     }
 
-    // this method uses reflection to update an object from it's delta.
-
-    private boolean overwrite(Object target, Object delta) {
-        Method[] methods = target.getClass().getMethods();
-
-        for(Method toMethod: methods){
-            if(toMethod.getDeclaringClass().equals(target.getClass())
-                    && toMethod.getName().startsWith("set")){
-
-                String toName = toMethod.getName();
-                String fromName = toName.replace("set", "get");
-
-                try {
-                    Method fromMethod = delta.getClass().getMethod(fromName);
-                    Object value = fromMethod.invoke(delta, (Object[])null);
-                    if(value != null){
-                        toMethod.invoke(target, value);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     public OpenDoveNeutronControlBlock getSystemBlock() {
         return systemDB.get("default");
     }
 
     public boolean updateControlBlock(OpenDoveNeutronControlBlock input) {
         OpenDoveNeutronControlBlock target = systemDB.get("default");
-        return overwrite(target, input);
+        return target.overwrite(input);
     }
 }

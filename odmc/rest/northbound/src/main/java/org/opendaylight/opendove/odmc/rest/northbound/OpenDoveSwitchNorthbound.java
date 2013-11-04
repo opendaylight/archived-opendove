@@ -14,7 +14,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlElement;
 
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
@@ -98,7 +97,7 @@ public class OpenDoveSwitchNorthbound {
      * Returns all switches
      *
      * @param none
-     * 
+     *
      * @return List of all switches
      *
      *         <pre>

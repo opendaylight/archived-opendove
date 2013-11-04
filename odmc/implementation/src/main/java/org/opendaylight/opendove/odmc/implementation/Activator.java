@@ -51,20 +51,20 @@ public class Activator extends ComponentActivatorAbstractBase {
      *
      */
     public void init() {
-    	openDoveGC = new OpenDoveGC();
+        openDoveGC = new OpenDoveGC();
         scheduler = new HashedWheelTimer(1000, TimeUnit.MILLISECONDS);
-    	openDoveGC.setTimer(scheduler);
-    	scheduler.newTimeout(openDoveGC, 5000, TimeUnit.MILLISECONDS);
-    	scheduler.start();
+        openDoveGC.setTimer(scheduler);
+        scheduler.newTimeout(openDoveGC, 5000, TimeUnit.MILLISECONDS);
+        scheduler.start();
     }
-    
+
     /**
      * Function called when the activator stops just before the
      * cleanup done by ComponentActivatorAbstractBase
      *
      */
     public void destroy() {
-    	scheduler.stop();
+        scheduler.stop();
     }
 
     /**

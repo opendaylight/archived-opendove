@@ -51,7 +51,7 @@ public class OpenDoveServiceApplianceNorthbound {
      * Returns all service appliances
      *
      * @param none
-     * 
+     *
      * @return List of all service appliances
      *
      *         <pre>
@@ -81,7 +81,7 @@ public class OpenDoveServiceApplianceNorthbound {
      * }
      * </pre>
      */
-	@GET
+    @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @TypeHint(OpenDoveServiceApplianceRequest.class)
     @StatusCodes({
@@ -97,8 +97,8 @@ public class OpenDoveServiceApplianceNorthbound {
         }
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getAppliances())).build();
     }
-	
-	/**
+
+    /**
      * Deletes a particular service appliance
      *
      * @param saUUID
@@ -113,7 +113,7 @@ public class OpenDoveServiceApplianceNorthbound {
      *
      * </pre>
      */
-	@Path("{saUUID}")
+    @Path("{saUUID}")
     @DELETE
     @StatusCodes({
             @ResponseCode(code = 204, condition = "No content"),
@@ -132,11 +132,11 @@ public class OpenDoveServiceApplianceNorthbound {
             return Response.status(404).build();
         OpenDoveServiceAppliance appliance = sbInterface.getDoveServiceAppliance(saUUID);
         if (appliance.get_isDCS() || appliance.get_isDGW())
-        	throw new ResourceConflictException("cannot delete role assigned service appliance");
+            throw new ResourceConflictException("cannot delete role assigned service appliance");
         sbInterface.deleteServiceAppliance(saUUID);
         return Response.status(204).build();
     }
-	
+
     /**
      * Returns a particular service appliance
      *
@@ -171,7 +171,7 @@ public class OpenDoveServiceApplianceNorthbound {
      * }
      * </pre>
      */
-	@Path("{saUUID}")
+    @Path("{saUUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @TypeHint(OpenDoveServiceApplianceRequest.class)

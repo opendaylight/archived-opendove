@@ -33,12 +33,12 @@ public class OpenDoveSwitchStatsRequest {
     }
 
     public OpenDoveSwitchStatsRequest(List<OpenDoveNVP> bulk) {
-    	bulkStats = bulk;
-    	stat = null;
+        bulkStats = bulk;
+        stat = null;
     }
 
     public OpenDoveSwitchStatsRequest(OpenDoveNVP single) {
-    	stat = single;
+        stat = single;
     }
 
     public OpenDoveNVP getSingleton() {

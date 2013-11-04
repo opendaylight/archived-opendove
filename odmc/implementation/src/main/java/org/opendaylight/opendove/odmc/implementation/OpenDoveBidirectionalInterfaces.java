@@ -22,7 +22,6 @@ import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
 import org.opendaylight.opendove.odmc.OpenDoveConcurrentBackedMap;
 import org.opendaylight.opendove.odmc.OpenDoveDomain;
 import org.opendaylight.opendove.odmc.OpenDoveEndpoint;
-import org.opendaylight.opendove.odmc.OpenDoveNVP;
 import org.opendaylight.opendove.odmc.OpenDoveNetwork;
 import org.opendaylight.opendove.odmc.OpenDoveObject;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
@@ -227,7 +226,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
             if (appliance.get_isDCS())
                 candidates.add(appliance);
         }
-        return candidates.get(OpenDoveUtils.getNextInt() % candidates.size());
+        if (candidates.size() < 1)
+        	return null;
+        return candidates.get(Math.abs(OpenDoveUtils.getNextInt()) % candidates.size());
     }
 
     public void deleteServiceAppliance(String saUUID) {

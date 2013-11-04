@@ -38,23 +38,26 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
     @XmlElement(name="action")
     Integer policyAction;
 
-    @XmlElement(name="domain_id")
+    @XmlElement(name="domain_uuid")
     String domainUUID;
 
     @XmlElement(name="traffic_type")
     Integer trafficType;
 
+    Integer domainID;
+
     public OpenDovePolicy() { }
 
-    public OpenDovePolicy(Integer src_vnid, Integer dst_vnid, String dom_UUID, Integer tType) {
-        uuid = java.util.UUID.randomUUID().toString();
-        sourceVNID = src_vnid;
-        destinationVNID = dst_vnid;
-        timeToLive = 1000;
-        policyAction = 1;
-        policyType = 1;
-        domainUUID = dom_UUID;
-        trafficType = tType;
+    public OpenDovePolicy(Integer src_vnid, Integer dst_vnid, String dom_UUID, Integer domain_id, Integer tType) {
+        this.uuid = java.util.UUID.randomUUID().toString();
+        this.sourceVNID = src_vnid;
+        this.destinationVNID = dst_vnid;
+        this.timeToLive = 1000;
+        this.policyAction = 1;
+        this.policyType = 1;
+        this.domainUUID = dom_UUID;
+        this.trafficType = tType;
+        this.domainID = domain_id;
     }
 
     @Override
@@ -128,7 +131,7 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
     }
 
     public String getSBDcsUri() {
-        return "/controller/sb/v2/opendove/odmc/domains/" + domainUUID + "/policy/" + uuid;
+        return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domainID + "/policy/" + uuid;
     }
 
     public static void removeAllowPolicies(IfSBDovePolicyCRUD dovePolicyDB,
@@ -181,7 +184,7 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
         }
         if (!found) {
             OpenDovePolicy newPolicy = new OpenDovePolicy(newODN.getVnid(),
-                    oldODN.getVnid(), newODN.getDomain_uuid(), traffic_type);
+                    oldODN.getVnid(), newODN.getDomain_uuid(), newODN.getDomain_id(), traffic_type);
             newPolicy.setTombstoneFlag(false);
             dovePolicyDB.addPolicy(newPolicy.getUUID(), newPolicy);
         }

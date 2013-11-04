@@ -122,7 +122,7 @@ public class OpenDoveRestClient {
             HTTPResponse response = HTTPClient.sendRequest(request);
             return response.getStatus();
         } catch (Exception e) {
-            throw new BadRequestException("Could not complete SB request for role manipulation");
+            throw new BadRequestException("Could not complete SB request");
         }
     }
     /*

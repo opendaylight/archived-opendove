@@ -131,6 +131,7 @@ static dove_status cli_controller_set(cli_config_t *cli_config)
 		memcpy(data.controller_location.ip6,
 		       cli_config->cli_controller_location.IPv6, 16);
 	}
+	set_dps_appliance_registration_needed(1);
 	data.controller_location.port_http = cli_config->cli_controller_location.port;
 	status = dps_controller_data_msg(&data);
 

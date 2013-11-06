@@ -73,12 +73,11 @@ public class OpenDoveDgwChangeVersionSouthbound {
     @StatusCodes({
             @ResponseCode(code = 200, condition = "Operation successful"),
             @ResponseCode(code = 204, condition = "No content") })
-    public Response getOdcsChange(
+    public Response getOdgwChange(
             @PathParam("changeVersion") String changeVersion
             ) {
         IfSBOpenDoveChangeVersionR sbInterface = OpenDoveCRUDInterfaces.getIfSBOpenDoveChangeVersionR(this);
 
-        System.out.println("********************** Inside getOdgwChange  ^^^^^^^^ ");
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
@@ -91,7 +90,7 @@ public class OpenDoveDgwChangeVersionSouthbound {
         }
         if (sbInterface.versionExists(i_changeVersion) == 204 )
             return Response.status(204).build();
-        return Response.status(200).entity(sbInterface.getNextOdcsChange(i_changeVersion)).build();
+        return Response.status(200).entity(sbInterface.getNextOdgwChange(i_changeVersion)).build();
     }
 
 }

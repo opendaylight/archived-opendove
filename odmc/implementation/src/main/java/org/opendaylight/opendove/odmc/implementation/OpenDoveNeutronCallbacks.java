@@ -56,8 +56,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
     // callbacks for INeutronNetworkAware
 
     public int canCreateNetwork(NeutronNetwork network) {
-        if (network.getAdminStateUp() != null && !network.isAdminStateUp())
+        if (network.getAdminStateUp() != null && !network.isAdminStateUp()) {
             return 400;
+        }
         return 200;
     }
     public void neutronNetworkCreated(NeutronNetwork input) {
@@ -97,8 +98,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
             String networkName = "Ext_MCast_"+vnid;
             OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, domain, 1, "");
             doveNetworkDB.addNetwork(extMCastNet.getUUID(), extMCastNet);
-        } else
+        } else {
             domain = domainDB.getDomainByName(domainName);
+        }
         return domain;
     }
 
@@ -107,8 +109,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
          * transitions forbidden by openDove
          */
         if (delta.getNetworkName() != null || delta.getAdminStateUp() != null ||
-                delta.getShared() != null || delta.getRouterExternal() != null)
+                delta.getShared() != null || delta.getRouterExternal() != null) {
             return 403;
+        }
         return 200;
     }
 
@@ -201,8 +204,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
         /*
          * updates restricted by openDove
          */
-        if (delta.getGatewayIP() != null)
+        if (delta.getGatewayIP() != null) {
             return 403;
+        }
         return 200;
     }
 
@@ -224,7 +228,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
             if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(subnet.getID())) {
                 // need to remove from the domain
                 String domainName = oDS.getDomainUUID();
-                OpenDoveDomain domain = domainDB.getDomainByName(domainName);
+                OpenDoveDomain domain = domainDB.getDomain(domainName);
                 domain.removeSubnet(oDS);
                 // need to remove from the systemdb
                 doveSubnetDB.removeSubnet(oDS.getUUID());
@@ -236,8 +240,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public int canCreatePort(NeutronPort port) {
         // openDove specific requirement on create
-        if (port.getAdminStateUp() != null && !port.isAdminStateUp())
+        if (port.getAdminStateUp() != null && !port.isAdminStateUp()) {
             return 400;
+        }
         return canAllocateEGW(port.getNetworkUUID(), false);
     }
 
@@ -281,8 +286,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public int canUpdatePort(NeutronPort delta, NeutronPort original) {
         // openDove specific things that can't be changed
-        if (delta.getAdminStateUp() != null)
+        if (delta.getAdminStateUp() != null) {
             return 403;
+        }
         return 200;
     }
     public void neutronPortUpdated(NeutronPort port) {
@@ -302,8 +308,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
         /*
          * openDove specific requirement on create
          */
-        if (router.getAdminStateUp() != null && !router.isAdminStateUp())
+        if (router.getAdminStateUp() != null && !router.isAdminStateUp()) {
             return 400;
+        }
         return 200;
     }
 
@@ -316,8 +323,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
         /*
          * attribute changes blocked by openDove
          */
-        if (delta.getAdminStateUp() != null || delta.getExternalGatewayInfo() != null)
+        if (delta.getAdminStateUp() != null || delta.getExternalGatewayInfo() != null) {
             return 403;
+        }
         return 200;
     }
 
@@ -349,8 +357,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
             List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
             Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
             while (iterator.hasNext()) {
-                if (iterator.next().get_isDGW())
+                if (iterator.next().get_isDGW()) {
                     return 200;
+                }
             }
             return 400;
         }
@@ -500,10 +509,11 @@ INeutronRouterAware, INeutronFloatingIPAware {
     public void neutronFloatingIPUpdated(NeutronFloatingIP floatingIP) {
         // if Port-ID is null, look through all EGWFwdRules and set tombstone flag for each
         // if Port-ID is not null, repeat create steps (refactor)
-        if (floatingIP.getPortUUID() == null)
+        if (floatingIP.getPortUUID() == null) {
             OpenDoveEGWFwdRule.removeEgwFwdRulesForFloatingIP(floatingIP, this);
-        else
+        } else {
             OpenDoveEGWFwdRule.mapFloatingIPtoEGWFwdRule(floatingIP, this);
+        }
     }
     public int canDeleteFloatingIP(NeutronFloatingIP floatingIP) {
         // opendove doesn't block anything here
@@ -531,8 +541,9 @@ INeutronRouterAware, INeutronFloatingIPAware {
                     List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
                     Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
                     while (iterator.hasNext()) {
-                        if (iterator.next().get_isDGW())
+                        if (iterator.next().get_isDGW()) {
                             return 200;
+                        }
                     }
                     return 400;
                 }

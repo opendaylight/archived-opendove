@@ -175,11 +175,29 @@ public class OpenDoveDgwServiceApplianceNorthbound {
     @StatusCodes({
         @ResponseCode(code = 200, condition = "Operation successful"),
         @ResponseCode(code = 204, condition = "No content"),
+        @ResponseCode(code = 404, condition = "Not Found"),
         })
     public Response getAllStats(
             @PathParam("odgwUUID") String odgwUUID
             ) {
-        return Response.status(501).build();
+
+
+//        IfOpenDoveDgwStatsCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveDgwCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
+
+        if (!sbInterface.applianceExists(odgwUUID))
+            return Response.status(404).build();
+
+        OpenDoveRestClient client = new OpenDoveRestClient();
+        OpenDoveGWStats answer = client.getDgwAllStats(dgwAppliance, odgwUUID);
+        if (answer == null) {
+            return Response.status(204).build();
+        }
+        return Response.status(200).entity(answer).build();
     }
 
     /**
@@ -194,7 +212,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
      * Example:
      *
      * Request URL:
-     * http://localhost:8080/controller/nb/v2/opendove/odgw/uuid/allstats
+     * http://localhost:8080/controller/nb/v2/opendove/odgw/uuid/session_stats
      *
      * Response body in JSON:
      * {
@@ -228,10 +246,32 @@ public class OpenDoveDgwServiceApplianceNorthbound {
     @StatusCodes({
         @ResponseCode(code = 200, condition = "Operation successful"),
         @ResponseCode(code = 204, condition = "No content"),
+        @ResponseCode(code = 404, condition = "Not Found"),
         })
+
     public Response getSessionStats(
             @PathParam("odgwUUID") String odgwUUID) {
-        return Response.status(501).build();
+        //return Response.status(501).build();
+
+
+        //IfOpenDoveDgwStatsCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveDgwCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+
+        OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
+        if (!sbInterface.applianceExists(odgwUUID))
+            return Response.status(404).build();
+
+        OpenDoveRestClient client = new OpenDoveRestClient();
+
+        OpenDoveGWSessionStatsRequest answer = client.getDgwSessionStats(dgwAppliance, odgwUUID);
+        if (answer == null) {
+            return Response.status(204).build();
+        }
+        return Response.status(200).entity(answer).build();
     }
 
     /**
@@ -283,7 +323,27 @@ public class OpenDoveDgwServiceApplianceNorthbound {
     public Response getVNIDStats(
             @PathParam("odgwUUID") String odgwUUID,
             @PathParam("vnid") String vnid ) {
-        return Response.status(501).build();
+        // return Response.status(501).build();
+
+        //IfOpenDoveDgwStatsCRU sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveDgwCRU(this);
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
+
+        if (!sbInterface.applianceExists(odgwUUID))
+            return Response.status(404).build();
+
+        OpenDoveRestClient client = new OpenDoveRestClient();
+
+        OpenDoveVNIDStats answer = client.getDgwVNIDStats(dgwAppliance, odgwUUID, vnid);
+        if (answer == null) {
+            return Response.status(204).build();
+        }
+        return Response.status(200).entity(answer).build();
     }
+
 }
 

@@ -47,26 +47,26 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     void setClusterContainerService(IClusterContainerServices s) {
         logger.debug("Cluster Service set");
-        this.clusterContainerService = s;
+        clusterContainerService = s;
     }
 
     void unsetClusterContainerService(IClusterContainerServices s) {
-        if (this.clusterContainerService == s) {
+        if (clusterContainerService == s) {
             logger.debug("Cluster Service removed!");
-            this.clusterContainerService = null;
+            clusterContainerService = null;
         }
     }
 
     @SuppressWarnings("deprecation")
     private void allocateCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterContainerService, can't create cache");
             return;
         }
         logger.debug("Creating Cache for OpenDOVE");
         try {
             // DOVE caches
-          this.clusterContainerService.createCache("openDoveServiceAppliances",
+          clusterContainerService.createCache("openDoveServiceAppliances",
                  EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
             logger.error("Southbound Caches couldn't be created for OpenDOVE -  check cache mode");
@@ -78,19 +78,19 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     @SuppressWarnings({ "unchecked", "deprecation" })
     private void retrieveCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterContainerService, can't retrieve cache");
             return;
         }
         logger.debug("Retrieving cache for openDoveServiceAppliances");
-        doveServiceApplianceDB = (ConcurrentMap<String, OpenDoveServiceAppliance>) this.clusterContainerService
+        doveServiceApplianceDB = (ConcurrentMap<String, OpenDoveServiceAppliance>) clusterContainerService
                .getCache("openDoveServiceAppliances");
         if (doveServiceApplianceDB == null) {
             logger.error("Cache couldn't be retrieved for openDoveServiceAppliances");
         }
         logger.debug("Cache was successfully retrieved for openDoveServiceAppliances");
         logger.debug("Retrieving cache for openDoveObjects");
-        objectDB = (ConcurrentMap<Integer, OpenDoveObject>) this.clusterContainerService
+        objectDB = (ConcurrentMap<Integer, OpenDoveObject>) clusterContainerService
                 .getCache("openDoveObjects");
         if (objectDB == null) {
             logger.error("Cache couldn't be retrieved for openDoveSubnets");
@@ -103,12 +103,12 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     @SuppressWarnings("deprecation")
     private void destroyCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterMger, can't destroy cache");
             return;
         }
         logger.debug("Destroying Caches for OpenDove");
-        this.clusterContainerService.destroyCache("openDoveServiceAppliances");
+        clusterContainerService.destroyCache("openDoveServiceAppliances");
     }
 
     private void startUp() {
@@ -124,11 +124,11 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     void init(Component c) {
         Dictionary<?, ?> props = c.getServiceProperties();
         if (props != null) {
-            this.containerName = (String) props.get("containerName");
-            logger.debug("Running containerName: {}", this.containerName);
+            containerName = (String) props.get("containerName");
+            logger.debug("Running containerName: {}", containerName);
         } else {
             // In the Global instance case the containerName is empty
-            this.containerName = "";
+            containerName = "";
         }
         startUp();
     }
@@ -168,8 +168,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
         while (i.hasNext()) {
             OpenDoveServiceAppliance d = i.next();
-            if (d.getIP().compareTo(ip) == 0)
+            if (d.getIP().compareTo(ip) == 0) {
                 return true;
+            }
         }
         return false;
     }
@@ -192,8 +193,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveServiceAppliance> i = doveServiceApplianceDB.values().iterator();
         while (i.hasNext()) {
             OpenDoveServiceAppliance d = i.next();
-            if (d.get_isDCS () == true )
+            if (d.get_isDCS () == true ) {
                 answer.add(d);
+            }
         }
         return answer;
     }
@@ -222,11 +224,13 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     public OpenDoveServiceAppliance getDCSSeed() {
         List<OpenDoveServiceAppliance> candidates = new ArrayList<OpenDoveServiceAppliance>();
         for (OpenDoveServiceAppliance appliance: doveServiceApplianceDB.values()) {
-            if (appliance.get_isDCS())
+            if (appliance.get_isDCS()) {
                 candidates.add(appliance);
+            }
         }
-        if (candidates.size() < 1)
+        if (candidates.size() < 1) {
             return null;
+        }
         return candidates.get(Math.abs(OpenDoveUtils.getNextInt()) % candidates.size());
     }
 
@@ -255,8 +259,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveObject> i = domainMap.values().iterator();
         while (i.hasNext()) {
             OpenDoveDomain d = (OpenDoveDomain) i.next();
-            if (d.getName().compareTo(name) == 0)
+            if (d.getName().compareTo(name) == 0) {
                 return true;
+            }
         }
         return false;
     }
@@ -269,8 +274,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveObject> i = domainMap.values().iterator();
         while (i.hasNext()) {
             OpenDoveDomain d = (OpenDoveDomain) i.next();
-            if (d.getName().compareTo(name) == 0)
+            if (d.getName().compareTo(name) == 0) {
                 return d;
+            }
         }
         return null;
     }
@@ -307,8 +313,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     public boolean domainExistsByNumber(String domainID) {
         for (OpenDoveObject o: domainMap.values()) {
             OpenDoveDomain domain = (OpenDoveDomain) o;
-            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString()))
+            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString())) {
                 return true;
+            }
         }
         return false;
     }
@@ -316,8 +323,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     public OpenDoveDomain getDomainByNumber(String domainID) {
         for (OpenDoveObject o: domainMap.values()) {
             OpenDoveDomain domain = (OpenDoveDomain) o;
-            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString()))
+            if (domainID.equalsIgnoreCase(domain.getCreateVersion().toString())) {
                 return domain;
+            }
         }
         return null;
     }
@@ -336,8 +344,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveObject> i = networkMap.values().iterator();
         while (i.hasNext()) {
             OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getVnid() == vnid)
+            if (n.getVnid() == vnid) {
                 return true;
+            }
         }
         return false;
     }
@@ -350,8 +359,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveObject> i = networkMap.values().iterator();
         while (i.hasNext()) {
             OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getVnid() == vnid)
+            if (n.getVnid() == vnid) {
                 return n;
+            }
         }
         return null;
     }
@@ -360,8 +370,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         Iterator<OpenDoveObject> i = networkMap.values().iterator();
         while (i.hasNext()) {
             OpenDoveNetwork n = (OpenDoveNetwork) i.next();
-            if (n.getName().equals(name))
+            if (n.getName().equals(name)) {
                 return n;
+            }
         }
         return null;
     }
@@ -369,16 +380,18 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
     public void addNetwork(String networkUUID, OpenDoveNetwork network) {
         networkMap.putIfAbsent(networkUUID, network);
         IfOpenDoveDomainCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        if (sbInterface != null)
+        if (sbInterface != null) {
             sbInterface.addNetworkToDomain(network.getDomain_uuid(), network);
+        }
     }
 
     public int allocateVNID() {
         boolean done = false;
         while (!done) {
             long candidateVNID = OpenDoveUtils.getNextLong() & 0x0000000000FFFFFF;
-            if (!networkExistsByVnid((int) candidateVNID))
+            if (!networkExistsByVnid((int) candidateVNID)) {
                 return (int) candidateVNID;
+            }
         }
         return 0;
     }
@@ -422,8 +435,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     public void updateSwitch(String switchUUID, OpenDoveSwitch delta) {
         OpenDoveSwitch target = (OpenDoveSwitch) switchMap.get(switchUUID);
-        if (target.overwrite(delta))
+        if (target.overwrite(delta)) {
             switchMap.update(switchUUID, target);
+        }
     }
 
     public List<OpenDoveSwitch> getSwitches() {
@@ -481,8 +495,8 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
 
     public void updateRule(String mappingUUID, OpenDoveVGWVNIDMapping delta) {
         OpenDoveVGWVNIDMapping target = (OpenDoveVGWVNIDMapping) vgwVNIDMap.get(mappingUUID);
-        if (target.overwrite(delta))
+        if (target.overwrite(delta)) {
             vgwVNIDMap.update(mappingUUID, target);
+        }
     }
-
 }

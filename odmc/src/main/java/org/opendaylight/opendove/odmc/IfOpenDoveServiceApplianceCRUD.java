@@ -27,5 +27,4 @@ public interface IfOpenDoveServiceApplianceCRUD {
     public OpenDoveServiceAppliance getDCSSeed();
 
     public void deleteServiceAppliance(String saUUID);
-
 }

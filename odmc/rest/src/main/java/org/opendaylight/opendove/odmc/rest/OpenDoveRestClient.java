@@ -420,5 +420,164 @@ public class OpenDoveRestClient {
             return 504;
         }
     }
+
+    /*
+     *  REST Client Method for "DGW All stats"
+     */
+
+    public OpenDoveGWStats getDgwAllStats(OpenDoveServiceAppliance appliance, String odgwUUID)
+    {
+
+        String  dsaIP   = appliance.getIP();
+        Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
+
+            //String action = "start";
+            //JSONObject jo = new JSONObject().put("action", action);
+
+            // execute HTTP request and verify response code
+            String uri = "http://" + dsaIP + ":" + dgw_rest_service_port + "/controller/sb/v2/opendove/" + odgwUUID + "/allstats";
+            HTTPRequest request = new HTTPRequest();
+            request.setMethod("GET");
+            request.setUri(uri);
+            //    request.setEntity(jo.toString());
+
+            Map<String, List<String>> headers = new HashMap<String, List<String>>();
+            //  String authString = "admin:admin";
+            //  byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+            //  String authStringEnc = new String(authEncBytes);
+            List<String> header = new ArrayList<String>();
+            //  header.add("Basic "+authStringEnc);
+            //  headers.put("Authorization", header);
+            //  header = new ArrayList<String>();
+
+            //header.add("application/json");
+
+            headers.put("Content-Type", header);
+            headers.put("Accept", header);
+            request.setHeaders(headers);
+
+          try {
+              HTTPResponse response = HTTPClient.sendRequest(request);
+              if (response.getStatus() < 200 && response.getStatus() > 299)
+                return null;
+              JAXBContext jc = JAXBContext.newInstance(OpenDoveGWStats.class);
+              Unmarshaller unmarshaller = jc.createUnmarshaller();
+              unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
+              unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
+              OpenDoveGWStats stats = (OpenDoveGWStats) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
+              return stats;
+          } catch (Exception e) {
+              return null;
+          }
+
+    }
+
+
+    /*
+         *    REST Client Method for "DGW Session stats"
+        */
+
+    public OpenDoveGWSessionStatsRequest getDgwSessionStats(OpenDoveServiceAppliance appliance, String odgwUUID)
+    {
+
+        String  dsaIP = appliance.getIP();
+        Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
+
+        //String action = "start";
+        //JSONObject jo = new JSONObject().put("action", action);
+
+       // execute HTTP request and verify response code
+       String uri = "http://" + dsaIP + ":" + dgw_rest_service_port + "/controller/sb/v2/opendove/" + odgwUUID + "/session_stats";
+       HTTPRequest request = new HTTPRequest();
+       request.setMethod("GET");
+       request.setUri(uri);
+       //  request.setEntity(jo.toString());
+
+       Map<String, List<String>> headers = new HashMap<String, List<String>>();
+      //String authString = "admin:admin";
+      //byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+      //String authStringEnc = new String(authEncBytes);
+       List<String> header = new ArrayList<String>();
+      //header.add("Basic "+authStringEnc);
+      //headers.put("Authorization", header);
+      //header = new ArrayList<String>();
+
+     //header.add("application/json");
+
+       headers.put("Content-Type", header);
+       headers.put("Accept", header);
+       request.setHeaders(headers);
+
+       try {
+          HTTPResponse response = HTTPClient.sendRequest(request);
+          if (response.getStatus() < 200 && response.getStatus() > 299)
+             return null;
+          JAXBContext jc = JAXBContext.newInstance(OpenDoveGWSessionStatsRequest.class);
+          Unmarshaller unmarshaller = jc.createUnmarshaller();
+          unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
+          unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
+          OpenDoveGWSessionStatsRequest stats = (OpenDoveGWSessionStatsRequest) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
+             return stats;
+       } catch (Exception e) {
+            return null;
+       }
+
+}
+
+
+/*
+ *  REST Client Method for "DGW Session stats"
+ */
+//* http://localhost:8080/controller/nb/v2/opendove/odgw/uuid/vnid_stats/vnid
+//    @Path("/{odgwUUID}/vnid_stats/{vnid}")
+
+public OpenDoveVNIDStats getDgwVNIDStats(OpenDoveServiceAppliance appliance, String odgwUUID, String queryVNID)
+{
+    String  dsaIP = appliance.getIP();
+    Integer dgw_rest_service_port = appliance.getDgwRestServicePort();
+
+    //String action = "start";
+    //JSONObject jo = new JSONObject().put("action", action);
+    // execute HTTP request and verify response code
+    String uri = "http://" + dsaIP + ":" + dgw_rest_service_port + "/controller/sb/v2/opendove/" + odgwUUID +
+                "/vnid_stats/" + queryVNID;
+
+    HTTPRequest request = new HTTPRequest();
+    request.setMethod("GET");
+    request.setUri(uri);
+    //  request.setEntity(jo.toString());
+
+    Map<String, List<String>> headers = new HashMap<String, List<String>>();
+    //String authString = "admin:admin";
+    //byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+    //String authStringEnc = new String(authEncBytes);
+    List<String> header = new ArrayList<String>();
+    //header.add("Basic "+authStringEnc);
+    //headers.put("Authorization", header);
+    //header = new ArrayList<String>();
+
+    //header.add("application/json");
+
+    headers.put("Content-Type", header);
+    headers.put("Accept", header);
+    request.setHeaders(headers);
+
+    try {
+       HTTPResponse response = HTTPClient.sendRequest(request);
+       if (response.getStatus() < 200 && response.getStatus() > 299)
+          return null;
+       JAXBContext jc = JAXBContext.newInstance(OpenDoveVNIDStats.class);
+       Unmarshaller unmarshaller = jc.createUnmarshaller();
+       unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
+       unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
+       OpenDoveVNIDStats stats = (OpenDoveVNIDStats) unmarshaller.unmarshal(new StreamSource(new StringReader( response.getEntity())));
+       return stats;
+     } catch (Exception e) {
+         return null;
+    }
+
+}
+
+
 }
 

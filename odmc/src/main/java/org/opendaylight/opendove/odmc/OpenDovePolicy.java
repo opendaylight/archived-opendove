@@ -161,15 +161,15 @@ public class OpenDovePolicy extends OpenDoveObject implements IfOpenDCSTrackedOb
         }
     }
 
-    public static void setAllowPolicies(IfSBDovePolicyCRUD dovePolicyDB,
+    public static void createAllowPolicies(IfSBDovePolicyCRUD dovePolicyDB,
             OpenDoveNetwork newODN, OpenDoveNetwork oldODN) {
-        setAllowPolicy(dovePolicyDB, newODN, oldODN, 0);
-        setAllowPolicy(dovePolicyDB, newODN, oldODN, 1);
-        setAllowPolicy(dovePolicyDB, oldODN, newODN, 0);
-        setAllowPolicy(dovePolicyDB, oldODN, newODN, 1);
+        createAllowPolicy(dovePolicyDB, newODN, oldODN, 0);
+        createAllowPolicy(dovePolicyDB, newODN, oldODN, 1);
+        createAllowPolicy(dovePolicyDB, oldODN, newODN, 0);
+        createAllowPolicy(dovePolicyDB, oldODN, newODN, 1);
     }
 
-    private static void setAllowPolicy(IfSBDovePolicyCRUD dovePolicyDB,
+    private static void createAllowPolicy(IfSBDovePolicyCRUD dovePolicyDB,
             OpenDoveNetwork newODN, OpenDoveNetwork oldODN, int traffic_type) {
         List<OpenDovePolicy> policies = dovePolicyDB.getPolicies();
         Iterator<OpenDovePolicy> policyIterator = policies.iterator();

@@ -412,7 +412,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                     }
                 } else {
                     if (newODN.getDomain_uuid().equalsIgnoreCase(oldODN.getDomain_uuid())) {
-                        OpenDovePolicy.setAllowPolicies(dovePolicyDB, newODN, oldODN);
+                        OpenDovePolicy.createAllowPolicies(dovePolicyDB, newODN, oldODN);
                     }
                 }
             }

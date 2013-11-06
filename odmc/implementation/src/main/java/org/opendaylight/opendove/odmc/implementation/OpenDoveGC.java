@@ -25,8 +25,8 @@ import io.netty.util.TimerTask;
 
 public class OpenDoveGC implements TimerTask {
     private Timer timer;
-    private OpenDoveBidirectionalInterfaces openDoveBidirectionalInterfaces;
-    private OpenDoveSBInterfaces openDoveSBInterfaces;
+    private final OpenDoveBidirectionalInterfaces openDoveBidirectionalInterfaces;
+    private final OpenDoveSBInterfaces openDoveSBInterfaces;
 
     public OpenDoveGC() {
         openDoveBidirectionalInterfaces = (OpenDoveBidirectionalInterfaces) ServiceHelper.getGlobalInstance(
@@ -47,16 +47,18 @@ public class OpenDoveGC implements TimerTask {
             for (Integer i: OpenDoveConcurrentBackedMap.getOrderedBackingKeys(internalCache)) {
                 OpenDoveObject o = internalCache.get(i);
                 if (o != null) {
-                    if (o.getTombstoneFlag()) {
+                    if (canBeRemoved(o)) {
                         boolean purge = true;
                         for (OpenDoveServiceAppliance oDSA: oDSAs) {
                             if (oDSA.get_isDCS()) {
-                                if (oDSA.get_dcs_config_version() < i)
+                                if (oDSA.get_dcs_config_version() < i) {
                                     purge = false;
+                                }
                             }
                             if (oDSA.get_isDGW()) {
-                                if (oDSA.get_dgw_config_version() < i)
+                                if (oDSA.get_dgw_config_version() < i) {
                                     purge = false;
+                                }
                             }
                         }
                         if (purge) {
@@ -68,6 +70,17 @@ public class OpenDoveGC implements TimerTask {
             }
         }
         timer.newTimeout(this, 5000, TimeUnit.MILLISECONDS);
+    }
+
+    private boolean canBeRemoved(OpenDoveObject o) {
+        if (o instanceof OpenDovePolicy) {
+            if (((OpenDovePolicy) o).getPolicyAction() == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return o.getTombstoneFlag();
     }
 
     private void cleanObjectReferences(OpenDoveObject o) {

@@ -51,6 +51,7 @@
 #include "vconn.h"
 #include "vlog.h"
 #include "dhcp.h"
+#include "unaligned.h"
 
 #include "dps_client_common.h"
 #include "dps_pkt.h"
@@ -106,6 +107,7 @@ struct dove_switch {
      * to set up the flow table. */
     const struct ofputil_flow_mod *default_flows;
     size_t n_default_flows;
+    enum ofputil_protocol usable_protocols;
     uint16_t dove_port;
     DC_Address host;
 
@@ -139,6 +141,11 @@ static void add_tunnel_ep(struct dove_switch * sw, uint32_t vnid);
 static int loc_update(uint32_t pIP, uint32_t vnid, uint32_t vIP, uint8_t * vMAC, void * ctx);
 static int pol_resolve(uint32_t vnid, uint32_t vIP, void * ctx);
 int dpsa_response(void* rsp);
+static void send_dhcp_reply(struct dove_switch *sw,
+			    struct ofputil_packet_in *pi, 
+			    struct in_addr *vIP,
+			    struct in_addr *gw, 
+			    struct in_addr *mask);
 
 /* Creates and returns a new learning switch whose configuration is given by
  * 'cfg'.
@@ -198,6 +205,7 @@ dove_switch_create(struct rconn *rconn,
 
     sw->default_flows = cfg->default_flows;
     sw->n_default_flows = cfg->n_default_flows;
+    sw->usable_protocols = cfg->usable_protocols;
 
     sw->queued = rconn_packet_counter_create();
 
@@ -213,7 +221,6 @@ lswitch_handshake(struct dove_switch *sw)
 
     protocol = ofputil_protocol_from_ofp_version(rconn_get_version(sw->rconn));
     if (sw->default_flows) {
-        enum ofputil_protocol usable_protocols;
         struct ofpbuf *msg = NULL;
         int error = 0;
         size_t i;
@@ -225,10 +232,8 @@ lswitch_handshake(struct dove_switch *sw)
          * This could be improved by actually negotiating a mutually acceptable
          * flow format with the switch, but that would require an asynchronous
          * state machine.  This version ought to work fine in practice. */
-        usable_protocols = ofputil_flow_mod_usable_protocols(
-            sw->default_flows, sw->n_default_flows);
-        if (!(protocol & usable_protocols)) {
-            enum ofputil_protocol want = rightmost_1bit(usable_protocols);
+	if (!(protocol & sw->usable_protocols)) {
+            enum ofputil_protocol want = rightmost_1bit(sw->usable_protocols);
             while (!error) {
                 msg = ofputil_encode_set_protocol(protocol, want, &protocol);
                 if (!msg) {
@@ -237,7 +242,7 @@ lswitch_handshake(struct dove_switch *sw)
                 error = rconn_send(sw->rconn, msg, NULL);
             }
         }
-        if (protocol & usable_protocols) {
+        if (protocol & sw->usable_protocols) {
             for (i = 0; !error && i < sw->n_default_flows; i++) {
                 msg = ofputil_encode_flow_mod(&sw->default_flows[i], protocol);
                 error = rconn_send(sw->rconn, msg, NULL);
@@ -419,20 +424,6 @@ dswitch_process_packet(struct dove_switch *sw, struct ofpbuf *msg)
     case OFPTYPE_GET_ASYNC_REPLY:
     case OFPTYPE_SET_ASYNC_CONFIG:
     case OFPTYPE_METER_MOD:
-    case OFPTYPE_GROUP_REQUEST:
-    case OFPTYPE_GROUP_REPLY:
-    case OFPTYPE_GROUP_DESC_REQUEST:
-    case OFPTYPE_GROUP_DESC_REPLY:
-    case OFPTYPE_GROUP_FEATURES_REQUEST:
-    case OFPTYPE_GROUP_FEATURES_REPLY:
-    case OFPTYPE_METER_REQUEST:
-    case OFPTYPE_METER_REPLY:
-    case OFPTYPE_METER_CONFIG_REQUEST:
-    case OFPTYPE_METER_CONFIG_REPLY:
-    case OFPTYPE_METER_FEATURES_REQUEST:
-    case OFPTYPE_METER_FEATURES_REPLY:
-    case OFPTYPE_TABLE_FEATURES_REQUEST:
-    case OFPTYPE_TABLE_FEATURES_REPLY:
     default:
         if (VLOG_IS_DBG_ENABLED()) {
             char *s = ofp_to_string(msg->data, msg->size, 2);
@@ -461,7 +452,8 @@ send_features_request(struct dove_switch *sw)
     /* Send OFPT_SET_CONFIG. */
     b = ofpraw_alloc(OFPRAW_OFPT_SET_CONFIG, ofp_version, sizeof *osc);
     osc = ofpbuf_put_zeros(b, sizeof *osc);
-    osc->miss_send_len = htons(OFP_DEFAULT_MISS_SEND_LEN);
+    //osc->miss_send_len = htons(OFP_DEFAULT_MISS_SEND_LEN);
+    osc->miss_send_len = htons(1024);
     queue_tx(sw, b);
 
     /* Set PACKET_IN to NXM */
@@ -556,9 +548,9 @@ static bool extract_ids(struct dove_switch *sw,
 			uint32_t *groupID)
 {
   if (pi->fmd.regs[0] != 0L) {
-    // Non zero reg0 means that it contains domainID
-    *domainID = pi->fmd.regs[0];
-    *groupID = pi->fmd.regs[1];
+    // Non zero reg0 means that it contains groupID
+    *domainID = 123;
+    *groupID = pi->fmd.regs[0];
     return true;
   } else if ((pi->fmd.in_port == sw->dove_port) &&
 	     (pi->fmd.tun_id != 0)) {
@@ -569,11 +561,29 @@ static bool extract_ids(struct dove_switch *sw,
     return true;
   }
   else {
-    printf("logical ID extraction failed for in_port = %d, rule.flow.regs[0] = %x, rule.flow.regs[1] = %dtun id %Lx\n", pi->fmd.in_port, pi->fmd.regs[0],
-	   pi->fmd.regs[1], pi->fmd.tun_id);
+    printf("logical ID extraction failed for in_port = %d, rule.flow.regs[0] = %x,tun id %Lx\n", pi->fmd.in_port, pi->fmd.regs[0],
+	   pi->fmd.tun_id);
 
     return false;
   }
+}
+
+static int get_net_info(struct ofputil_packet_in *pi,
+			struct in_addr * ip,
+			struct in_addr * gw,
+			struct in_addr * mask)
+{  
+  if((pi->fmd.regs[1] != 0) && (pi->fmd.regs[2] != 0) && (pi->fmd.regs[3] != 0)) {
+    ip->s_addr = htonl(pi->fmd.regs[1]);
+    mask->s_addr = htonl(pi->fmd.regs[2]);
+    gw->s_addr = htonl(pi->fmd.regs[3]);
+    
+    printf("Found VM inforamtion: IP "IP_FMT" mask "IP_FMT" gateway "IP_FMT" \n", IP_ARGS(ip->s_addr), IP_ARGS(mask->s_addr), IP_ARGS(gw->s_addr));
+
+    return 0;
+  }
+
+  return -1;
 }
 
 static bool
@@ -587,6 +597,7 @@ process_packet_in(struct dove_switch *sw, struct ofpbuf *msg)
     struct flow flow;
     DC_PolicyKey key;
     struct packet_in_params * params;
+    union flow_in_port in_port_;
 
     error = ofputil_decode_packet_in(&pi, oh);
     if (error) {
@@ -605,7 +616,8 @@ process_packet_in(struct dove_switch *sw, struct ofpbuf *msg)
 
     /* Extract flow data from 'opi' into 'flow'. */
     ofpbuf_use_const(&pkt, pi.packet, pi.packet_len);
-    flow_extract(&pkt, 0, 0, NULL, pi.fmd.in_port, &flow);
+    in_port_.ofp_port = pi.fmd.in_port;
+    flow_extract(&pkt, 0, 0, NULL, &in_port_, &flow);
     flow.tunnel.tun_id = pi.fmd.tun_id;
 
     if(!extract_ids(sw, &pi, &domainID, &groupID)) {
@@ -618,27 +630,6 @@ process_packet_in(struct dove_switch *sw, struct ofpbuf *msg)
         add_tunnel_ep(sw, groupID);
     }
 
-    if(ntohs(flow.dl_type) == ETH_TYPE_IP &&
-       flow.nw_proto == IPPROTO_UDP &&
-       ntohs(flow.tp_src) == DHCP_CLIENT_PORT &&
-       ntohs(flow.tp_dst) == DHCP_SERVER_PORT) {
-      // char vNIC_ID[8] = {0, 0, ETH_ADDR_ARGS(flow.dl_src)};
-      // DC_Address address = {.kind = IPv4};
-
-      printf("[DISABLED for DCS] Catching dhcp request - ignore\n");
-
-      // enqueue_vip_request(dps, domainID, *((uint64_t *)vNIC_ID), params);
-
-      return false;
-    }
-
-    /* Extract flow data from 'opi' into 'flow'. */
-    if (flow.nw_src == 0L || flow.nw_dst == 0L) {
-      printf("Ignoring the packet: flow.nw_src == 0L || flow.nw_dst == 0L\n");
-      return false;
-    }
-
-
     // 1. if not done yet for this key, QUERY DPS
     // 2. proceed with code below after policy arrives
 
@@ -648,24 +639,53 @@ process_packet_in(struct dove_switch *sw, struct ofpbuf *msg)
     key.source.addr.ipv4.s_addr = flow.nw_src;
     key.target.addr.ipv4.s_addr = flow.nw_dst;
 
-    if (pi.fmd.in_port != sw->dove_port) {
-        // do location update
+    if (flow.nw_src != 0L && flow.nw_dst != 0L)
+        if (pi.fmd.in_port != sw->dove_port) {
+            // do location update
 
-        printf("%s location update:vMAC "ETH_ADDR_FMT" vIP "IP_FMT
-                " on pIP "IP_FMT"\n",
-                (flow.nw_src == 0 ? "PARTIAL" : "FULL"),
-                ETH_ADDR_ARGS(flow.dl_src),
-                IP_ARGS(key.source.addr.ipv4.s_addr),
-                IP_ARGS(sw->host.addr.ipv4.s_addr));
+            printf("%s location update:vMAC "ETH_ADDR_FMT" vIP "IP_FMT
+                    " on pIP "IP_FMT"\n",
+                    (flow.nw_src == 0 ? "PARTIAL" : "FULL"),
+                    ETH_ADDR_ARGS(flow.dl_src),
+                    IP_ARGS(key.source.addr.ipv4.s_addr),
+                    IP_ARGS(sw->host.addr.ipv4.s_addr));
 
-        loc_update(
-            ntohl(sw->host.addr.ipv4.s_addr),
-            groupID,
-            ntohl(flow.nw_src),
-            flow.dl_src,
-            0
-        );
+            loc_update(
+                ntohl(sw->host.addr.ipv4.s_addr),
+                groupID,
+                ntohl(flow.nw_src),
+                flow.dl_src,
+                0
+            );
+        }
+
+    if(ntohs(flow.dl_type) == ETH_TYPE_IP &&
+       flow.nw_proto == IPPROTO_UDP &&
+       ntohs(flow.tp_src) == DHCP_CLIENT_PORT &&
+       ntohs(flow.tp_dst) == DHCP_SERVER_PORT)
+    {
+      struct in_addr ip, gw, mask;
+      
+        // char vNIC_ID[8] = {0, 0, ETH_ADDR_ARGS(flow.dl_src)};
+        // DC_Address address = {.kind = IPv4};
+        //printf("[DISABLED for DCS] Catching dhcp request - ignore\n");
+        // enqueue_vip_request(dps, domainID, *((uint64_t *)vNIC_ID), params);
+
+      if (get_net_info(&pi, &ip, &gw, &mask ))
+	{
+	  printf("Failed locating remaining IPv4 guest configuration, skipping DHCP reply\n");
+	  return false;
+	}
+      send_dhcp_reply(sw, &pi, &ip, &gw, &mask);
+      return false;
     }
+
+    /* Extract flow data from 'opi' into 'flow'. */
+    if (flow.nw_src == 0L || flow.nw_dst == 0L) {
+      printf("Ignoring the packet: flow.nw_src == 0L || flow.nw_dst == 0L\n");
+      return false;
+    }
+
 
     printf("Query DPS %ld:%d "IP_FMT" ==> "IP_FMT"\n",
 	   (long int) domainID,
@@ -702,6 +722,7 @@ forward_pkt(struct dove_switch *sw,
   struct ofpbuf *buffer;
   uint32_t domainID, groupID;
   bool fromDove;
+  union flow_in_port in_port_;
 
   error = ofputil_decode_packet_in(&pi, oh);
   if (error) {
@@ -719,7 +740,8 @@ forward_pkt(struct dove_switch *sw,
   }
 
   ofpbuf_use_const(&pkt, pi.packet, pi.packet_len);
-  flow_extract(&pkt, 0, 0, NULL, pi.fmd.in_port, &flow);
+  in_port_.ofp_port = pi.fmd.in_port;
+  flow_extract(&pkt, 0, 0, NULL, &in_port_, &flow);
 
   /* generate ARP reply to in_port */
   if(ntohs(flow.dl_type) == ETH_TYPE_ARP) {
@@ -740,9 +762,9 @@ forward_pkt(struct dove_switch *sw,
     memcpy(reply->ar_tha, reply->ar_sha, ETH_ADDR_LEN);
     memcpy(reply->ar_sha, policy->vMAC, ETH_ADDR_LEN);
 
-    ar_spa = reply->ar_tpa;
-    reply->ar_tpa = reply->ar_spa;
-    reply->ar_spa = ar_spa;
+    ar_spa = get_16aligned_be32(&reply->ar_tpa);
+    put_16aligned_be32(&reply->ar_tpa, get_16aligned_be32(&reply->ar_spa));
+    put_16aligned_be32(&reply->ar_spa , ar_spa);
 
     ofpbuf_use_stack(&ofpacts, ofpacts_stub, sizeof ofpacts_stub);
     ofpact_put_OUTPUT(&ofpacts)->port = pi.fmd.in_port;
@@ -760,7 +782,7 @@ forward_pkt(struct dove_switch *sw,
 
     printf("Forward ARP reply to port %d: "IP_FMT" is at "ETH_ADDR_FMT"\n",
 	   pi.fmd.in_port,
-	   IP_ARGS(reply->ar_spa),
+	   IP_ARGS(get_16aligned_be32(&reply->ar_spa)),
 	   ETH_ADDR_ARGS(reply->ar_sha));
 
     return;
@@ -862,7 +884,7 @@ forward_pkt(struct dove_switch *sw,
   fm.priority = 65535;
   fm.table_id = 0xff;
   fm.command = OFPFC_ADD;
-  fm.idle_timeout = 5;
+  fm.hard_timeout = fm.idle_timeout = policy->ttl;
   fm.buffer_id = pi.buffer_id;
   fm.out_port = OFPP_NONE;
   fm.ofpacts = ofpacts.data;
@@ -1060,7 +1082,6 @@ int dpsa_response(void* rsp)
 
     switch (rspType)
     {
-        case DPS_ENDPOINT_LOC_REPLY:
         case DPS_UNSOLICITED_ENDPOINT_LOC_REPLY:
             break;
 
@@ -1086,7 +1107,7 @@ int dpsa_response(void* rsp)
 
                     memcpy(policy.vMAC, p_loc_reply->mac, 6);
                     policy.host.addr.ipv4.s_addr = ntohl(p_loc_reply->tunnel_info.tunnel_list[0].ip4);
-
+		    policy.ttl = policy_reply->dps_policy_info.ttl;
                     dove_policy_cb(&key, &policy, 0, p_context);
                 }
                 else
@@ -1113,7 +1134,7 @@ int dpsa_response(void* rsp)
         case DPS_MCAST_RECEIVER_DS_LIST:
         case DPS_REG_DEREGISTER_ACK:
         case DPS_UNSOLICITED_VNID_DEL_REQ:
-
+        case DPS_ENDPOINT_LOC_REPLY:
             break;
 
         default:
@@ -1141,13 +1162,12 @@ static unsigned short checksum(unsigned short * buffer, int bytes)
     return ~sum;
 }
 
-static unsigned char msg_type = 2;
-
-void vip_cb(DC_Address srcIp, void *opaque)
+static void send_dhcp_reply(struct dove_switch *sw,
+			    struct ofputil_packet_in *pi, 
+			    struct in_addr *vIP,
+			    struct in_addr *gw, 
+			    struct in_addr *mask)
 {
-  struct packet_in_params * params = (struct packet_in_params *) opaque;
-  const struct ofp_header *oh = params->msg->data;
-  struct ofputil_packet_in pi;
   struct ofputil_packet_out po;
   uint64_t ofpacts_stub[64 / 8];
   struct ofpbuf ofpacts;
@@ -1159,23 +1179,17 @@ void vip_cb(DC_Address srcIp, void *opaque)
   struct dhcp_header *dhcp;
   unsigned char * options;
   uint32_t domainID, groupID;
-  enum ofperr error;
+  uint32_t buf[256];
+  union flow_in_port in_port_;
 
-  error = ofputil_decode_packet_in(&pi, oh);
-  if (error) {
-    VLOG_WARN_RL(&rl, "failed to decode packet-in: %s",
-		 ofperr_to_string(error));
-
-    return;
-  }
-
-  if(!extract_ids(params->sw, &pi, &domainID, &groupID)) {
+  if(!extract_ids(sw, pi, &domainID, &groupID)) {
        VLOG_ERR("Failed to extract IDs on policy resolution\n");
        return;
   }
 
-  ofpbuf_use_const(&pkt, pi.packet, pi.packet_len);
-  flow_extract(&pkt, 0, 0, NULL, pi.fmd.in_port, &flow);
+  ofpbuf_use_const(&pkt, pi->packet, pi->packet_len);
+  in_port_.ofp_port = pi->fmd.in_port;
+  flow_extract(&pkt, 0, 0, NULL, &in_port_, &flow);
 
   if(!(ntohs(flow.dl_type) == ETH_TYPE_IP &&
      flow.nw_proto == IPPROTO_UDP &&
@@ -1183,11 +1197,10 @@ void vip_cb(DC_Address srcIp, void *opaque)
        ntohs(flow.tp_dst) == DHCP_SERVER_PORT)) {
     printf("Error vip CB on non DHCP request\n");
   } else {
-    //   ofpbuf_use_const(&pkt, opi,  sizeof *opi + 590);
-/*     ofpbuf_use_const(&pkt, opi,  sizeof *opi +  */
-/* 		     ROUND_UP(ntohs(opi->match_len),8) + 2 +  */
-/* 		     IP_HEADER_LEN + ETH_HEADER_LEN +  */
-/* 		     sizeof(struct udp_header) + sizeof *dhcp + ); */
+
+     ofpbuf_use_stack(&pkt, buf, 1024);
+
+     memcpy(pkt.data, pi->packet, pi->packet_len);
 
     eth = pkt.data;
 
@@ -1198,8 +1211,8 @@ void vip_cb(DC_Address srcIp, void *opaque)
     eth->eth_src[5]++;
 
     ip =(struct ip_header *)((char *)eth + ETH_HEADER_LEN);
-    ip->ip_src = inet_addr("10.0.2.2"); //srcIp.addr.ipv4.s_addr + 1;
-    ip->ip_dst = srcIp.addr.ipv4.s_addr;
+    put_16aligned_be32(&ip->ip_src, inet_addr("10.0.2.2")); //vIP.addr.ipv4.s_addr + 1;
+    put_16aligned_be32(&ip->ip_dst, vIP->s_addr);
 
     ip->ip_csum = 0;
     ip->ip_csum = checksum((unsigned short *)ip, IP_HEADER_LEN);
@@ -1214,70 +1227,77 @@ void vip_cb(DC_Address srcIp, void *opaque)
     udp->udp_src = htons(DHCP_SERVER_PORT);
     udp->udp_dst = htons(DHCP_CLIENT_PORT);
 
-    dhcp = ofpbuf_pull(&pkt, DHCP_HEADER_LEN);
+    dhcp = (struct dhcp_header *)((char *)eth + ETH_HEADER_LEN + IP_HEADER_LEN + UDP_HEADER_LEN);
 
     options = ((unsigned char *)dhcp) + DHCP_HEADER_LEN; //pkt.data - 10; //ofpbuf_pull(&pkt, 0);//pkt.size);
 
     *(uint32_t *)options = htonl(0x63825363);
     options += 4;
 
+    /* type of packet */
     options[0] = 53;
     options[1] = 1;
-    options[2] = msg_type;
-
-    if(msg_type == 2) {
-      msg_type = 5;
-    } else {
-      msg_type = 2;
-    }
+    if (options[2] == 1) options[2]=2;
+    else if (options[2] == 3) options[2]=5;
+       else
+       {
+           printf("neither 1 nor 3 DHCP msg type received, skipping\n");
+           goto bail;
+       }
 
     options += 3;
 
+    /* subnet mask */
     options[0] = 1;
     options[1] = 4;
     options += 2;
-    *(uint32_t *)options = inet_addr("0.0.0.0");
+    *(uint32_t *)options = mask->s_addr;
     options += 4;
 
+    /* Router */
     options[0] = 3;
     options[1] = 4;
     options += 2;
-    *(uint32_t *)options = inet_addr("0.0.0.0"); //10.0.2.2");
+    *(uint32_t *)options = gw->s_addr;
     options += 4;
 
+    /* DNS IP */
     //options[0] = 6;
     //options[1] = 4;
     //options += 2;
     //*(uint32_t *)options = inet_addr("10.0.2.2");
     //options += 4;
 
+    /* Domain Name */
     //options[0] = 15;
     //options[1] = 13;
     //options += 2;
     //strncpy(options, "haifa.ibm.com", 13);
     //options += 13;
 
+    /* Lease time */
     options[0] = 51;
     options[1] = 4;
     options += 2;
     *(uint32_t *)options = htonl(86400);
     options += 4;
 
-    //options[0] = 54;
-    //options[1] = 4;
-    //options += 2;
-    //*(uint32_t *)options = inet_addr("10.0.2.2");
-    //options += 4;
+    /* DHCP Server IP */
+    options[0] = 54;
+    options[1] = 4;
+    options += 2;
+    *(uint32_t *)options = inet_addr("10.0.2.2");
+    options += 4;
 
     *options = 0xff;
 
     dhcp->op = 2;
     dhcp->secs = 0;
-    dhcp->yiaddr = srcIp.addr.ipv4.s_addr;
+    dhcp->yiaddr = vIP->s_addr;
     dhcp->siaddr = inet_addr("10.0.2.4"); //dhcp->yiaddr + 1;
 
     ofpbuf_use_stack(&ofpacts, ofpacts_stub, sizeof ofpacts_stub);
-    ofpact_put_OUTPUT(&ofpacts)->port = htons(pi.fmd.in_port);
+    ofpact_put_OUTPUT(&ofpacts)->port = pi->fmd.in_port;
     ofpact_pad(&ofpacts);
 
     po.buffer_id = UINT32_MAX;
@@ -1289,11 +1309,11 @@ void vip_cb(DC_Address srcIp, void *opaque)
     po.ofpacts = ofpacts.data;
     po.ofpacts_len = ofpacts.size;
 
-    queue_tx(params->sw, ofputil_encode_packet_out(&po, params->sw->protocol));
+    queue_tx(sw, ofputil_encode_packet_out(&po, sw->protocol));
 
-    printf("Forward DHCP reply to port %d\n", pi.fmd.in_port);
+    printf("Forward DHCP reply to port %d\n", pi->fmd.in_port);
   }
 
-  ofpbuf_delete(params->msg);
-  free(params);
+ bail:
+  return;
 }

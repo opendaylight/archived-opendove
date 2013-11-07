@@ -12,7 +12,7 @@
 ## dependency: Open vSwitch -- download and build
 #################################################
 
-OVS_URL_STABLE="http://openvswitch.org/releases/openvswitch-1.10.0.tar.gz"
+OVS_URL_STABLE="http://openvswitch.org/releases/openvswitch-2.0.0.tar.gz"
 OVS_URL_LATEST="http://openvswitch.org/cgi-bin/gitweb.cgi?p=openvswitch;a=snapshot;sf=tgz;h=HEAD"
 OVS_DISTFILE=./openvswitch.tar.gz
 OVS_DIR=./openvswitch

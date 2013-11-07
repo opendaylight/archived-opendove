@@ -1,1 +1,8 @@
 /.project
+*.o
+*~
+build
+dove-controller
+openvswitch
+openvswitch-2.0.0
+openvswitch.tar.gz

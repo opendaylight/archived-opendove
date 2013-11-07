@@ -334,6 +334,9 @@ public class OpenDoveBidirectionalInterfaces implements IfOpenDoveSwitchCRUD, If
         domainMap.remove(domainUUID);
     }
 
+    public void updateDomain(String domainUUID, OpenDoveDomain domain) {
+        domainMap.update(domainUUID, domain);
+    }
     // code to support SB network interfaces (including URI)
 
     public boolean networkExists(String networkUUID) {

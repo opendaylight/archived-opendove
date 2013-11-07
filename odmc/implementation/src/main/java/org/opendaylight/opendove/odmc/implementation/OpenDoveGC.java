@@ -102,8 +102,17 @@ public class OpenDoveGC implements TimerTask {
         if (o instanceof OpenDoveNetwork) {
             for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {
                 oDD.removeNetwork((OpenDoveNetwork) o);
-                //TODO: if domain only has one EXT_MCAST network left, tombstone the EXT_MCAST network
-                //TODO: if domain has no networks left, tombstone it
+                if (oDD.getAssociatedNetworks().size() == 1) {
+                    // if domain only has one network left, tombstone it
+                    OpenDoveNetwork last = oDD.getAssociatedNetworks().get(0);
+                    last.setTombstoneFlag(true);
+                    openDoveBidirectionalInterfaces.updateNetwork(last.getUUID());
+                }
+                if (oDD.getAssociatedNetworks().size() == 0) {
+                    // if domain has no networks left, tombstone it
+                    oDD.setTombstoneFlag(true);
+                    openDoveBidirectionalInterfaces.updateDomain(oDD.getUUID(), oDD);
+                }
             }
             openDoveBidirectionalInterfaces.removeNetwork(o.getUUID());
         }

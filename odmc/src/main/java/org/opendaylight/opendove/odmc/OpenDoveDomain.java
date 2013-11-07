@@ -10,7 +10,6 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -37,18 +36,18 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     Integer domain_id;
 
     public OpenDoveDomain() {
-        this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
-        this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
+        scopedNetworks = new ArrayList<OpenDoveNetwork>();
+        scopedSubnets = new ArrayList<OpenDoveSubnet>();
     }
 
     public OpenDoveDomain(String name) {
-        this.uuid = java.util.UUID.randomUUID().toString();
-        this.domain_id = createVersion;
+        uuid = java.util.UUID.randomUUID().toString();
+        domain_id = createVersion;
         this.name = name;
-        this.tombstoneFlag = false;
-        this.replicationFactor = 2;
-        this.scopedNetworks = new ArrayList<OpenDoveNetwork>();
-        this.scopedSubnets = new ArrayList<OpenDoveSubnet>();
+        tombstoneFlag = false;
+        replicationFactor = 2;
+        scopedNetworks = new ArrayList<OpenDoveNetwork>();
+        scopedSubnets = new ArrayList<OpenDoveSubnet>();
     }
 
     @Override
@@ -107,7 +106,7 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     // changed from uuid to createVersion to make oDCS life easier.
     public String getSBDcsUri() {
         //return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + createVersion;
-        this.domain_id = createVersion;
+        domain_id = createVersion;
         return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id;
     }
 
@@ -117,6 +116,10 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     public void setAssociatedOSTenantUUID(String associatedOSTenantUUID) {
         this.associatedOSTenantUUID = associatedOSTenantUUID;
+    }
+
+    public List<OpenDoveNetwork> getAssociatedNetworks() {
+        return scopedNetworks;
     }
 
 }

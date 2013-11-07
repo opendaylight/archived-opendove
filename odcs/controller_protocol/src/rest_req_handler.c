@@ -310,6 +310,7 @@ void dps_req_handler_domain(struct evhttp_request *req, void *arg, int argc, cha
 	json_t *js_root = NULL;
 	json_t *js_rep_factor = NULL;
 	json_t *js_res = NULL;
+    json_t *js_domain = NULL;
 	json_error_t jerror;
 	char *res_body_str = NULL;
 	struct evbuffer *retbuf = NULL;
@@ -371,8 +372,9 @@ void dps_req_handler_domain(struct evhttp_request *req, void *arg, int argc, cha
 				log_warn(RESTHandlerLogLevel,"js_root is NULL");
 				break;
 			}
+            js_domain = json_object_get(js_root, "domain");
 			/* Borrowed reference, no need to decref */
-			js_rep_factor = json_object_get(js_root, "replication_factor");
+			js_rep_factor = json_object_get(js_domain, "replication_factor");
 			if (!json_is_integer(js_rep_factor))
 			{
 				log_warn(RESTHandlerLogLevel,
@@ -861,6 +863,9 @@ void dps_req_handler_policies(struct evhttp_request *req, void *arg, int argc, c
 	GET /api/dps/domains/{domain_id}/policies/{policy_id}
 	DELETE /api/dps/domains/{domain_id}/policies/{policy_id}
 	PUT //api/dps/domains/{domain_id}/policies/{policy_id}
+
+	new ODCS URI
+	/controller/sb/v2/opendove/odmc/domains/bynumber/{domain_id}/policy/{policy_UUID}
  */
 void dps_req_handler_policy(struct evhttp_request *req, void *arg, int argc, char **argv)
 {
@@ -875,10 +880,11 @@ void dps_req_handler_policy(struct evhttp_request *req, void *arg, int argc, cha
 	struct evbuffer *retbuf = NULL;
 	int res_code = HTTP_BADREQUEST;
 	unsigned long int domain_id;
-	unsigned long int src_dvg;
-	unsigned long int dst_dvg;
-	unsigned long int traffic_type;
-	char *endptr = NULL, *saveptr = NULL, *p = NULL;
+	unsigned long int src_dvg = 0;
+	unsigned long int dst_dvg = 0;
+	unsigned long int traffic_type = 0;
+	char *endptr = NULL;
+	//char *saveptr = NULL, *p = NULL;
 	int n;
 	unsigned int type, ttl;
 	dps_object_policy_action_t action;
@@ -897,6 +903,7 @@ void dps_req_handler_policy(struct evhttp_request *req, void *arg, int argc, cha
 		evhttp_send_reply(req, HTTP_BADREQUEST, NULL, NULL);
 		return;
 	}
+#if 0
 #if 1	
 	/* Decode SRC DVG */
 	p = strtok_r(argv[1], "-", &saveptr);
@@ -950,6 +957,8 @@ void dps_req_handler_policy(struct evhttp_request *req, void *arg, int argc, cha
 	dst_dvg = (unsigned int)((policy_id >> SRC_DVG_ID_LEN)&SRC_DVG_ID_MASK);
 	src_dvg = (unsigned int)(policy_id & SRC_DVG_ID_MASK);
 #endif
+#endif
+
 	switch (evhttp_request_get_command(req))
 	{
 		case EVHTTP_REQ_GET:
@@ -986,6 +995,27 @@ void dps_req_handler_policy(struct evhttp_request *req, void *arg, int argc, cha
 			{
 				break;
 			}
+
+			js_tok = json_object_get(js_root, "src_network");
+			if (NULL == js_tok || !json_is_integer(js_tok))
+			{
+				break;
+			}
+			src_dvg = (unsigned int)json_integer_value(js_tok);
+
+			js_tok = json_object_get(js_root, "dst_network");
+			if (NULL == js_tok || !json_is_integer(js_tok))
+			{
+				break;
+			}
+			dst_dvg = (unsigned int)json_integer_value(js_tok);
+
+			js_tok = json_object_get(js_root, "traffic_type");
+			if (NULL == js_tok || !json_is_integer(js_tok))
+			{
+				break;
+			}
+			traffic_type = (unsigned int)json_integer_value(js_tok);
 
 			js_res = dps_rest_api_get_policy(domain_id, src_dvg, dst_dvg, traffic_type);
 			if (js_res)
@@ -2194,11 +2224,14 @@ void dps_req_handler_statistics_general_statistics(struct evhttp_request *req, v
         or
 	GET /api/dove/dps/vns/{vn_id}/ipv4-subnets/{ip-mask}
 	DELETE /api/dove/dps/vns/{vn_id}/ipv4-subnets/{ip-mask}
+
+	new ODCS URI
+	GET /controller/sb/v2/opendove/odmc/networks/<vnid>/subnets/<uuid>
  */
 void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, char **argv)
 {
 	json_t *js_root = NULL;
-	json_t *js_mode = NULL, *js_gateway = NULL;
+	json_t *js_mode = NULL, *js_gateway = NULL, *js_id = NULL;
 	json_t *js_res = NULL;
 	json_error_t jerror;
 	char *res_body_str = NULL;
@@ -2210,9 +2243,9 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 	int res_code = HTTP_BADREQUEST;
 	int n;
 	unsigned long int associated_type, associated_id;
-	char *endptr = NULL, *saveptr = NULL, *token = NULL;
-	char ip_str[INET6_ADDRSTRLEN], mask_str[INET6_ADDRSTRLEN]; 
-	const char *mode_str, *gateway_str;
+	char *endptr = NULL;
+	//char ip_str[INET6_ADDRSTRLEN], mask_str[INET6_ADDRSTRLEN];
+	const char *mode_str, *gateway_str, *ip_str, *mask_str;
 	unsigned int ip, mask, mode, gateway;
 
 	if (argc != 2 || NULL == argv )
@@ -2220,7 +2253,7 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 		evhttp_send_reply(req, HTTP_BADREQUEST, NULL, NULL);
 		return;
 	}
-	if (strstr(evhttp_request_get_uri(req), "vns"))
+	if (strstr(evhttp_request_get_uri(req), "networks"))
 	{
 		associated_type = IP_SUBNET_ASSOCIATED_TYPE_VNID;
 	}
@@ -2235,6 +2268,7 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 		return;
 	}
 
+#if 0
 	/* Decode IP */
 	token = strtok_r(argv[1], "-", &saveptr);
 	if(NULL == token)
@@ -2259,6 +2293,7 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 		evhttp_send_reply(req, HTTP_BADREQUEST, NULL, NULL);
 		return;
 	}
+#endif
 
 	switch (evhttp_request_get_command(req))
 	{
@@ -2300,9 +2335,8 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 				break;
 			}
 			/* Borrowed reference, no need to decref */
-			inet_ntop(AF_INET, &ip, ip_str, INET6_ADDRSTRLEN);
-			inet_ntop(AF_INET, &mask, mask_str, INET6_ADDRSTRLEN);
-			js_mode = json_object_get(js_root, "mode");
+
+			js_mode = json_object_get(js_root, "type");
 			if (!json_is_string(js_mode))
 			{
 				break;
@@ -2311,11 +2345,11 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 			{
 				break;
 			}
-			if (strcmp(mode_str, "dedicated") == 0)
+			if (strcmp(mode_str, "Dedicated") == 0)
 			{
 				mode = 0;
 			}
-			else if (strcmp(mode_str, "shared") == 0)
+			else if (strcmp(mode_str, "Shared") == 0)
 			{
 				mode = 1;
 			}
@@ -2323,7 +2357,36 @@ void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, c
 			{
 				break;
 			}
-			js_gateway = json_object_get(js_root, "gateway");
+			// extract subnet
+            js_id = json_object_get(js_root, "subnet");
+            if (!json_is_string(js_id))
+            {
+                break;
+            }
+            if ((ip_str = json_string_value(js_id)) == NULL)
+            {
+                break;
+            }
+            if (0 == inet_pton(AF_INET, ip_str, (void *)&ip))
+            {
+                break;
+            }
+			// extract mask
+            js_id = json_object_get(js_root, "mask");
+            if (!json_is_string(js_id))
+            {
+                break;
+            }
+            if ((mask_str = json_string_value(js_id)) == NULL)
+            {
+                break;
+            }
+            if (0 == inet_pton(AF_INET, mask_str, (void *)&mask))
+            {
+                break;
+            }
+            // extract nexthop (gateway)
+			js_gateway = json_object_get(js_root, "nexthop");
 			if (!json_is_string(js_gateway))
 			{
 				break;
@@ -2961,8 +3024,8 @@ static dove_status dps_form_local_dcslist_json(struct evbuffer **retbuf,
 		                    "ip_family", node_list[i].family,
 		                    "ip",ipstr,
 		                    "uuid",dps_node_uuid,
-		                    "rest_port",dps_rest_port,
-		                    "service_port",node_list[i].port
+		                    "dcs_rest_service_port",dps_rest_port,
+		                    "dcs_raw_service_port",node_list[i].port
 		                   );
 		if(NULL == js_res)
 		{

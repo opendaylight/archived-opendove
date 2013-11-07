@@ -447,76 +447,76 @@ static void http_server_main (void *pDummy)
 	dps_rest_port = resthttp_port;
 	show_print("DCS HTTP Server started on Port %d", dps_rest_port);
 
-//	helper_evhttp_set_cb_pattern(DPS_DOMAINS_URI, DPS_REST_FWD_FLAG_POST_TO_AVAIL,
-//	                             dps_req_handler_domains, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DOMAIN_URI, DPS_REST_FWD_FLAG_PUT_TO_AVAIL|DPS_REST_FWD_FLAG_DELETE_TO_ALL,
-//	                             dps_req_handler_domain, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DVGS_URI, DPS_REST_FWD_FLAG_POST_TO_ALL,
-//	                             dps_req_handler_dvgs, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DVG_URI, DPS_REST_FWD_FLAG_PUT_TO_ALL|DPS_REST_FWD_FLAG_DELETE_TO_ALL,
-//	                             dps_req_handler_dvg, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_POLICIES_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_policies, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_POLICY_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_policy, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_EXTERNAL_GATEWAYS_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_gateways, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_EXTERNAL_GATEWAY_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_gateway, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_STATISTICS_LOAD_BALANCING_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_statistics_load_balancing, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_STATISTICS_GENERAL_STATISTICS_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_statistics_general_statistics, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DOMAIN_IPV4SUBNET_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_ipsubnet, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DVG_IPV4SUBNET_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_ipsubnet, NULL);
-//	helper_evhttp_set_cb_pattern(ODCS_SERVICE_ROLE_ASSIGNMENT_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_service_role, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_LOCAL_DOMAINS_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_local_domain_mapping, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_STATISTICS_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_node_statistics, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_HEARTBEAT_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_node_heartbeat, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_HEARTBEAT_REQUEST_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_node_heartbeat_request, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_NODE_STATUS_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_node_status, NULL);
-//	helper_evhttp_set_cb_pattern(ODCS_CLUSTER_INFO_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_query_cluster_nodes, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DOMAIN_TO_NODE_MAPPING_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_dcslist, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CLUSTER_TRANSFER_DOMAIN_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_transfer_domain, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_CONTROLLER_LOCATION_UPDATE_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_set_dmc_location, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_NODE_GET_READY, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_get_ready, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_ACTIVATE, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_activate, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_DEACTIVATE, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_deactivate, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_RECOVER, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_recover, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_VNID_LIST, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_vnid_listing, NULL);
-//	helper_evhttp_set_cb_pattern(DOVE_CLUSTER_BULK_POLICY_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_bulk_policy, NULL);
-//	helper_evhttp_set_cb_pattern(DOVE_CLUSTER_BULK_SUBNET4_URI, DPS_REST_FWD_FLAG_DENY,
-//	                             dps_req_handler_domain_bulk_ip4subnets, NULL);
-//
+	helper_evhttp_set_cb_pattern(DPS_DOMAINS_URI, DPS_REST_FWD_FLAG_POST_TO_AVAIL,
+	                             dps_req_handler_domains, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DOMAIN_URI, DPS_REST_FWD_FLAG_PUT_TO_AVAIL|DPS_REST_FWD_FLAG_DELETE_TO_ALL,
+	                             dps_req_handler_domain, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DVGS_URI, DPS_REST_FWD_FLAG_POST_TO_ALL,
+	                             dps_req_handler_dvgs, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DVG_URI, DPS_REST_FWD_FLAG_PUT_TO_ALL|DPS_REST_FWD_FLAG_DELETE_TO_ALL,
+	                             dps_req_handler_dvg, NULL);
+	helper_evhttp_set_cb_pattern(DPS_POLICIES_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_policies, NULL);
+	helper_evhttp_set_cb_pattern(ODCS_POLICY_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_policy, NULL);
+	helper_evhttp_set_cb_pattern(DPS_EXTERNAL_GATEWAYS_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_gateways, NULL);
+	helper_evhttp_set_cb_pattern(DPS_EXTERNAL_GATEWAY_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_gateway, NULL);
+	helper_evhttp_set_cb_pattern(DPS_STATISTICS_LOAD_BALANCING_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_statistics_load_balancing, NULL);
+	helper_evhttp_set_cb_pattern(DPS_STATISTICS_GENERAL_STATISTICS_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_statistics_general_statistics, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DOMAIN_IPV4SUBNET_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_ipsubnet, NULL);
+	helper_evhttp_set_cb_pattern(ODCS_DVG_IPV4SUBNET_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_ipsubnet, NULL);
+	helper_evhttp_set_cb_pattern(ODCS_SERVICE_ROLE_ASSIGNMENT_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_service_role, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_LOCAL_DOMAINS_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_local_domain_mapping, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_STATISTICS_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_node_statistics, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_HEARTBEAT_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_node_heartbeat, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_HEARTBEAT_REQUEST_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_node_heartbeat_request, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_NODE_STATUS_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_node_status, NULL);
+	helper_evhttp_set_cb_pattern(ODCS_CLUSTER_INFO_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_query_cluster_nodes, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DOMAIN_TO_NODE_MAPPING_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_dcslist, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CLUSTER_TRANSFER_DOMAIN_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_transfer_domain, NULL);
+	helper_evhttp_set_cb_pattern(DPS_CONTROLLER_LOCATION_UPDATE_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_set_dmc_location, NULL);
+	helper_evhttp_set_cb_pattern(DPS_NODE_GET_READY, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_get_ready, NULL);
+	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_ACTIVATE, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_activate, NULL);
+	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_DEACTIVATE, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_deactivate, NULL);
+	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_RECOVER, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_recover, NULL);
+	helper_evhttp_set_cb_pattern(DPS_NODE_DOMAIN_VNID_LIST, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_vnid_listing, NULL);
+	helper_evhttp_set_cb_pattern(DOVE_CLUSTER_BULK_POLICY_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_bulk_policy, NULL);
+	helper_evhttp_set_cb_pattern(DOVE_CLUSTER_BULK_SUBNET4_URI, DPS_REST_FWD_FLAG_DENY,
+	                             dps_req_handler_domain_bulk_ip4subnets, NULL);
+
 	/*  DPS DEBUG for DMC */
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_ENDPOINTS_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_vnid_endpoints, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_TUNNEL_ENDPOINTS_URI, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_vnid_tunnel_endpoints, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_DOMAIN_MAPPING, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_vnid_get_domain_mapping, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_ALLOW_POLICIES, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_vnid_get_allow_policies, NULL);
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_SUBNETS, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_vnid_get_subnets, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_ENDPOINTS_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_vnid_endpoints, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_TUNNEL_ENDPOINTS_URI, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_vnid_tunnel_endpoints, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_DOMAIN_MAPPING, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_vnid_get_domain_mapping, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_ALLOW_POLICIES, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_vnid_get_allow_policies, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_SUBNETS, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_vnid_get_subnets, NULL);
 	/*TODO: The remaining 2 items to do */
 	/*
 	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_DPS_CLIENTS_URI, DPS_REST_FWD_FLAG_GENERIC,
@@ -524,9 +524,14 @@ static void http_server_main (void *pDummy)
 	helper_evhttp_set_cb_pattern(DPS_DEBUG_VNID_MULTICAST_URI, DPS_REST_FWD_FLAG_GENERIC,
 	                             dps_req_handler_vnid_multicast, NULL);
 	*/
-//	helper_evhttp_set_cb_pattern(DPS_DEBUG_CLUSTER_DISPLAY, DPS_REST_FWD_FLAG_GENERIC,
-//	                             dps_req_handler_cluster_display, NULL);
+	helper_evhttp_set_cb_pattern(DPS_DEBUG_CLUSTER_DISPLAY, DPS_REST_FWD_FLAG_GENERIC,
+	                             dps_req_handler_cluster_display, NULL);
 
+#ifdef _DPS_REST_DEBUG
+	evhttp_set_cb(resthttpd_server, "/test1", http_test, (void *)1);
+	evhttp_set_cb(resthttpd_server, "/test2", http_test, (void *)2);
+	evhttp_set_cb(resthttpd_server, "/test4", http_test, (void *)4);
+#endif
 	evhttp_set_gencb(resthttpd_server, http_request_handler, NULL);
 	evhttp_set_timeout(resthttpd_server, 20);
 	event_base_dispatch(base);

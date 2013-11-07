@@ -263,6 +263,61 @@ class cli_data_objects_domain(cli_dps_objects):
 #Add this class of command to global list of supported commands
 cli_data_objects_domain.add_context()
 
+class cli_data_objects_domain_value(cli_dps_objects):
+    '''
+    Represents the CLI Context for Domain Command in the DPS Object
+    with a value (for testing)
+    '''
+    #The input to display for Context:
+    user_input_string = 'domain_val_context'
+    user_input_string_raw = '%s:%s'%(cli_dps_objects.user_input_string,
+                                     user_input_string)
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'domain_val'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Domain Related Configuration'
+    #Whether it's a hidden command
+    hidden = True
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #MAJOR CODE not needed for this context
+    #major_type = cli_interface.CLI_DATA_OBJECTS
+    #CLI CODE not needed for this context
+    #cli_code = cli_interface.CLI_DATA_OBJECTS
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Required', 'Random Function', '(Input to Random Function)' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain id', cli_type_int, True, cli_interface.range_domain)] #Empty
+    support_random = False
+    value = None
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        Execute Login: Nothing To Do here
+        @param session: The session context
+        @type session: Class login_context
+        @return None
+        '''
+        return_cli_context = None
+        try:
+            cli_data_objects_domain.value = self.params[0]
+            return_cli_context = cli_data_objects_domain
+        except Exception:
+            pass
+        return return_cli_context
+    #This function 'exit' must be present for all contexts
+    def cli_exit(self, session):
+        '''
+        Exits configuration mode. Go back to Login Context
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        cli_data_objects_domain.value = None
+        return
+#Add this class of command to global list of supported commands
+#cli_data_objects_domain_value.add_context()
+
 class cli_data_objects_domain_add(cli_data_objects_domain):
     '''
     Represents the CLI Object for Adding a Domain
@@ -942,6 +997,84 @@ class cli_data_objects_endpoint(cli_dps_objects):
 #Add this class of command to global list of supported commands
 cli_data_objects_endpoint.add_context()
 
+class cli_data_objects_endpoint_update(cli_data_objects_endpoint):
+    '''
+    Represents the CLI Object for Endpoint Update
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'update'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Endpoint Update'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.ENDPOINT_UPDATE
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('client_type', cli_type_string_set, True, cli_interface_data_objects.dps_client_types_range),
+                      ('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('operation', cli_type_string_set, True, cli_interface_data_objects.endpoint_update_options_range),
+                      ('physical IP(IPv4)', cli_type_ip, True, cli_interface.range_pip),
+                      ('vIP(IPv4)', cli_type_ip, True, cli_interface.range_ip),
+                      ('vMAC', cli_type_mac, True, cli_interface.range_mac)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_endpoint_update_s{
+    #    uint32_t    vnid;
+    #    uint32_t    update_op;
+    #    uint32_t    client_type;
+    #    uint32_t    pIP_type;
+    #    union{
+    #        uint32_t    pIPv4;
+    #        char        pIPv6[16];
+    #    };
+    #    uint32_t    vIP_type;
+    #    union{
+    #        uint32_t    vIPv4;
+    #        char        vIPv6[16];
+    #    };
+    #    char        vMac[6];
+    #}cli_data_object_endpoint_update_t;
+    #Only support IPv4 now
+    fmt = 'II'
+    fmt += 'IIII' #vnid, operation, pIP_type
+    fmt += 'I12s' #IPv4 + 12 extra bytes = 16 bytes for union
+    fmt += 'I' #vIP_type
+    fmt += 'I12s' #IPv4 + 12 extra bytes = 16 bytes for union
+    fmt += '6s' #vMAC
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        client_type = cli_interface_data_objects.dps_client_types[self.params[0]]
+        vnid = self.params[1]
+        operation = cli_interface_data_objects.endpoint_update_options[self.params[2]]
+        pIP = cli_type_ip.ipv4_atoi(self.params[3])
+        vIP = cli_type_ip.ipv4_atoi(self.params[4])
+        vMAC = cli_type_mac.bytes(self.params[5])
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, 
+                               vnid, operation, client_type,
+                               socket.AF_INET,
+                               pIP, '',
+                               socket.AF_INET,
+                               vIP, '',
+                               vMAC)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_endpoint_update.add_cli()
+
 class cli_data_objects_endpoint_lookup_mac(cli_data_objects_endpoint):
     '''
     Represents the CLI Object for Endpoint Lookup using MAC
@@ -1047,6 +1180,78 @@ class cli_data_objects_endpoint_lookup_ip(cli_data_objects_endpoint):
 #Add this class of command to global list of supported commands
 cli_data_objects_endpoint_lookup_ip.add_cli()
 
+class cli_data_objects_endpoint_migrate_hint(cli_data_objects_endpoint):
+    '''
+    Represents the CLI Object for Endpoint Lookup using IP Address
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    #command_id = 'endpoint_lookup_vIP'
+    command_id = 'migrate_hint'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Endpoint Migrate Hint'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.ENPOINT_MIGRATE_HINT
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('vnid', cli_type_int, True, cli_interface.range_domain),
+                      ('src_pIPv4', cli_type_ip, True, cli_interface.range_ip),
+                      ('src_vIPv4', cli_type_ip, True, cli_interface.range_ip),
+                      ('migrated_vIPv4', cli_type_ip, True, cli_interface.range_ip),]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_endpoint_migrate_s{
+    #    uint32_t vnid;
+    #    uint32_t src_pIP_type;
+    #    union {
+    #        uint32_t src_pIPv4;
+    #        char src_pIPv6[16];
+    #    };
+    #    uint32_t src_vIP_type;
+    #    union {
+    #        uint32_t src_vIPv4;
+    #        char src_vIPv6[16];
+    #    };
+    #    uint32_t dst_vIP_type;
+    #    union {
+    #        uint32_t dst_vIPv4;
+    #        char dst_vIPv6[16];
+    #    };
+    #}cli_data_object_endpoint_migrate_t;
+    fmt = 'III'
+    fmt += 'II12s' #Type + IPv4 + 12 extra bytes = 16 bytes for union
+    fmt += 'II12s' #Type + IPv4 + 12 extra bytes = 16 bytes for union
+    fmt += 'II12s' #Type + IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        vnid = self.params[0]
+        pIP_src = cli_type_ip.ipv4_atoi(self.params[1])
+        vIP_src = cli_type_ip.ipv4_atoi(self.params[2])
+        vIP_dst = cli_type_ip.ipv4_atoi(self.params[3])
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, vnid,
+                               socket.AF_INET, pIP_src, '',
+                               socket.AF_INET, vIP_src, '',
+                               socket.AF_INET, vIP_dst, '')
+        ret = dcslib.process_cli_data(c_struct)
+        if ret != cli_interface.DOVE_STATUS_OK:
+            cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_endpoint_migrate_hint.add_cli()
+
 class cli_data_objects_gateway(cli_dps_objects):
     '''
     Represents the CLI Context for Gateway Command in the DPS Object
@@ -1092,6 +1297,153 @@ class cli_data_objects_gateway(cli_dps_objects):
         return
 #Add this class of command to global list of supported commands
 cli_data_objects_gateway.add_context()
+
+class cli_data_objects_gateway_external_add(cli_data_objects_gateway):
+    '''
+    Represents the CLI Object for adding External Gateway
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'external_add'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Add External Gateway'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.EXTERNAL_GATEWAY_ADD
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('IPv4', cli_type_ip, True, cli_interface.range_ip)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_gateway_s{
+    #    uint32_t domain_id;
+    #    uint32_t IP_type;
+    #    union {
+    #        uint32_t IPv4;
+    #        char IPv6[16];
+    #    };
+    #}cli_data_object_gateway_t;
+    fmt = 'IIII'
+    fmt += 'I12s' #IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        domain = self.params[0]
+        IP = cli_type_ip.ipv4_atoi(self.params[1])
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain,
+                               socket.AF_INET, IP, '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_gateway_external_add.add_cli()
+
+class cli_data_objects_gateway_external_del(cli_data_objects_gateway):
+    '''
+    Represents the CLI Object for deleting External Gateway
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'external_delete'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Delete External Gateway'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.EXTERNAL_GATEWAY_DEL
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain),
+                      ('IPv4', cli_type_ip, True, cli_interface.range_ip)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_gateway_s{
+    #    uint32_t domain_id;
+    #    uint32_t IP_type;
+    #    union {
+    #        uint32_t IPv4;
+    #        char IPv6[16];
+    #    };
+    #}cli_data_object_gateway_t;
+    fmt = 'IIII'
+    fmt += 'I12s' #IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        domain = self.params[0]
+        IP = cli_type_ip.ipv4_atoi(self.params[1])
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain,
+                               socket.AF_INET, IP, '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_gateway_external_del.add_cli()
+
+class cli_data_objects_gateway_external_clr(cli_data_objects_gateway):
+    '''
+    Represents the CLI Object for clearing External Gateways
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'external_clear'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Clear External Gateways'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.EXTERNAL_GATEWAY_CLR
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_gateway_s{
+    #    uint32_t domain_id;
+    #}cli_data_object_domain_t;
+    fmt = 'III'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        domain = self.params[0]
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_gateway_external_clr.add_cli()
 
 class cli_data_objects_gateway_external_get(cli_data_objects_gateway):
     '''
@@ -1834,9 +2186,191 @@ class cli_ipsubnet_flush(cli_ipsubnet):
 #Add this class of command to global list of supported commands
 cli_ipsubnet_flush.add_cli()
 
+class cli_tunnel(cli_dps_objects):
+    '''
+    Represents the CLI Context for Tunnel Command in the DPS Object
+    '''
+    #The input to display for Context:
+    user_input_string = 'tunnel'
+    user_input_string_raw = '%s:%s'%(cli_dps_objects.user_input_string,
+                                     user_input_string)
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'tunnel'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Tunnel Related Configuration'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #MAJOR CODE not needed for this context
+    #major_type = cli_interface.CLI_DATA_OBJECTS
+    #CLI CODE not needed for this context
+    #cli_code = cli_interface.CLI_DATA_OBJECTS
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Required', 'Random Function', '(Input to Random Function)' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [] #Empty
+    support_random = False
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        Execute Login: Nothing To Do here
+        @param session: The session context
+        @type session: Class login_context
+        @return cli_tunnel
+        '''
+        return cli_tunnel
+    #This function 'exit' must be present for all contexts
+    def cli_exit(self, session):
+        '''
+        Exits configuration mode. Go back to Login Context
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        return
+#Add this class of command to global list of supported commands
+cli_tunnel.add_context()
+
 ##############################################################
 #Add the CLI for IP Subnet
 ##############################################################
+class cli_tunnel_register(cli_tunnel):
+    '''
+    Represents the CLI Object for adding an IP Subnet to the Domain
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'register'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Register Tunnel IP Address (4 max)'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.TUNNEL_REGISTER
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('client_type', cli_type_string_set, True, cli_interface_data_objects.dps_client_types_range),
+                      ('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('ip_address1', cli_type_ip, True, cli_interface.range_ip),
+                      ('ip_address2', cli_type_ip, False, cli_interface.range_ip)
+                      ]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_tunnel_register_s{
+    #    uint32_t client_type;
+    #    uint32_t vnid;
+    #    uint32_t num_tunnels;
+    #    struct{
+    #        uint32_t IP_type;
+    #        union {
+    #            uint32_t pIPv4;
+    #            char pIPv6[16];
+    #        };
+    #    }ip_list[4];
+    #}cli_data_object_tunnel_register_t;
+    base_fmt = 'IIIII'
+    ip_fmt = 'II12s' #type, IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        ip_list = []
+        #self.params hold the variables
+        client_type = cli_interface_data_objects.dps_client_types[self.params[0]]
+        vnid = self.params[1]
+        num_elements = 0
+        for i in range(2):
+            try:
+                #From the 2nd parameter onwards all IP Addresses
+                ipaddr = cli_type_ip.ipv4_atoi(self.params[2+i])
+                ip_list.append(ipaddr)
+                num_elements += 1
+            except Exception:
+                break
+        c_struct = struct.pack(self.base_fmt, self.major_type, self.cli_code, client_type, vnid, num_elements)
+        for i in range(num_elements):
+            c_struct += struct.pack(self.ip_fmt, socket.AF_INET, ip_list[i], '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+cli_tunnel_register.add_cli()
+
+class cli_tunnel_deregister(cli_tunnel):
+    '''
+    Represents the CLI Object for adding an IP Subnet to the Domain
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'deregister'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'De-Register Tunnel IP Address (4 max)'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.TUNNEL_UNREGISTER
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('client_type', cli_type_string_set, True, cli_interface_data_objects.dps_client_types_range),
+                      ('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('ip_address1', cli_type_ip, True, cli_interface.range_ip),
+                      ('ip_address2', cli_type_ip, False, cli_interface.range_ip)
+                      ]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_tunnel_register_s{
+    #    uint32_t client_type;
+    #    uint32_t vnid;
+    #    uint32_t num_tunnels;
+    #    struct{
+    #        uint32_t IP_type;
+    #        union {
+    #            uint32_t pIPv4;
+    #            char pIPv6[16];
+    #        };
+    #    }ip_list[4];
+    #}cli_data_object_tunnel_register_t;
+    base_fmt = 'IIIII'
+    ip_fmt = 'II12s' #type, IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        ip_list = []
+        #self.params hold the variables
+        client_type = cli_interface_data_objects.dps_client_types[self.params[0]]
+        vnid = self.params[1]
+        num_elements = 0
+        for i in range(2):
+            try:
+                #From the 2nd parameter onwards all IP Addresses
+                ipaddr = cli_type_ip.ipv4_atoi(self.params[2+i])
+                ip_list.append(ipaddr)
+                num_elements += 1
+            except Exception:
+                break
+        c_struct = struct.pack(self.base_fmt, self.major_type, self.cli_code, client_type, vnid, num_elements)
+        for i in range(num_elements):
+            c_struct += struct.pack(self.ip_fmt, socket.AF_INET, ip_list[i], '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+cli_tunnel_deregister.add_cli()
+
 class cli_data_objects_multicast(cli_dps_objects):
     '''
     Represents the CLI Context for VNID Command in the DPS Object
@@ -1882,6 +2416,177 @@ class cli_data_objects_multicast(cli_dps_objects):
         return
 #Add this class of command to global list of supported commands
 cli_data_objects_multicast.add_context()
+
+class cli_data_objects_multicast_sender(cli_data_objects_multicast):
+    '''
+    Represents the CLI Object for adding a VNID
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'sender'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Sender Register/Unregister'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.MULTICAST_SENDER_ADD
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('operation', cli_type_string_set, True, cli_interface_data_objects.multicast_sender_options),
+                      ('client_type', cli_type_string_set, True, cli_interface_data_objects.dps_client_types_range),
+                      ('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('tunnel_IP', cli_type_ip, True, cli_interface.range_ip),
+                      ('multicast_mac', cli_type_mac, True, cli_interface.range_mac),
+                      ('multicast_ip', cli_type_ip, True, cli_interface.range_ip_multicast)
+                      ]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_multicast_register_s{
+    #    uint32_t client_type;
+    #    uint32_t vnid;
+    #    uint32_t multicast_IP_type;
+    #    char mac[6];
+    #    union {
+    #        uint32_t multicast_IPv4;
+    #        char multicast_IPv6[16];
+    #    };
+    #    uint32_t tunnel_IP_type;
+    #    union {
+    #        uint32_t tunnel_IPv4;
+    #        char tunnel_IPv6[16];
+    #    };
+    #}cli_data_object_multicast_register_t;
+    fmt = 'II'
+    fmt += 'III'
+    fmt += '6s' #mac
+    fmt += 'I12s'
+    fmt += 'II12s'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        operation = self.params[0]
+        if operation == 'register':
+            code = cli_interface_data_objects.MULTICAST_SENDER_ADD
+        else:
+            code = cli_interface_data_objects.MULTICAST_SENDER_DEL
+        client_type = cli_interface_data_objects.dps_client_types[self.params[1]]
+        vnid = self.params[2]
+        tunnel_ip = cli_type_ip.ipv4_atoi(self.params[3])
+        mac = cli_type_mac.bytes(self.params[4])
+        ip = cli_type_ip.ipv4_atoi(self.params[5])
+        ip_packed = struct.pack('I', ip)
+        ip_string = socket.inet_ntop(socket.AF_INET, ip_packed)
+        if ip_string == cli_interface.ip_multicast_unknown:
+            ip_type = 0
+            ip = 0
+        else:
+            ip_type = socket.AF_INET
+        c_struct = struct.pack(self.fmt, 
+                               self.major_type, code,
+                               client_type, vnid,
+                               ip_type, mac, ip, '',
+                               socket.AF_INET, tunnel_ip, '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_multicast_sender.add_cli()
+
+class cli_data_objects_multicast_receiver(cli_data_objects_multicast):
+    '''
+    Represents the CLI Object for adding a VNID
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'receiver'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Receiver Join/Leave'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.MULTICAST_RECEIVER_ADD
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('operation', cli_type_string_set, True, cli_interface_data_objects.multicast_receiver_options),
+                      ('client_type', cli_type_string_set, True, cli_interface_data_objects.dps_client_types_range),
+                      ('vnid', cli_type_int, True, cli_interface.range_dvg),
+                      ('tunnel_IP', cli_type_ip, True, cli_interface.range_ip),
+                      ('multicast_mac', cli_type_mac, True, cli_interface.range_mac),
+                      ('multicast_ip', cli_type_ip, True, cli_interface.range_ip_multicast)
+                      ]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_multicast_register_s{
+    #    uint32_t client_type;
+    #    uint32_t vnid;
+    #    uint32_t multicast_IP_type;
+    #    char mac[6];
+    #    union {
+    #        uint32_t multicast_IPv4;
+    #        char multicast_IPv6[16];
+    #    };
+    #    uint32_t tunnel_IP_type;
+    #    union {
+    #        uint32_t tunnel_IPv4;
+    #        char tunnel_IPv6[16];
+    #    };
+    #}cli_data_object_multicast_register_t;
+    fmt = 'II'
+    fmt += 'III'
+    fmt += '6s' #mac
+    fmt += 'I12s'
+    fmt += 'II12s'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        while True:
+            operation = self.params[0]
+            try:
+                code = cli_interface_data_objects.multicast_receiver_operations[operation]
+            except Exception:
+                ret = cli_interface.DOVE_STATUS_INVALID_PARAMETER
+                break
+            client_type = cli_interface_data_objects.dps_client_types[self.params[1]]
+            vnid = self.params[2]
+            tunnel_ip = cli_type_ip.ipv4_atoi(self.params[3])
+            mac = cli_type_mac.bytes(self.params[4])
+            ip = cli_type_ip.ipv4_atoi(self.params[5])
+            ip_packed = struct.pack('I', ip)
+            ip_string = socket.inet_ntop(socket.AF_INET, ip_packed)
+            if ip_string == cli_interface.ip_multicast_unknown:
+                ip_type = 0
+                ip = 0
+            else:
+                ip_type = socket.AF_INET
+            c_struct = struct.pack(self.fmt, 
+                                   self.major_type, code,
+                                   client_type, vnid,
+                                   ip_type, mac, ip, '',
+                                   socket.AF_INET, tunnel_ip, '')
+            ret = dcslib.process_cli_data(c_struct)
+            break
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_multicast_receiver.add_cli()
 
 class cli_data_objects_multicast_global_scope_get(cli_data_objects_multicast):
     '''
@@ -2187,3 +2892,415 @@ class cli_data_objects_multicast_show(cli_data_objects_show):
         cli_interface.process_error(ret)
 #Add this class of command to global list of supported commands
 cli_data_objects_multicast_show.add_cli()
+
+class cli_data_objects_address_resolution_show(cli_data_objects_show):
+    '''
+    Represents the CLI Object for showing Multicast Details
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'address_resolution'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Show Address Resolution Waiters'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.ADDRESS_RESOLUTION_SHOW
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_add_s{
+    #    uint32_t    domain_id;
+    #}cli_data_object_domain_add_t;
+    fmt = 'III'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        domain_int = self.params[0]
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain_int)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_address_resolution_show.add_cli()
+
+
+
+#Add command for DPS Heartbeat, now only the report interval
+class cli_data_objects_heartbeat(cli_dps_objects):
+    '''
+    Represents the CLI Context for Domain Command in the DPS Object
+    '''
+    #The input to display for Context:
+    user_input_string = 'heartbeat'
+    user_input_string_raw = '%s:%s'%(cli_dps_objects.user_input_string,
+                                     user_input_string)
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'heartbeat'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Heartbeat Related Configuration'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #MAJOR CODE not needed for this context
+    #major_type = cli_interface.CLI_DATA_OBJECTS
+    #CLI CODE not needed for this context
+    #cli_code = cli_interface.CLI_DATA_OBJECTS
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Required', 'Random Function', '(Input to Random Function)' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [] #Empty
+    support_random = False
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        Execute Login: Nothing To Do here
+        @param session: The session context
+        @type session: Class login_context
+        @return cli_data_objects_heartbeat
+        '''
+        return cli_data_objects_heartbeat
+    #This function 'exit' must be present for all contexts
+    def cli_exit(self, session):
+        '''
+        Exits configuration mode. Go back to Login Context
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        return
+#Add this class of command to global list of supported commands
+cli_data_objects_heartbeat.add_context()
+
+class cli_data_objects_hearbeat_interval(cli_data_objects_heartbeat):
+    '''
+    Represents the CLI Object for Setting the heartbeat interval
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'interval'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Set report interval,0:Not Send'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.HEARTBEAT_REPORT_INTERVAL_SET
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('interval', cli_type_int, True, cli_interface.range_report_interval)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_add_s{
+    #    /**
+    #     * \brief The Domain ID
+    #     */
+    #    uint32_t    domain_id;
+    #}cli_data_object_domain_add_t;
+    fmt = 'III'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        interval_int = self.params[0]
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, interval_int)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_hearbeat_interval.add_cli()
+
+
+#Add command for DPS Statistics, now only the report interval
+class cli_data_objects_statistics(cli_dps_objects):
+    '''
+    Represents the CLI Context for Domain Command in the DPS Object
+    '''
+    #The input to display for Context:
+    user_input_string = 'statistics'
+    user_input_string_raw = '%s:%s'%(cli_dps_objects.user_input_string,
+                                     user_input_string)
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'statistics'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Statistics Related Configuration'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #MAJOR CODE not needed for this context
+    #major_type = cli_interface.CLI_DATA_OBJECTS
+    #CLI CODE not needed for this context
+    #cli_code = cli_interface.CLI_DATA_OBJECTS
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Required', 'Random Function', '(Input to Random Function)' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [] #Empty
+    support_random = False
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        Execute Login: Nothing To Do here
+        @param session: The session context
+        @type session: Class login_context
+        @return cli_data_objects_statistics
+        '''
+        return cli_data_objects_statistics
+    #This function 'exit' must be present for all contexts
+    def cli_exit(self, session):
+        '''
+        Exits configuration mode. Go back to Login Context
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        return
+#Add this class of command to global list of supported commands
+cli_data_objects_statistics.add_context()
+
+
+class cli_data_objects_statistics_interval(cli_data_objects_statistics):
+    '''
+    Represents the CLI Object for Setting the heartbeat interval
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'interval'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Set report interval,0:Not Send'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.STATISTICS_REPORT_INTERVAL_SET
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('interval', cli_type_int, True, cli_interface.range_report_interval)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_add_s{
+    #    /**
+    #     * \brief The Domain ID
+    #     */
+    #    uint32_t    domain_id;
+    #}cli_data_object_domain_add_t;
+    fmt = 'III'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        interval_int = self.params[0]
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, interval_int)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_statistics_interval.add_cli()
+
+class cli_data_objects_mass_transfer(cli_dps_objects):
+    '''
+    Represents the CLI Context for Mass Transfer of Domain Data Testing in DPS
+    '''
+    #The input to display for Context:
+    user_input_string = 'mass_transfer'
+    user_input_string_raw = '%s:%s'%(cli_dps_objects.user_input_string,
+                                     user_input_string)
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'mass_transfer'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Mass Transfer Testing'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #MAJOR CODE not needed for this context
+    #major_type = cli_interface.CLI_DATA_OBJECTS
+    #CLI CODE not needed for this context
+    #cli_code = cli_interface.CLI_DATA_OBJECTS
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Required', 'Random Function', '(Input to Random Function)' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [] #Empty
+    support_random = False
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        Execute Login: Nothing To Do here
+        @param session: The session context
+        @type session: Class login_context
+        @return cli_data_objects_mass_transfer
+        '''
+        return cli_data_objects_mass_transfer
+    #This function 'exit' must be present for all contexts
+    def cli_exit(self, session):
+        '''
+        Exits configuration mode. Go back to Login Context
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        return
+#Add this class of command to global list of supported commands
+cli_data_objects_mass_transfer.add_context()
+
+class cli_data_objects_mass_transfer_get_ready(cli_data_objects_mass_transfer):
+    '''
+    Represents the CLI Object for informing a DPS Node to get ready for a Domain
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'get_ready'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Get Ready for a Domain'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.MASS_TRANSFER_GET_READY
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_add_s{
+    #    uint32_t    domain_id;
+    #}cli_data_object_domain_add_t;
+    fmt = 'III'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        domain_int = self.params[0]
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain_int)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_mass_transfer_get_ready.add_cli()
+
+class cli_data_objects_mass_transfer_start(cli_data_objects_mass_transfer):
+    '''
+    Represents the CLI Object for informing a DPS Node to get ready for a Domain
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'start'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Start transfer of Domain Data'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.MASS_TRANSFER_START
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain),
+                      ('dps_ip_address', cli_type_ip, True, cli_interface.range_ip)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_transfer_s{
+    #    uint32_t domain_id;
+    #    uint32_t IP_type;
+    #    union {
+    #        uint32_t IPv4;
+    #        char IPv6[16];
+    #    };
+    #}cli_data_object_domain_transfer_t;
+    fmt = 'IIII'
+    fmt += 'I12s' #IPv4 + 12 extra bytes = 16 bytes for union
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        #self.params hold the variables
+        domain = self.params[0]
+        IP = cli_type_ip.ipv4_atoi(self.params[1])
+        #Pack into structure
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain,
+                               socket.AF_INET, IP, '')
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_mass_transfer_start.add_cli()
+
+class cli_data_objects_mass_transfer_domain_activate(cli_data_objects_mass_transfer):
+    '''
+    Represents the CLI Object for informing a DPS Node to get ready for a Domain
+    '''
+    #The Possible Unique Names that identify this command
+    #These will be the 1st parameter in the CLI command (20 chars max)
+    command_id = 'domain_activate'
+    #Definition of the Command - Keep it short (40 chars)
+    command_def = 'Activate a Domain'
+    #Whether it's a hidden command
+    hidden = False
+    #Whether the command is only available in god mode
+    GodModeOnly = True
+    #This is MAJOR TYPE of the Command
+    major_type = cli_dps_interface.CLI_DATA_OBJECTS
+    #CLI CODE
+    cli_code = cli_interface_data_objects.DOMAIN_ACTIVATE
+    #The Parameters of the rest of the command
+    #Each parameter must have ('Name', 'Type', 'Non-Optional?', 'Range' )
+    #All optional parameters MUST come after the required parameters
+    command_format = [('domain_id', cli_type_int, True, cli_interface.range_domain),
+                      ('replication_factor', cli_type_int, True, cli_interface.range_replication)]
+    support_random = False
+    #Structure to send
+    # 2 Integers (MAJOR CODE, MINOR CODE) followed by
+    #typedef struct cli_data_object_domain_update_s{
+    #    uint32_t    domain_id;
+    #    uint32_t    replication_factor;
+    #}cli_data_object_domain_update_t;
+    fmt = 'IIII'
+    #This function 'execute' must exist for all CLI objects
+    def execute(self, session):
+        '''
+        @param session: The session context
+        @type session: Class login_context
+        '''
+        domain_int = self.params[0]
+        replication = self.params[1]
+        c_struct = struct.pack(self.fmt, self.major_type, self.cli_code, domain_int, replication)
+        ret = dcslib.process_cli_data(c_struct)
+        cli_interface.process_error(ret)
+#Add this class of command to global list of supported commands
+cli_data_objects_mass_transfer_domain_activate.add_cli()
+

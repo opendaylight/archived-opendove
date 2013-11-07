@@ -215,23 +215,38 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public int canDeleteSubnet(NeutronSubnet subnet) {
+        /* TODO: check if router external - if so, check for EGW assignments or SNAT pool assignments
+         * if either exist, can't delete router external subnet
+         */
         return 200;
     }
 
     public void neutronSubnetDeleted(NeutronSubnet subnet) {
-        IfOpenDoveDomainCRUD domainDB = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
-        IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
-        // mark open dove networks for deletion
-        Iterator<OpenDoveSubnet> i = doveSubnetDB.getSubnets().iterator();
-        while (i.hasNext()) {
-            OpenDoveSubnet oDS = i.next();
-            if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(subnet.getID())) {
-                // need to remove from the domain
-                String domainName = oDS.getDomainUUID();
-                OpenDoveDomain domain = domainDB.getDomain(domainName);
-                domain.removeSubnet(oDS);
-                // need to remove from the systemdb
-                doveSubnetDB.removeSubnet(oDS.getUUID());
+        IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
+        OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock();
+
+        OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+        IfSBDoveSubnetCRUD subnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
+        IfSBDoveNetworkSubnetAssociationCRUD networkSubnetAssociationDB =
+            OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
+        INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+        NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(subnet.getNetworkUUID());
+        if (!neutronNetwork.isRouterExternal()) {
+            if (neutronNetwork.isShared()) {
+                if (!controlBlock.getDomainSeparation()) {
+                    // TODO: tombstone EGW IPv4 information
+                }
+            }
+            // tombstone networkSubnetAssociation
+            for (OpenDoveSubnet oDS: subnetDB.getSubnets()) {
+                if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(subnet.getID())) {
+                    for (OpenDoveNetworkSubnetAssociation oDNSA : networkSubnetAssociationDB.getAssociations()) {
+                        if (oDNSA.getOpenDoveNetworkSubnetUuid().equalsIgnoreCase(oDS.getUUID())) {
+                            oDNSA.setTombstoneFlag(true);
+                            networkSubnetAssociationDB.updateAssociation(oDNSA);
+                        }
+                    }
+                }
             }
         }
     }

@@ -21,6 +21,7 @@ import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveNetworkSubnetAssociationCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.rest.OpenDoveNetworkSubnetRequest;
 
 /**
  * Open DOVE Southbound REST APIs for Network/Subnet Association.<br>
@@ -59,8 +60,26 @@ public class OpenDoveNetworkSubnetSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!aInterface.associationExists(associationUUID))
+        if (!aInterface.associationExists(associationUUID)) {
             return Response.status(404).build();
-        return Response.status(200).entity(aInterface.getAssociation(associationUUID)).build();
+        }
+        return Response.status(200).entity(new OpenDoveNetworkSubnetRequest(aInterface.getAssociation(associationUUID))).build();
+    }
+
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response listSubnets( ) {
+        IfSBDoveNetworkSubnetAssociationCRUD aInterface = OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
+        if (aInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        return Response.status(200).entity(new OpenDoveNetworkSubnetRequest(aInterface.getAssociations())).build();
     }
 }

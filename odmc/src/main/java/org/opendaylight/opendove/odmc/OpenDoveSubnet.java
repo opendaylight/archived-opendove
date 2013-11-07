@@ -65,8 +65,9 @@ public class OpenDoveSubnet extends OpenDoveObject {
         }
         while (octet < 4) {
             ans.append("0");
-            if (octet < 3)
+            if (octet < 3) {
                 ans.append(".");
+            }
             octet++;
         }
         return ans.toString();
@@ -80,10 +81,11 @@ public class OpenDoveSubnet extends OpenDoveObject {
         subnet = getIPNetwork(neutronSubnet.getCidr());
         mask = getIPMask(neutronSubnet.getCidr());
         nexthop = neutronSubnet.getGatewayIP();
-        if (neutronNetwork.isShared())
+        if (neutronNetwork.isShared()) {
             subnetType = "Shared";
-        else
+        } else {
             subnetType = "Dedicated";
+        }
         // link to network
         networkUUIDs.add(network.getUUID());
         tombstoneFlag = false;
@@ -145,6 +147,10 @@ public class OpenDoveSubnet extends OpenDoveObject {
 
     public void setNetworkUUIDs(List<String> networkUUIDs) {
         this.networkUUIDs = networkUUIDs;
+    }
+
+    public void removeNetwork(String uuid) {
+        networkUUIDs.remove(uuid);
     }
 
     public String getAssociatedOSSubnetUUID() {

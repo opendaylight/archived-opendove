@@ -56,19 +56,19 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
 
     void setClusterContainerService(IClusterContainerServices s) {
         logger.debug("Cluster Service set");
-        this.clusterContainerService = s;
+        clusterContainerService = s;
     }
 
     void unsetClusterContainerService(IClusterContainerServices s) {
-        if (this.clusterContainerService == s) {
+        if (clusterContainerService == s) {
             logger.debug("Cluster Service removed!");
-            this.clusterContainerService = null;
+            clusterContainerService = null;
         }
     }
 
     @SuppressWarnings("deprecation")
     private void allocateCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterContainerService, can't create cache");
             return;
         }
@@ -81,7 +81,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
 //                    EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
 //            this.clusterContainerService.createCache("openDoveSubnets",
 //                    EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
-          this.clusterContainerService.createCache("openDoveObjects",
+          clusterContainerService.createCache("openDoveObjects",
                   EnumSet.of(IClusterServices.cacheMode.NON_TRANSACTIONAL));
         } catch (CacheConfigException cce) {
             logger.error("Southbound Caches couldn't be created for OpenDOVE -  check cache mode");
@@ -93,7 +93,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
 
     @SuppressWarnings({ "unchecked", "deprecation" })
     private void retrieveCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterContainerService, can't retrieve cache");
             return;
         }
@@ -122,7 +122,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         logger.debug("Cache was successfully retrieved for openDoveSubnets");
         */
         logger.debug("Retrieving cache for openDoveObjects");
-        objectDB = (ConcurrentMap<Integer, OpenDoveObject>) this.clusterContainerService
+        objectDB = (ConcurrentMap<Integer, OpenDoveObject>) clusterContainerService
                 .getCache("openDoveObjects");
         if (objectDB == null) {
             logger.error("Cache couldn't be retrieved for openDoveSubnets");
@@ -138,7 +138,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
 
     @SuppressWarnings("deprecation")
     private void destroyCache() {
-        if (this.clusterContainerService == null) {
+        if (clusterContainerService == null) {
             logger.error("un-initialized clusterMger, can't destroy cache");
             return;
         }
@@ -146,7 +146,7 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
 //        this.clusterContainerService.destroyCache("openDoveDomains");
 //        this.clusterContainerService.destroyCache("openDoveNetworks");
 //        this.clusterContainerService.destroyCache("openDoveSubnets");
-        this.clusterContainerService.destroyCache("openDoveObjects");
+        clusterContainerService.destroyCache("openDoveObjects");
     }
 
     private void startUp() {
@@ -169,11 +169,11 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
     void init(Component c) {
         Dictionary<?, ?> props = c.getServiceProperties();
         if (props != null) {
-            this.containerName = (String) props.get("containerName");
-            logger.debug("Running containerName: {}", this.containerName);
+            containerName = (String) props.get("containerName");
+            logger.debug("Running containerName: {}", containerName);
         } else {
             // In the Global instance case the containerName is empty
-            this.containerName = "";
+            containerName = "";
         }
         startUp();
     }
@@ -233,13 +233,18 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         subnetMap.remove(subnetUUID);
     }
 
+    public void updateSubnet(OpenDoveSubnet subnet) {
+        subnetMap.update(subnet.getUUID(), subnet);
+    }
+
     public int versionExists(int version) {
         List<Integer> orderedKeys = OpenDoveConcurrentBackedMap.getOrderedBackingKeys(objectDB);
         Iterator<Integer> iterator = orderedKeys.iterator();
         while (iterator.hasNext()) {
             Integer i = iterator.next();
-            if (i >= version)
+            if (i >= version) {
                 return 200;
+            }
         }
         return 204;
     }
@@ -252,10 +257,11 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
             ans.setUri("");
         } else {
             try {
-                if (currentChange.getTombstoneFlag())
+                if (currentChange.getTombstoneFlag()) {
                     ans.setMethod("DELETE");
-                else
+                } else {
                     ans.setMethod("GET");
+                }
                 IfOpenDGWTrackedObject t = (IfOpenDGWTrackedObject) currentChange;
                 ans.setUri(t.getSBDgwUri());
             } catch (Exception e) {
@@ -270,10 +276,9 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         while (iterator.hasNext()) {
             Integer i = iterator.next();
             if (i > changeIndex) {
-                OpenDoveObject test = objectDB.get(i);
+                objectDB.get(i);
                 lastChangeSeen = i;
                 try {
-                    IfOpenDGWTrackedObject t = (IfOpenDGWTrackedObject) test;
                     ans.setNextChange(i);
                     return ans;
                 } catch (Exception e) {
@@ -293,10 +298,11 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
             ans.setUri("");
         } else {
             try {
-                if (currentChange.getTombstoneFlag())
+                if (currentChange.getTombstoneFlag()) {
                     ans.setMethod("DELETE");
-                else
+                } else {
                     ans.setMethod("GET");
+                }
                 IfOpenDCSTrackedObject t = (IfOpenDCSTrackedObject) currentChange;
                 ans.setUri(t.getSBDcsUri());
             } catch (Exception e) {
@@ -311,10 +317,9 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         while (iterator.hasNext()) {
             Integer i = iterator.next();
             if (i > changeIndex) {
-                OpenDoveObject test = objectDB.get(i);
+                objectDB.get(i);
                 lastChangeSeen = i;
                 try {
-                    IfOpenDCSTrackedObject t = (IfOpenDCSTrackedObject) test;
                     ans.setNextChange(i);
                     return ans;
                 } catch (Exception e) {
@@ -331,8 +336,9 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
     }
 
     public OpenDoveNetworkSubnetAssociation getAssociation(String uuid) {
-        if (networkSubnetAssociationMap.containsKey(uuid))
+        if (networkSubnetAssociationMap.containsKey(uuid)) {
             return (OpenDoveNetworkSubnetAssociation) networkSubnetAssociationMap.get(uuid);
+        }
         return null;
     }
 
@@ -349,6 +355,9 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         return answer;
     }
 
+    public void updateAssociation(OpenDoveNetworkSubnetAssociation oDNSA) {
+        networkSubnetAssociationMap.update(oDNSA.getUUID(), oDNSA);
+    }
     public void removeNetworkSubnetAssociation(String uuid) {
         networkSubnetAssociationMap.remove(uuid);
     }

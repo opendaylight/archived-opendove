@@ -51,12 +51,12 @@ public class OpenDoveGC implements TimerTask {
                         boolean purge = true;
                         for (OpenDoveServiceAppliance oDSA: oDSAs) {
                             if (oDSA.get_isDCS()) {
-                                if (oDSA.get_dcs_config_version() < i) {
+                                if (oDSA.get_dcs_config_version() < o.getLastChangeVersion()) {
                                     purge = false;
                                 }
                             }
                             if (oDSA.get_isDGW()) {
-                                if (oDSA.get_dgw_config_version() < i) {
+                                if (oDSA.get_dgw_config_version() < o.getLastChangeVersion()) {
                                     purge = false;
                                 }
                             }
@@ -83,6 +83,10 @@ public class OpenDoveGC implements TimerTask {
         return o.getTombstoneFlag();
     }
 
+    /* NOTE: if code in this block looks for dependent objects based on the parameters of the passed in object, please add
+     * tests for checking the dependent object is not null, as this method *will* be called multiple times on an object
+     * when removing that object
+     */
     private void cleanObjectReferences(OpenDoveObject o) {
         if (o instanceof OpenDoveDomain) {
             for (OpenDoveNetwork oDN: openDoveBidirectionalInterfaces.getNetworks()) {
@@ -117,6 +121,15 @@ public class OpenDoveGC implements TimerTask {
             openDoveBidirectionalInterfaces.removeNetwork(o.getUUID());
         }
         if (o instanceof OpenDoveNetworkSubnetAssociation) {
+            OpenDoveNetworkSubnetAssociation oDNSA = (OpenDoveNetworkSubnetAssociation) o;
+            OpenDoveSubnet oDS = openDoveSBInterfaces.getSubnet(oDNSA.getOpenDoveNetworkSubnetUuid());
+            if (oDS != null) {
+                oDS.removeNetwork(openDoveBidirectionalInterfaces.getNetworkByVnid(oDNSA.getOpenDoveNetworkVnid()).getUUID());
+                if (oDS.getNetworkUUIDs().size() == 0) {
+                    oDS.setTombstoneFlag(true);
+                    openDoveSBInterfaces.updateSubnet(oDS);
+                }
+            }
             openDoveSBInterfaces.removeNetworkSubnetAssociation(o.getUUID());
         }
         if (o instanceof OpenDovePolicy) {

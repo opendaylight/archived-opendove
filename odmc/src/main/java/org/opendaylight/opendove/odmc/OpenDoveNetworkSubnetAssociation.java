@@ -10,13 +10,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class OpenDoveNetworkSubnetAssociation extends OpenDoveObject
     implements IfOpenDCSTrackedObject, IfOpenDGWTrackedObject {
 
-    @XmlElement(name="subnet_id")
+    @XmlElement(name="uuid")
     String uuid;
 
     @XmlElement(name="vnid_id")
     int openDoveNetworkVnid;
 
-    @XmlElement(name="uuid")
+    @XmlElement(name="subnet_id")
     String openDoveNetworkSubnetUuid;
 
     public OpenDoveNetworkSubnetAssociation() {

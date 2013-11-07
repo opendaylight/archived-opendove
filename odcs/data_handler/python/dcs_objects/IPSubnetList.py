@@ -59,11 +59,6 @@ class IPSubnetList:
         @param inet_type: socket type i.e. AF_INET or AF_INET6
         @type inet_type: Integer
         '''
-        ret_val, subnet_list = dcslib.create_ipsubnetlist()
-        if ret_val != DOVEStatus.DOVE_STATUS_OK:
-            raise Exception ('Fail to create IP subnet list')
-        #The C object list for Subnet
-        self.CList = subnet_list
         #The Python list for Subnet
         self.PyList = {}
         self.count = 0
@@ -71,19 +66,17 @@ class IPSubnetList:
     def add(self, ip_value, mask_value, ip_gateway, mode):
         '''
         Adds a IP Subnet to List
-        @param ip_value: IP Address of Subnet
+        @param ip_value: IP Address of Subnet (Network Byte Order)
         @type ip_value: Integer
-        @param mask_value: Mask of Subnet
+        @param mask_value: Mask of Subnet (Network Byte Order)
         @type mask_value: Integer
-        @param ip_gateway: The Gateway associated with the subnet
+        @param ip_gateway: The Gateway associated with the subnet (Network Byte Order)
         @type ip_gateway: Integer
         @param mode: Mode of Subnet
         @type mode: Integer (0 = Dedicated, 1 = Shared)
         @return: The status of the operation
         @rtype: dove_status (defined in include/status.h) Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG
         #Add to Python List
         key = '%s:%s'%(ip_value, mask_value)
         self.PyList[key] = IPSubnet(ip_value, mask_value, ip_gateway, mode)
@@ -100,8 +93,6 @@ class IPSubnetList:
         @return: The status of the operation
         @rtype: dove_status (defined in include/status.h) Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG
         key = '%s:%s'%(ip_value, mask_value)
         try:
             del self.PyList[key]
@@ -121,29 +112,10 @@ class IPSubnetList:
         @return: status, subnet_ip, subnet_mask, subnet_mode, subnet_gateway
         @rtype: Integer, Integer, Integer, Integer, Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG, 0, 0, 0, 0
-
-        ret_val, subnet_ip, subnet_mask, subnet_mode, subnet_gateway = self.IPSubnetLookup(ip_value)
-
-        return ret_val, socket.htonl(subnet_ip), socket.htonl(subnet_mask), subnet_mode, socket.htonl(subnet_gateway)
-
-    def IPSubnetLookup(self,ip_val):
-	'''
-	This function will do a lookup on Python Subnet Dictionary for an IP and returns
-	the subnet details.
-	'''
         try:
-            key_list = self.PyList.keys()
-            for key in key_list:
-                ipmask = key.split(':')
-                ip_str = ipmask[0]
-                mask_str = ipmask[1]
-                ip = struct.unpack('!L',socket.inet_aton(ip_str))[0]
-                mask = struct.unpack('!L',socket.inet_aton(mask_str))[0]
-                lookupip = struct.unpack('!L',socket.inet_aton(ip_val))[0]
-                if (ip & mask) == (lookupip & mask):
-                    subnet = self.PyList[key]
+            subnet_list = self.PyList.values()
+            for subnet in subnet_list:
+                if (subnet.ip_value & subnet.mask_value) == (ip_val & subnet.mask_value):
                     return DOVEStatus.DOVE_STATUS_OK, subnet.ip_value, subnet.mask_value, subnet.mode, subnet.ip_gateway
         except Exception:
             return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
@@ -156,8 +128,6 @@ class IPSubnetList:
         @return: True or False
         @rtype: Boolean
         '''
-        if self.CList is None:
-            raise Exception('Invalid')
         ret_val, subnet_ip, subnet_mask, subnet_mode, subnet_gateway = self.lookup(ip_value)
         if ret_val == DOVEStatus.DOVE_STATUS_OK:
             return subnet_mode
@@ -167,20 +137,20 @@ class IPSubnetList:
     def get(self, ip_value, mask_value):
         '''
         Get a exact subnet according to IP and Mask pair
-        @param ip_value: IP Address
+        @param ip_value: IP Address (Network Byte Order)
         @type ip_value: Integer
-        @param mask_value: Mask of Subnet
+        @param mask_value: Mask of Subnet (Network Byte Order)
         @type mask_value: Integer
         @return: status, subnet_ip, subnet_mask, subnet_mode, subnet_gateway
         @rtype: Integer, Integer, Integer, Integer, Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG, 0, 0, 0, 0
-        c_struct = struct.pack('III',
-                               IPSUBNETListOpcode.IP_SUBNET_LIST_OPCODE_GET, 
-                               socket.ntohl(ip_value), socket.ntohl(mask_value))
-        ret_val, subnet_ip, subnet_mask, subnet_mode, subnet_gateway = dcslib.process_ipsubnet(self.CList, c_struct)
-        return ret_val, socket.htonl(subnet_ip), socket.htonl(subnet_mask), subnet_mode, socket.htonl(subnet_gateway)
+        try:
+            subnet_list = self.PyList.values()
+            for subnet in subnet_list:
+                if (subnet.ip_value & subnet.mask_value) == (ip_val & subnet_mask):
+                    return DOVEStatus.DOVE_STATUS_OK, subnet.ip_value, subnet.mask_value, subnet.mode, subnet.ip_gateway
+        except Exception:
+            return DOVEStatus.DOVE_STATUS_NOT_FOUND, 0, 0, 0, 0
 
     def show(self):
         '''
@@ -188,11 +158,15 @@ class IPSubnetList:
         @return: The status of the operation
         @rtype: dove_status (defined in include/status.h) Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG
-        c_struct = struct.pack('I', IPSUBNETListOpcode.IP_SUBNET_LIST_OPCODE_LIST)
-        ret_val = dcslib.process_ipsubnet(self.CList, c_struct)
-        return ret_val
+        try:
+            subnet_list = self.PyList.values()
+            for subnet in subnet_list:
+                ip_value_packed = struct.pack('I', subnet.ip_value)
+                mask_value_packed = struct.pack('I', subnet.mask_value)
+                print 'IP: %s, Mask: %s\r'%(socket.inet_ntop(socket.AF_INET, ip_value_packed),
+                                            socket.inet_ntop(socket.AF_INET, mask_value_packed))
+        except Exception:
+            return DOVEStatus.DOVE_STATUS_NOT_FOUND
 
     def flush(self):
         '''
@@ -200,37 +174,14 @@ class IPSubnetList:
         @return: The status of the operation
         @rtype: dove_status (defined in include/status.h) Integer
         '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG
-        c_struct = struct.pack('I', IPSUBNETListOpcode.IP_SUBNET_LIST_OPCODE_FLUSH)
-        ret_val = dcslib.process_ipsubnet(self.CList, c_struct)
         self.count = 0
         self.PyList.clear()
         return ret_val
-
-    def getallids(self):
-        '''
-        Get all IDs from list
-        @return: status, subnet_ids
-        @rtype: Integer, String
-        '''
-        if self.CList is None:
-            return DOVEStatus.DOVE_STATUS_INVALID_DVG, ''
-        c_struct = struct.pack('I', IPSUBNETListOpcode.IP_SUBNET_LIST_OPCODE_GETALLIDS)
-        ret_val, subnet_ids = dcslib.process_ipsubnet(self.CList, c_struct)
-        return ret_val, subnet_ids
 
     def destroy(self):
         '''
         Destructor all IP Subnets from List
         '''
-        if self.CList is None:
-            return
-        c_struct = struct.pack('I', IPSUBNETListOpcode.IP_SUBNET_LIST_OPCODE_DESTROY)
-        ret_val = dcslib.process_ipsubnet(self.CList, c_struct)
-        if ret_val != DOVEStatus.DOVE_STATUS_OK:
-            message = 'IPSubnetList.destroy: Failed return value %s'%ret_val
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
         self.count = 0
         self.CList = None
         self.PyList.clear()

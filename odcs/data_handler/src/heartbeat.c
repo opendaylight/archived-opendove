@@ -24,14 +24,14 @@
 #include "include.h"
 
 /**
- * \brief The module location defines for the DPS Statistics 
+ * \brief The module location defines for the DPS Statistics
  *        Handling API
  */
 #define HEARTBEAT_MODULE "dps_heartbeat"
 
 //I don't know how to represent the UUID
 char uuid[] = "000000000000000000000000";
-char dps_heartbeat_uri[] = DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI;
+//char dps_heartbeat_uri[] = DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI;
 char dps_cluster_heartbeat_uri[] = DPS_CLUSTER_HEARTBEAT_URI;
 char dps_cluster_heartbeat_request_uri[] = DPS_CLUSTER_HEARTBEAT_REQUEST_URI;
 char dps_cluster_nodestatus_uri[] = DPS_CLUSTER_NODE_STATUS_URI;
@@ -46,13 +46,13 @@ long long local_config_version = 0;
  */
 long long cluster_config_version = 0;
 /**
- * \brief The mutex and condition variable used by thread. 
+ * \brief The mutex and condition variable used by thread.
  */
 pthread_cond_t dps_heartbeat_cv = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t dps_heartbeat_mp = PTHREAD_MUTEX_INITIALIZER;
 
 /*
-mutex and retry variable used by thread 
+mutex and retry variable used by thread
 */
 pthread_mutex_t dps_appliance_registration_needed_mp = PTHREAD_MUTEX_INITIALIZER;
 unsigned char dps_appliance_registration_needed = 0;
@@ -60,6 +60,11 @@ unsigned char dps_appliance_registration_needed = 0;
 unsigned char dps_inter_node_heartbeat_send = 1;
 
 uint32_t dps_registration_fail_count = 0;
+
+/**
+ * \brief The thread ID.
+ */
+long heartbeatTaskId;
 
 int set_dps_appliance_registration_needed(unsigned char value)
 {
@@ -79,7 +84,7 @@ unsigned char get_dps_appliance_registration_needed(void)
 }
 
 /**
- * \brief The Interval in which DPS collects statistics. 
+ * \brief The Interval in which DPS collects statistics.
  *        Unit(second)
  */
 static int dps_heartbeat_sample_interval = 15; /* 15s*/
@@ -89,7 +94,6 @@ unsigned char dps_heartbeat_send = 1;
 int dps_heartbeat_to_dmc_send_count = 0;
 /* Record if last heartbeat is success or not*/
 int last_heartbeat_to_dmc_is_success = 0;
-
 
 int heartbeat_send_sock = 0;
 
@@ -118,26 +122,25 @@ int get_heartbeat_interval(void)
 		return 0;
 	}
 }
-#ifdef PTHREAD_REPLACEMENT
+
 static json_t *dps_form_json_heartbeat()
 {
 	json_t *js_root = NULL;
 	char str[INET6_ADDRSTRLEN];
 
 	log_debug(RESTHandlerLogLevel, "Enter");
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6, str, INET6_ADDRSTRLEN);
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, str, INET6_ADDRSTRLEN);
 
-	js_root = json_pack("{s:i, s:i, s:s, s:s, s:s}",
-	                    "family", (int)dps_local_ip.family,
-	                    "config_version", (int)cluster_config_version,
-	                    "ip", str,
-	                    "UUID", dps_node_uuid,
-	                    "Cluster_Leader", dps_cluster_leader_ip_string);
+	js_root = json_pack("{s:i, s:i, s:s}",
+	                    "ip_family", (int)dcs_local_ip.family,
+	                    "dcs_config_version", (int)cluster_config_version,
+	                    "ip", str
+	                    );
 
 	log_debug(RESTHandlerLogLevel, "Exit");
 	return js_root;
 }
-#endif
+
 static json_t *dps_form_json_heartbeat_to_dps_node(int factive,
                                                    long long config_version)
 {
@@ -152,10 +155,13 @@ static json_t *dps_form_json_heartbeat_to_dps_node(int factive,
 	log_debug(RESTHandlerLogLevel, "Exit");
 	return js_root;
 }
-#ifdef PTHREAD_REPLACEMENT
+
 static void dps_heartbeat_send_to_dove_controller()
 {
 	json_t *js_res = NULL;
+    char dps_heartbeat_uri[MAX_URI_LEN];
+   
+    sprintf (dps_heartbeat_uri, DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI, dps_node_uuid);
 
 	log_debug(RESTHandlerLogLevel, "Enter");
 	do
@@ -174,7 +180,7 @@ static void dps_heartbeat_send_to_dove_controller()
 	log_debug(RESTHandlerLogLevel, "Exit");
 	return;
 }
-#endif
+
 /*
  ******************************************************************************
  * dps_rest_heartbeat_send_to_dps_node --                                 *//**
@@ -357,8 +363,8 @@ void dps_rest_nodes_status_send_to(ip_addr_t *dps_node,
 	log_debug(RESTHandlerLogLevel, "Exit");
 	return;
 }
-#ifdef PTHREAD_REPLACEMENT
-static void dps_heartbeat_main(unsigned char *pDummy)
+
+static void dps_heartbeat_main(void *pDummy)
 {
 
 	struct timespec   ts;
@@ -410,15 +416,14 @@ static void dps_heartbeat_main(unsigned char *pDummy)
 
 	return;
 }
-#endif
 
-dove_status dps_heartbeat_init(char *pythonpath)
+dove_status dcs_heartbeat_init(char *pythonpath)
 {
 	dove_status status = DOVE_STATUS_OK;
 
 	do
 	{
-#if 0	
+#if 0
 		status = python_functions_init(pythonpath);
 		if (status != DOVE_STATUS_OK)
 		{
@@ -436,25 +441,20 @@ dove_status dps_heartbeat_init(char *pythonpath)
 			status = DOVE_STATUS_INVALID_PARAMETER;
 			break;
 		}
-		
+
 		if (pthread_cond_init(&dps_heartbeat_cv, NULL) != 0) {
 			status = DOVE_STATUS_INVALID_PARAMETER;
 			break;
 		}
-#ifdef PTHREAD_REPLACEMENT
 		/* Create a thread for statistics collection */
-#endif
-		/* use Restful to send the heartbeat */
-#if 0
-		if ((heartbeat_send_sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+		if (create_task((const char *)"Heartbeat", 0, OSW_DEFAULT_STACK_SIZE,
+		                dps_heartbeat_main, 0,
+		                &heartbeatTaskId) != OSW_OK)
 		{
-			dps_log_error(PythonDataHandlerLogLevel, "socket() failed Error %s\n",
-			              strerror(errno));
-			status = DOVE_STATUS_INVALID_FD;
+			status = DOVE_STATUS_THREAD_FAILED;
+			log_error(PythonDataHandlerLogLevel,"task create failed");
 			break;
 		}
-#endif
-		
 	} while (0);
 
 	return status;

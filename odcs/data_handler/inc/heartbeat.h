@@ -22,7 +22,7 @@ extern int last_heartbeat_to_dmc_is_success;
 
 
 
-dove_status dps_heartbeat_init(char *pythonpath);
+dove_status dcs_heartbeat_init(char *pythonpath);
 
 /*
  ******************************************************************************

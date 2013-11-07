@@ -325,7 +325,7 @@ class DpsCollection(object):
     @classmethod
     def generate_query_id(cls):
         '''
-        This routine generates a query id that the DPS Server can use
+        This routine generates a query id that the DCS Server can use
         @return: 
         '''
         ret_val = cls.QueryID
@@ -357,7 +357,7 @@ class DOVEStatus:
     DOVE_STATUS_INVALID_DVG = 16
     DOVE_STATUS_INVALID_POLICY = 17
     DOVE_STATUS_THREAD_FAILED = 18
-    DOVE_STATUS_OSIX_INIT_FAILED = 19
+    DOVE_STATUS_OSW_INIT_FAILED = 19
     DOVE_STATUS_INVALID_SERVICE = 20
     DOVE_STATUS_RESTC_INIT_FAILED = 21
     DOVE_STATUS_LOCAL_DOMAIN = 22
@@ -387,7 +387,7 @@ class DOVEStatus:
                      DOVE_STATUS_INVALID_DVG: 'Invalid DVG',
                      DOVE_STATUS_INVALID_POLICY: 'Invalid Policy',
                      DOVE_STATUS_THREAD_FAILED: 'Thread Creation Failed',
-                     DOVE_STATUS_OSIX_INIT_FAILED: 'OSIX initialization Failed',
+                     DOVE_STATUS_OSW_INIT_FAILED: 'OSW initialization Failed',
                      DOVE_STATUS_INVALID_SERVICE: 'Invalid Service',
                      DOVE_STATUS_RESTC_INIT_FAILED: 'REST Client Initialization Failed',
                      DOVE_STATUS_LOCAL_DOMAIN: 'Domain Handled by Local Node',
@@ -450,7 +450,7 @@ class DpsClientType:
     vlan_gateway = 3
     external_gateway = 4
     controller = 5
-    types = {dps_server: 'DPS Server', 
+    types = {dps_server: 'DCS Server', 
              dove_switch: 'DOVE Switch', 
              vlan_gateway: 'VLAN Gateway', 
              external_gateway: 'External Gateway',

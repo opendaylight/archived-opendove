@@ -249,11 +249,11 @@ class DpsControllerHandler(object):
         @attention: DO NOT IMPORT THIS FUNCTION FROM PYTHON CODE
         @param domain_id: The Domain ID
         @type domain_id: Integer
-        @param ip_type: The remote DPS Server socket.AF_INET6 or socket.AF_INET
+        @param ip_type: The remote DCS Server socket.AF_INET6 or socket.AF_INET
         @type ip_type: Integer
-        @param ip_packed: The remote DPS Server Packed IP Address
+        @param ip_packed: The remote DCS Server Packed IP Address
         @type ip_packed: ByteArray
-        @param port: The remote DPS Server port
+        @param port: The remote DCS Server port
         @type port: Integer
         '''
         ret_val = DOVEStatus.DOVE_STATUS_OK
@@ -1707,46 +1707,6 @@ class DpsControllerHandler(object):
             break
         self.lock.release()
         return ret_val
-
-    def IP_Subnet_GetAllIds(self, associated_type, associated_id, IP_type):
-        '''
-        This routine return all Subnet IDs of the domain specified by domain_id
-        @attention: DO NOT IMPORT THIS FUNCTION FROM PYTHON CODE
-        @param associated_type: The associated which a IP subnet belongs to (Domain or VNID)
-        @type associated_type: Integer
-        @param associated_id: The associated ID (Domain ID or VNID)
-        @type associated_id: Integer
-        @param IP_type: socket.AF_INET or socket.AF_INET6
-        @type IP_type: Integer        
-        @return: status, subnet_ids
-        @rtype: Integer, Long
-        '''
-        self.lock.acquire()
-        while True:
-            try:
-                if associated_type == IPSUBNETAssociatedType.IP_SUBNET_ASSOCIATED_TYPE_DOMAIN:
-                    associated_obj = self.Domain_Hash[associated_id]
-            except Exception:
-                ret_val = DOVEStatus.DOVE_STATUS_INVALID_DOMAIN
-                break
-            try:
-                if associated_type == IPSUBNETAssociatedType.IP_SUBNET_ASSOCIATED_TYPE_VNID:
-                    domain_id = self.VNID_Hash[associated_id]
-                    domain_obj = self.Domain_Hash[domain_id]
-                    associated_obj = domain_obj.DVG_Hash[associated_id]
-            except Exception:
-                ret_val = DOVEStatus.DOVE_STATUS_INVALID_DVG
-                break
-            if IP_type == socket.AF_INET:
-                ret_val, subnet_ids = associated_obj.ip_subnet_getallids()
-                self.lock.release()
-                return (ret_val, subnet_ids)
-            else:
-                ret_val = DOVEStatus.DOVE_STATUS_NOT_SUPPORTED
-                self.lock.release()
-                return (ret_val, 0)
-        self.lock.release()
-        return (ret_val, 0)
 
     def DPSClientsShow(self):
         DPSClientHost.show()

@@ -39,11 +39,23 @@ extern int RESTHandlerLogLevel;
  */
 extern char *large_REST_buffer;
 
+/**
+ * \brief username and password to be used in the Authorization header of
+ * 		  REST messages.
+ */
+#define AUTH_HEADER_USERNAME "admin"
+#define AUTH_HEADER_PASSWORD "admin"
+
+/**
+ * \brief flag which signifies capability of a DSA.
+ */
+#define CAN_BE_DCS 	1
+
 /*
  ******************************************************************************
- * dps_server_rest_init                                                    *//**
+ * dcs_server_rest_init                                                    *//**
  *
- * \brief - Initializes the DPS Server REST infrastructure
+ * \brief - Initializes the DCS Server REST infrastructure
  *
  * \param[in] rest_port - The Port on which the REST Services should run on
  *
@@ -53,7 +65,7 @@ extern char *large_REST_buffer;
  *
  ******************************************************************************
  */
-dove_status dps_server_rest_init(short rest_port);
+dove_status dcs_server_rest_init(short rest_port);
 
 typedef struct dove_rest_request_info {
 	char *address;
@@ -204,10 +216,10 @@ typedef struct dps_rest_client_to_dove_controller_endpoint_conflict_s {
 	ip_addr_t physical_addr2;
 
 	/*
-	 * \brief The DPS Client Service Location (IP Address + Port) of the
+	 * \brief The DCS Client Service Location (IP Address + Port) of the
 	 *        Endpoint.
-	 *        DPS Clients MUST NOT set this value i.e. family should be 0
-	 *        DPS Server (during replication) MUST fill this field in
+	 *        DCS Clients MUST NOT set this value i.e. family should be 0
+	 *        DCS Server (during replication) MUST fill this field in
 	 *        based on the address provided by the Protocol Handler.
 	 */
 	ip_addr_t dps_client_addr;

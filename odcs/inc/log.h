@@ -12,7 +12,7 @@
  *      log.h
  *
  *  Abstract:
- *      The file contains the defines and the structures for the DPS Server
+ *      The file contains the defines and the structures for the DCS Server
  *      Logs.
  *
  *  Author:
@@ -52,7 +52,7 @@ void _show_print(const char *fmt, ...);
  * \defgroup DPSServerLog Logging Mechanism
  * @{
  *
- * This module describes the DPS Server logging mechanism. Logging has two
+ * This module describes the DCS Server logging mechanism. Logging has two
  */
 
 

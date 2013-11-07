@@ -40,7 +40,7 @@ class DPSReplicationRequest:
     def __init__(self, replication_query_id_list, reply_message):
         '''
         Initialization routine for the DPSReplicationRequest
-        @param replication_query_id_list: The DPS Server Replication Query ID List
+        @param replication_query_id_list: The DCS Server Replication Query ID List
         @type replication_query_id_list: List []
         @param reply_message: The Reply message to be sent back to DPS Client 
                               associated with this Replication request
@@ -132,7 +132,7 @@ class DPSDomainReplicationTracker:
           that if the Domain Mapping Changed, we would have to
           remove the old Domain Mapping form the DPSReplication
           request and added the new Mapping in.
-          For the current scheme to work, the DPS Servers must
+          For the current scheme to work, the DCS Servers must
           ignore Replication requests which have a version lower
           that what they are expecting and simply return SUCCESS.
     '''
@@ -149,7 +149,7 @@ class DPSDomainReplicationTracker:
         '''
         This routine adds a DPSReplicationRequest to the Queue
         use the Replication Query ID to send out the replicated requests
-        @param replication_query_id_list: The DPS Server Replication Query ID List
+        @param replication_query_id_list: The DCS Server Replication Query ID List
         @type replication_query_id_list: List []
         @param reply_message: A Pointer to the Reply Message which will be
                               used to send reply to the Client.
@@ -276,8 +276,8 @@ class DPSReplicationTracker(object):
         @type msg_domain_id: Integer
         @param transaction_type: DpsTransactionType
         @type transaction_type: DpsTransactionType
-        @return: (DOVEStatus, List of DPS Servers to send request to (replicate))
-        @return: Each DPS Server in list is a tuple of (inet_type, ip_packed, port)
+        @return: (DOVEStatus, List of DCS Servers to send request to (replicate))
+        @return: Each DCS Server in list is a tuple of (inet_type, ip_packed, port)
         '''
         nodes = []
         try:
@@ -333,7 +333,7 @@ class DPSReplicationTracker(object):
     def ReplicationQueryIDGenerate(self, msg_domain_id, transaction_type, reply_message):
         '''
         This routine generates a Replication Query ID to be used by the Server
-        for Client Requests which need to be replicated. The DPS Server must
+        for Client Requests which need to be replicated. The DCS Server must
         use the Replication Query ID to send out the replicated requests
         @attention: DO NOT IMPORT THIS FUNCTION FROM PYTHON CODE
         @param msg_domain_id: The Domain ID in the message
@@ -347,7 +347,7 @@ class DPSReplicationTracker(object):
                               send and free the message.
         @type reply_message: PyObject * (PYTHON OBJECT)
         @return: (DOVEStatus,
-                  List of DPS Servers for replication, 
+                  List of DCS Servers for replication, 
                   List of Query IDs to use)
                   DOVE_STATUS_OK: Replicate
                   DOVE_STATUS_EXISTS: The Client ID already exists, so the DPS

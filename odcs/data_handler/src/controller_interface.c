@@ -1,6 +1,6 @@
 /******************************************************************************
 ** File Main Owner:   DOVE DPS Development Team
-** File Description:  Interface between the Controller and the python code  
+** File Description:  Interface between the Controller and the python code
 **/
 /*
 {
@@ -233,11 +233,6 @@ char *controller_location_ip_string = controller_location_ip_string_storage;
 #define PYTHON_FUNC_IP_SUBNET_FLUSH "IP_Subnet_Flush"
 
 /**
- * \brief The PYTHON function that handles IP Subnet GetAllIds
- */
-#define PYTHON_FUNC_IP_SUBNET_GETALLIDS "IP_Subnet_GetAllIds"
-
-/**
  * \brief The PYTHON function that handles DVG Show
  */
 #define PYTHON_FUNC_DVG_SHOW "Dvg_Show"
@@ -424,10 +419,6 @@ typedef struct python_dps_controller_s{
 	 */
 	PyObject *IP_Subnet_Flush;
 	/*
-	 * \brief The function for IP_Subnet_GetAllIds
-	 */
-	PyObject *IP_Subnet_GetAllIds;
-	/*
 	 * \brief The function for Dvg_Show
 	 */
 	PyObject *Dvg_Show;
@@ -595,7 +586,7 @@ static dove_status domain_add(dps_controller_data_op_t *data)
 		}
 
 		// Add to Cluster collection
-		status = dps_cluster_node_add_domain(&dps_local_ip,
+		status = dps_cluster_node_add_domain(&dcs_local_ip,
 		                                     data->domain_add.domain_id,
 		                                     replication_factor);
 		if (status != DOVE_STATUS_OK)
@@ -692,7 +683,7 @@ static dove_status domain_delete(dps_controller_data_op_t *data)
 				           data->domain_delete.domain_id);
 			}
 			// Delete from Cluster collection
-			status = dps_cluster_node_delete_domain(&dps_local_ip,
+			status = dps_cluster_node_delete_domain(&dcs_local_ip,
 			                                        data->domain_delete.domain_id);
 			if (status != DOVE_STATUS_OK)
 			{
@@ -1271,7 +1262,7 @@ static dove_status domain_update(dps_controller_data_op_t *data)
 		}
 
 		// Add to Cluster collection
-		status = dps_cluster_node_add_domain(&dps_local_ip,
+		status = dps_cluster_node_add_domain(&dcs_local_ip,
 		                                     data->domain_add.domain_id,
 		                                     replication_factor);
 		if (status != DOVE_STATUS_OK)
@@ -2503,7 +2494,7 @@ static dove_status controller_location_delete(dps_controller_data_op_t *data)
 	log_debug(PythonDataHandlerLogLevel, "Enter");
 
 	//Copy local IP into C structure
-	memcpy(&controller_location, &dps_local_ip, sizeof(ip_addr_t));
+	memcpy(&controller_location, &dcs_local_ip, sizeof(ip_addr_t));
 	//Unset the controller location set flag
 	controller_location_set = 0;
 
@@ -3038,69 +3029,6 @@ static dove_status ip_subnet_flush(dps_controller_data_op_t *data)
 
 /*
  ******************************************************************************
- * ip_subnet_getallids --                                                     *//**
- *
- * \brief This routine return all Subnet IDs of the domain
- *
- * \param data The Structure of the Message for IP Subnets GetAllIds
- *
- * \return dove_status
- *
- *****************************************************************************/
-
-static dove_status ip_subnet_getallids(dps_controller_data_op_t *data)
-{
-	int status = DOVE_STATUS_NO_MEMORY;
-	long subnet_ids;
-	PyObject *strret, *strargs;
-	PyGILState_STATE gstate;
-
-	log_debug(PythonDataHandlerLogLevel, "Enter");
-
-	// Ensure the PYTHON Global Interpreter Lock
-	gstate = PyGILState_Ensure();
-	do
-	{
-		//def IP_Subnet_GetAllIds(self, associated_type, associated_id, IP_type):
-		strargs = Py_BuildValue("(III)",
-		                        data->ip_subnet_getallids.associated_type,
-		                        data->ip_subnet_getallids.associated_id,
-		                        data->ip_subnet_getallids.IP_type);
-		if (strargs == NULL)
-		{
-			log_notice(PythonDataHandlerLogLevel, "Py_BuildValue returns NULL");
-			break;
-		}
-
-		// Invoke the IP_Subnet_GetAllIds call
-		strret = PyEval_CallObject(Controller_Interface.IP_Subnet_GetAllIds, strargs);
-		Py_DECREF(strargs);
-
-		if (strret == NULL)
-		{
-			log_warn(PythonDataHandlerLogLevel,
-			         "PyEval_CallObject IP_Subnet_GetAllIds returns NULL");
-			break;
-		}
-		//@return: status, subnet_ids
-		//@rtype: Integer, Long
-		PyArg_ParseTuple(strret, "iL", &status, &subnet_ids);
-		data->return_val = (void *)subnet_ids;
-
-		// Lose the reference on all parameters and return arguments since they
-		// are no longer needed.
-		Py_DECREF(strret);
-	} while(0);
-
-	// Release the PYTHON Global Interpreter Lock
-	PyGILState_Release(gstate);
-	log_debug(PythonDataHandlerLogLevel, "Exit: %s",
-	          DOVEStatusToString((dove_status)status));
-	return (dove_status)status;
-}
-
-/*
- ******************************************************************************
  * dps_clients_show --                                                     *//**
  *
  * \brief This routine returns all the DPS Clients
@@ -3123,7 +3051,7 @@ static dove_status dps_clients_show(dps_controller_data_op_t *data)
 	gstate = PyGILState_Ensure();
 	do
 	{
-		//def IP_Subnet_GetAllIds(self, associated_type, associated_id, IP_type):
+		//def DPSClientsShow(self, associated_type, associated_id, IP_type):
 		strargs = Py_BuildValue("()");
 		if (strargs == NULL)
 		{
@@ -3131,7 +3059,7 @@ static dove_status dps_clients_show(dps_controller_data_op_t *data)
 			break;
 		}
 
-		// Invoke the IP_Subnet_GetAllIds call
+		// Invoke the DPSClientsShow call
 		PyEval_CallObject(Controller_Interface.DPSClientsShow, strargs);
 		Py_DECREF(strargs);
 
@@ -3185,7 +3113,7 @@ static dove_status functions_init(void)
 	function_array[DPS_CONTROLLER_IP_SUBNET_FLUSH] = ip_subnet_flush;
 	function_array[DPS_CONTROLLER_VNID_SHOW] = dvg_show;
 	function_array[DPS_CONTROLLER_QUERY_VNID] = dvg_query;
-	function_array[DPS_CONTROLLER_IP_SUBNET_GETALLIDS] = ip_subnet_getallids;
+	function_array[DPS_CONTROLLER_IP_SUBNET_GETALLIDS] = NULL;
 	function_array[DPS_CONTROLLER_DOMAIN_GLOBAL_SHOW] = domain_global_show;
 	function_array[DPS_CONTROLLER_SERVICE_ROLE] = NULL;
 	function_array[DPS_CONTROLLER_MULTICAST_SHOW] = multicast_show;
@@ -3691,19 +3619,6 @@ static dove_status python_functions_init(char *pythonpath)
 			break;
 		}
 
-		// Get handle to function IP_Subnet_GetAllIds
-		Controller_Interface.IP_Subnet_GetAllIds =
-			PyObject_GetAttrString(Controller_Interface.instance,
-			                       PYTHON_FUNC_IP_SUBNET_GETALLIDS);
-		if (Controller_Interface.IP_Subnet_GetAllIds == NULL)
-		{
-			log_emergency(PythonDataHandlerLogLevel,
-			              "ERROR! PyObject_GetAttrString (%s) failed...\n",
-			              PYTHON_FUNC_IP_SUBNET_GETALLIDS);
-			status = DOVE_STATUS_NOT_FOUND;
-			break;
-		}
-
 		// Get handle to function Dvg_Show
 		Controller_Interface.Dvg_Show =
 			PyObject_GetAttrString(Controller_Interface.instance,
@@ -3793,7 +3708,7 @@ static dove_status python_functions_init(char *pythonpath)
 
 /*
  ******************************************************************************
- * python_init_dps_controller_interface --                                *//**
+ * python_init_controller_interface --                                *//**
  *
  * \brief This routine initializes the DPS Controller Interface to PYTHON
  *        OBHECTS
@@ -3804,7 +3719,7 @@ static dove_status python_functions_init(char *pythonpath)
  *
  *****************************************************************************/
 
-dove_status python_init_dps_controller_interface(char *pythonpath)
+dove_status python_init_controller_interface(char *pythonpath)
 {
 	dove_status status = DOVE_STATUS_OK;
 
@@ -3823,7 +3738,7 @@ dove_status python_init_dps_controller_interface(char *pythonpath)
 
 /*
  ******************************************************************************
- * dps_controller_interface_stop --                                       *//**
+ * dcs_controller_interface_stop --                                       *//**
  *
  * \brief This routine stops the DPS Controller Interface
  *
@@ -3831,7 +3746,7 @@ dove_status python_init_dps_controller_interface(char *pythonpath)
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_controller_interface_stop()
+dove_status dcs_controller_interface_stop()
 {
 	PyObject *strargs;
 	PyGILState_STATE gstate;
@@ -3869,7 +3784,7 @@ dove_status dps_controller_interface_stop()
 
 /*
  ******************************************************************************
- * dps_controller_interface_start --                                       *//**
+ * dcs_controller_interface_start --                                       *//**
  *
  * \brief This routine starts the DPS Controller Interface
  *
@@ -3877,7 +3792,7 @@ dove_status dps_controller_interface_stop()
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_controller_interface_start()
+dove_status dcs_controller_interface_start()
 {
 	PyObject *strargs;
 	PyGILState_STATE gstate;

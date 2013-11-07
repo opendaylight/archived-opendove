@@ -42,10 +42,6 @@
 	snprintf((_buf), DOVE_CONTROLLER_URI_LEN, \
 	         "/api/dove/dps/domains/%d/bulk_policy", (unsigned int)(_id))
 
-#define DOVE_CLUSTER_SUBNET4_URI_GEN(_buf, _id) \
-	snprintf((_buf), DOVE_CONTROLLER_URI_LEN, \
-	         "/api/dove/dps/vns/%d/ipv4-subnets", (unsigned int)(_id))
-
 #define DOVE_CLUSTER_BULK_SUBNET4_URI_GEN(_buf, _id) \
 	snprintf((_buf), DOVE_CONTROLLER_URI_LEN, \
 	         "/api/dove/dps/domains/%d/bulk_ipv4-subnets", (unsigned int)(_id))
@@ -67,9 +63,6 @@ int dps_cluster_vnid_replication(char *dps_node, uint32_t crud,
 
 int dps_cluster_policy_replication(char *dps_node, uint32_t crud, uint32_t domain_id, uint32_t traffic_type,
                                    uint32_t type, uint32_t sdvg, uint32_t ddvg, uint32_t ttl, uint32_t action);
-
-int dps_cluster_ipsubnet4_replication(char *dps_node, uint32_t crud, uint32_t vnid, char *ip, char *mask, 
-                                      char *gw, uint32_t mode);
 
 int dps_cluster_bulk_policy_replication(char *dps_node, uint32_t crud,
                                         uint32_t domain_id, PyObject *pyList_policy);

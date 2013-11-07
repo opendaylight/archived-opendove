@@ -32,7 +32,6 @@ void dps_req_handler_gateways(struct evhttp_request *req, void *arg, int argc, c
 void dps_req_handler_gateway(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dps_req_handler_statistics_load_balancing(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dps_req_handler_statistics_general_statistics(struct evhttp_request *req, void *arg, int argc, char **argv);
-void dps_req_handler_ipsubnets(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dps_req_handler_ipsubnet(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dps_req_handler_local_domain_mapping(struct evhttp_request *req, void *arg, int argc, char **argv);
 void dps_req_handler_service_role(struct evhttp_request *req, void *arg, int argc, char **argv);

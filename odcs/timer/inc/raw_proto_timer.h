@@ -1,6 +1,4 @@
 /*
- *
- *
  * Copyright (c) 2010-2013 IBM Corporation
  * All rights reserved.
  *
@@ -21,14 +19,20 @@
 #define _RAW_PROTO_TIMER_
 
 // Default Retransmission Interval
+/*
+ * User will specify the default Interval as RAW_PKT_DEF_RETRANSMIT_INTERVAL
+ * but the Timer Module will calculate the time difference with an Exponential
+ * Back-Off algorithm
+ */
 #define  RAW_PKT_DEF_RETRANSMIT_INTERVAL      4 
 
 // Default MAX Number of Retransmission
 #define  MAX_NUM_DEF_RETRANSMIT               3
-
 // Maximum number of allowable outstanding packets
 #define  MAX_OUTSTANDING_PKT_CNT              1000
 
+
+#define RETRY_TIMER_OFFSET                    1
 #ifndef TRUE
 #define TRUE  1
 #endif

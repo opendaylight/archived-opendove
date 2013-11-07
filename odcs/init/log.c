@@ -15,7 +15,7 @@
  *      Amitabha Biswas
  *
  *  Abstract:
- *      This module deals with the logging mechanism in the DOVE DPS Server
+ *      This module deals with the logging mechanism in the DOVE DCS Server
  *
  */
 
@@ -26,7 +26,7 @@
  * @{
  */
 
-uint32_t log_console = 0;
+uint32_t log_console = 1;
 
 #define DPS_LOG_PATH "/flash/dcs.log"
 

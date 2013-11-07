@@ -7,7 +7,7 @@
  * terms of the Eclipse Public License v1.0 which accompanies this
  * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
  *
- * File:   python_lib.h
+ * File:   python_interface.h
  * Author: Amitabha Biswas
  *
  * Created on Feb 25, 2012, 12:32 PM
@@ -26,6 +26,23 @@
 #define MAX_PYTHON_INTERPRETOR_PATH 256
 
 extern int PythonLibLogLevel;
+
+/*
+ ******************************************************************************
+ * process_cli_data --                                                    *//**
+ *
+ * \brief This is the routine that the PYTHON Scripts must call to execute CLI
+ *        functions
+ *
+ * \param[in] self  PyObject
+ * \param[in] args  The input MUST of the structure dps_client_data_t and
+ *                  represented as a byte array
+ *
+ * \retval 0 Success
+ * \retval -1 Failure
+ *
+ ******************************************************************************/
+PyObject *process_cli_data(PyObject *self, PyObject *args);
 
 /*
  ******************************************************************************
@@ -51,6 +68,19 @@ dove_status python_lib_get_instance(char *pythonpath,
                                           const char *class_name,
                                           PyObject *pyargs,
                                           PyObject **ppy_instance);
+
+/*
+ ******************************************************************************
+ * python_lib_embed_cli_thread_start --                                   *//**
+ *
+ * \brief This routine gets the PYTHON request to send a message.
+ *
+ * \param fExitOnCtrlC Whether to exist on CTRL+C
+ *
+ * \return dove_status
+ *
+ *****************************************************************************/
+dove_status python_lib_embed_cli_thread_start(int fExitOnCtrlC);
 
 /** @} */
 

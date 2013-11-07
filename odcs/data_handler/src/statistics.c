@@ -30,13 +30,13 @@
 int statistics_need_send_to_leader = 1;
 
 /**
- * \brief The module location defines for the DPS Statistics 
+ * \brief The module location defines for the DPS Statistics
  *        Handling API
  */
 #define PYTHON_MODULE_FILE_STATISTICS "statistics"
 
 /**
- * \brief The PYTHON Class that handles the DPS Statistics 
+ * \brief The PYTHON Class that handles the DPS Statistics
  *        Requests
  */
 #define PYTHON_MODULE_CLASS_STATISTICS "DpsStatisticsHandler"
@@ -62,7 +62,7 @@ int statistics_need_send_to_leader = 1;
 #define PYTHON_FUNC_STATISTICS_LOAD_BALANCING_UPDATE "Statistics_Load_Balancing_Update"
 
 /**
- * \brief The DPS statistics handler function pointers data 
+ * \brief The DPS statistics handler function pointers data
  *        structure
  */
 
@@ -95,18 +95,22 @@ typedef struct python_dps_statistics_s{
 static python_dps_statistics_t Statistics_Interface;
 
 /**
- * \brief The mutex and condition variable used by thread. 
+ * \brief The mutex and condition variable used by thread.
  */
 pthread_cond_t dps_statistics_cv = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t dps_statistics_mp = PTHREAD_MUTEX_INITIALIZER;
 
 /**
- * \brief The Interval in which DPS collects statistics. 
+ * \brief The Interval in which DPS collects statistics.
  *        Unit(second)
  */
 int dps_statistics_sample_interval = 30; /* 30s*/
 unsigned char dps_statistics_send = 1;
 
+/**
+ * \brief The thread ID.
+ */
+long statisticsTaskId;
 extern int PythonDataHandlerLogLevel;
 
 /* Set the statistics interval */
@@ -239,7 +243,7 @@ dps_statistics_domain_general_statistics_get(dps_object_general_statistics_t *ge
 	int endpoint_update_count[2], endpoint_lookup_count[2];
 	int policy_lookup_count[2], multicast_lookup_count[2], internal_gw_lookup_count[2];
 	int i, ret_code = DOVE_STATUS_NO_MEMORY;
-	
+
 	for (i = 0; i < 2; i++)
 	{
 		// Ensure the PYTHON Global Interpreter Lock
@@ -301,7 +305,6 @@ dps_statistics_domain_general_statistics_get(dps_object_general_statistics_t *ge
 	return (dove_status)ret_code;
 }
 
-#ifdef PTHREAD_REPLACEMENT //Compilation Error so ifdefed it.
 static void dps_statistics_update_per_domain(int domain)
 {
 	PyObject *strret, *strargs;
@@ -363,12 +366,12 @@ static json_t *dps_form_json_load_balancing_json(json_t *js_stats)
 	json_t *js_node = NULL, *js_root = NULL;
 	char str[INET6_ADDRSTRLEN];
 
-	inet_ntop(dps_local_ip.family, dps_local_ip.ip6, str, INET6_ADDRSTRLEN);
+	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, str, INET6_ADDRSTRLEN);
 	do
 	{
 		js_node = json_pack("{s:i, s:s, s:s, s:s}",
 		                    /* fields to describe the report node */
-		                    "family", (int)dps_local_ip.family,
+		                    "family", (int)dcs_local_ip.family,
 		                    "ip", str,
 		                    "UUID", dps_node_uuid,
 		                    "Cluster_Leader", dps_cluster_leader_ip_string);
@@ -392,7 +395,6 @@ static json_t *dps_form_json_load_balancing_json(json_t *js_stats)
 
 	return js_root;
 }
-
 
 static dove_status dps_statistics_array_append(json_t *js_stats_array,
                                                dps_object_load_balancing_t *load_balancing)
@@ -470,7 +472,6 @@ static void dps_statistics_report_to_cluster_leader(json_t *js_stats)
 	log_debug(RESTHandlerLogLevel, "Exit");
 	return;
 }
-#endif
 
 //static json_t *dps_json_array_copy(json_t *array)
 //{
@@ -494,7 +495,6 @@ static void dps_statistics_report_to_cluster_leader(json_t *js_stats)
 //	return result;
 //}
 
-#ifdef PTHREAD_REPLACEMENT //Compilation Error so ifdefed it.
 static void dps_statistics_process(void)
 {
 	PyObject *strret, *strargs;
@@ -600,8 +600,7 @@ static void dps_statistics_process(void)
 	return;
 }
 
-
-static void dps_statistics_main(char *pDummy)
+static void dps_statistics_main(void *pDummy)
 {
 	struct timespec   ts;
 	struct timeval    tp;
@@ -633,9 +632,7 @@ static void dps_statistics_main(char *pDummy)
 			pthread_mutex_unlock(&dps_statistics_mp);
 			pthread_mutex_destroy(&dps_statistics_mp);
 			pthread_cond_destroy(&dps_statistics_cv);
-#ifdef PTHREAD_REPLACEMENT
-		/* Delete statistics thread */
-#endif
+			del_task(statisticsTaskId);
 			return;
 		}
 		pthread_mutex_unlock(&dps_statistics_mp);
@@ -644,7 +641,6 @@ static void dps_statistics_main(char *pDummy)
 	Py_Finalize();
 	return;
 }
-#endif
 
 /*
  ******************************************************************************
@@ -750,7 +746,7 @@ static dove_status python_functions_init(char *pythonpath)
 	return status;
 }
 
-dove_status dps_statistics_init(char *pythonpath)
+dove_status dcs_statistics_init(char *pythonpath)
 {
 	dove_status status = DOVE_STATUS_OK;
 
@@ -771,10 +767,14 @@ dove_status dps_statistics_init(char *pythonpath)
 			status = DOVE_STATUS_INVALID_PARAMETER;
 			break;
 		}
-#ifdef PTHREAD_REPLACEMENT
 		/* Create a thread for statistics collection */
-#endif
-
+		if (create_task((const char *)"Stat", 0, OSW_DEFAULT_STACK_SIZE,
+		                dps_statistics_main, 0,
+		                &statisticsTaskId) != OSW_OK)
+		{
+			status = DOVE_STATUS_THREAD_FAILED;
+			break;
+		}
 	} while (0);
 
 	return status;
@@ -786,9 +786,11 @@ dove_status dps_statistics_start(void)
 
 	do
 	{
-#ifdef PTHREAD_REPLACEMENT
-		/* Check for statistics thread */
-#endif
+		if (search_task("Stat") != 0)
+		{
+			log_info(PythonDataHandlerLogLevel, "Thread is running\r\n");
+			break;
+		}
 		log_info(PythonDataHandlerLogLevel, "Starting thread\r\n");
 		/* Re-initialize resources and create a thread */
 		if (pthread_mutex_init(&dps_statistics_mp, NULL) != 0)
@@ -801,9 +803,13 @@ dove_status dps_statistics_start(void)
 			status = DOVE_STATUS_INVALID_PARAMETER;
 			break;
 		}
-#ifdef PTHREAD_REPLACEMENT
-		/* Create a thread for statistics collection */
-#endif
+		if (create_task((const char *)"Stat", 0, OSW_DEFAULT_STACK_SIZE,
+		                dps_statistics_main, 0,
+		                &statisticsTaskId) != OSW_OK)
+		{
+			status = DOVE_STATUS_THREAD_FAILED;
+			break;
+		}
 
 	} while (0);
 
@@ -817,19 +823,20 @@ dove_status dps_statistics_stop(void)
 
 	do
 	{
-#ifdef PTHREAD_REPLACEMENT
-		/* Check if statistics thread exists*/
-#endif
-
+		if (search_task("Stat") == 0)
+		{
+			log_info(PythonDataHandlerLogLevel, "Thread not exist");
+			break;
+		}
 		log_info(PythonDataHandlerLogLevel, "Waiting for thread exit...\r\n");
 		/* Set condition var and then wait thread exit*/
 		pthread_mutex_lock(&dps_statistics_mp);
 		pthread_cond_broadcast(&dps_statistics_cv);
 		pthread_mutex_unlock(&dps_statistics_mp);
-
-#ifdef PTHREAD_REPLACEMENT
-		/* Check if statistics thread exists*/
-#endif
+		while (search_task("Stat") != 0)
+		{
+			sleep(1);
+		}
 
 	} while (0);
 

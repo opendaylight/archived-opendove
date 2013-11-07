@@ -54,3 +54,27 @@ RUNNING:
 After compiling, goto the "build" directory, type "dcs_server.py". 
 "dcs_server.py" is the starting script. The list of parameters will be
 shown if the incorrect number of parameters are entered.
+
+RUNNING WITH "TEMORARY" CLI:
+----------------------------
+Till the integration with between oDMC and oDCS is complete, a CLI
+has been provided on the oDCS. This CLI allows the user to configure
+DOVE objects such as domains, networks (vnids), subnets i.e.
+configuration that would be typically done by the DMC. The CLI has
+2 modes of operation:
+1 - Privileged mode: This allows user to enter configuration data
+2 - Non-privileged mode: For viewing data (read only)
+
+Start the CLI:
+./build/dcs_server.py <udp_port>
+
+Sample Output:
+dove@dps-64:~/odcs$ ./build/dcs_server.py 12345
+DCS HTTP Server started on Port 1888
+Password:
+
+Password for privileged mode: Hook&Ladder
+Password for non-privileged mode: Any other string
+
+Use tab for help at any time
+For entering DMC configuration use CLI context "dmc_config"

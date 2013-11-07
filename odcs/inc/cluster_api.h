@@ -269,7 +269,7 @@ dove_status dps_cluster_node_add(ip_addr_t *node_ip);
 
 /*
  ******************************************************************************
- * dps_cluster_node_local_update                                          *//**
+ * dcs_cluster_node_local_update                                          *//**
  *
  * \brief - This function can be used to update Local Node to cluster database
  *
@@ -280,11 +280,11 @@ dove_status dps_cluster_node_add(ip_addr_t *node_ip);
  *
  ******************************************************************************
  */
-dove_status dps_cluster_node_local_update(ip_addr_t *node_ip);
+dove_status dcs_cluster_node_local_update(ip_addr_t *node_ip);
 
 /*
  ******************************************************************************
- * dps_cluster_node_local_activate                                        *//**
+ * dcs_cluster_node_local_activate                                        *//**
  *
  * \brief - This function can be used to update set if the local node is active
  *
@@ -292,7 +292,7 @@ dove_status dps_cluster_node_local_update(ip_addr_t *node_ip);
  *
  ******************************************************************************
  */
-dove_status dps_cluster_node_local_activate(int factive);
+dove_status dcs_cluster_node_local_activate(int factive);
 
 /*
  ******************************************************************************
@@ -873,6 +873,20 @@ void dps_cluster_heavy_load_threshold_set(uint32_t threshold);
  *
  *****************************************************************************/
 PyObject *dps_cluster_reregister_endpoints(PyObject *self, PyObject *args);
+
+/*
+ ******************************************************************************
+ * dps_base64_encode --                                    *//**
+ *
+ * \brief This routine is called to encode a string into base64 format.
+ *
+ * \param input_string - The string to be encoded
+ * \param encoded_string - The base64 representation of input string.
+ *
+ * \return dove_status
+ *
+ *****************************************************************************/
+dove_status dps_base64_encode(char * input_string, char *encoded_string);
 
 /** @} */
 

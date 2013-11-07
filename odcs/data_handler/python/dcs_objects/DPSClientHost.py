@@ -284,7 +284,7 @@ class DPSClientHost:
     def Domain_Deleted_Locally(domain):
         '''
         This routine should be called when a domain is deleted or de-activated
-        from the local DPS Server Node
+        from the local DCS Server Node
         @attention: This routine must be called with the global lock held
         @param domain: The Domain object
         @type domain: Domain

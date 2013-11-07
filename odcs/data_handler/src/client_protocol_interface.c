@@ -479,9 +479,9 @@ static inline void dps_msg_send_inline(dps_client_data_t *dps_data)
 			         dps_data->hdr.type, dps_data->hdr.query_id);
 			break;
 		}
-	
+
 		dps_protocol_client_send(dps_data);
-	
+
 	}while(0);
 	return;
 }
@@ -2211,7 +2211,7 @@ PyObject *send_all_vm_migration_update(PyObject *self, PyObject *args)
  * mass_transfer_endpoint --                                              *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        endpoint mass transfer to a remote DPS Server
+ *        endpoint mass transfer to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -2295,7 +2295,7 @@ PyObject *mass_transfer_endpoint(PyObject *self, PyObject *args)
 			inet_ntop(AF_INET, dps_server_ip, str, INET_ADDRSTRLEN);
 			// IPv4
 			log_info(PythonDataHandlerLogLevel,
-			         "DPS Server: IPv4 %s, Port %d, Query ID %d",
+			         "DCS Server: IPv4 %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET;
 			hdr->reply_addr.ip4 = ntohl(*((uint32_t *)dps_server_ip));
@@ -2305,7 +2305,7 @@ PyObject *mass_transfer_endpoint(PyObject *self, PyObject *args)
 			// IPv6
 			inet_ntop(AF_INET6, dps_server_ip, str, INET6_ADDRSTRLEN);
 			log_info(PythonDataHandlerLogLevel,
-			         "DPS Server: pIPv6 %s, Port %d, Query ID %d",
+			         "DCS Server: pIPv6 %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET6;
 			memcpy(hdr->reply_addr.ip6, dps_server_ip, dps_server_ip_size);
@@ -2433,7 +2433,7 @@ PyObject *mass_transfer_endpoint(PyObject *self, PyObject *args)
  * mass_transfer_tunnel --                                                *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        tunnel endpoint mass transfer to a remote DPS Server
+ *        tunnel endpoint mass transfer to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -2509,7 +2509,7 @@ PyObject *mass_transfer_tunnel(PyObject *self, PyObject *args)
 			inet_ntop(AF_INET, dps_server_ip, str, INET_ADDRSTRLEN);
 			// IPv4
 			log_info(PythonDataHandlerLogLevel,
-			         "DPS Server: IPv4 %s, Port %d, Query ID %d",
+			         "DCS Server: IPv4 %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET;
 			hdr->reply_addr.ip4 = ntohl(*((uint32_t *)dps_server_ip));
@@ -2519,7 +2519,7 @@ PyObject *mass_transfer_tunnel(PyObject *self, PyObject *args)
 			// IPv6
 			inet_ntop(AF_INET6, dps_server_ip, str, INET6_ADDRSTRLEN);
 			log_info(PythonDataHandlerLogLevel,
-			         "DPS Server: pIPv6 %s, Port %d, Query ID %d",
+			         "DCS Server: pIPv6 %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET6;
 			memcpy(hdr->reply_addr.ip6, dps_server_ip, dps_server_ip_size);
@@ -2618,7 +2618,7 @@ PyObject *mass_transfer_tunnel(PyObject *self, PyObject *args)
  * mass_transfer_multicast_sender --                                      *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        multicast sender (mass transfer) to a remote DPS Server
+ *        multicast sender (mass transfer) to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -2687,7 +2687,7 @@ PyObject *mass_transfer_multicast_sender(PyObject *self, PyObject *args)
 			inet_ntop(AF_INET, dps_server_ip, str, INET_ADDRSTRLEN);
 			// IPv4
 			log_info(PythonMulticastDataHandlerLogLevel,
-			         "DPS Server: IP %s, Port %d, Query ID %d",
+			         "DCS Server: IP %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET;
 			hdr->reply_addr.ip4 = ntohl(*((uint32_t *)dps_server_ip));
@@ -2697,7 +2697,7 @@ PyObject *mass_transfer_multicast_sender(PyObject *self, PyObject *args)
 			// IPv6
 			inet_ntop(AF_INET6, dps_server_ip, str, INET6_ADDRSTRLEN);
 			log_info(PythonMulticastDataHandlerLogLevel,
-			         "DPS Server: IP %s, Port %d, Query ID %d",
+			         "DCS Server: IP %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET6;
 			memcpy(hdr->reply_addr.ip6, dps_server_ip, dps_server_ip_size);
@@ -2766,7 +2766,7 @@ PyObject *mass_transfer_multicast_sender(PyObject *self, PyObject *args)
  * mass_transfer_multicast_receiver --                                    *//**
  *
  * \brief This is the routine that the PYTHON Scripts must call to send
- *        multicast receiver (mass transfer) to a remote DPS Server
+ *        multicast receiver (mass transfer) to a remote DCS Server
  *
  * \param[in] self  PyObject
  * \param[in] args  The input must be the following:
@@ -2836,7 +2836,7 @@ PyObject *mass_transfer_multicast_receiver(PyObject *self, PyObject *args)
 			inet_ntop(AF_INET, dps_server_ip, str, INET_ADDRSTRLEN);
 			// IPv4
 			log_info(PythonMulticastDataHandlerLogLevel,
-			         "DPS Server: IP %s, Port %d, Query ID %d",
+			         "DCS Server: IP %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET;
 			hdr->reply_addr.ip4 = ntohl(*((uint32_t *)dps_server_ip));
@@ -2846,7 +2846,7 @@ PyObject *mass_transfer_multicast_receiver(PyObject *self, PyObject *args)
 			// IPv6
 			inet_ntop(AF_INET6, dps_server_ip, str, INET6_ADDRSTRLEN);
 			log_info(PythonMulticastDataHandlerLogLevel,
-			         "DPS Server: IP %s, Port %d, Query ID %d",
+			         "DCS Server: IP %s, Port %d, Query ID %d",
 			         str, dps_server_port, hdr->query_id);
 			hdr->reply_addr.family = AF_INET6;
 			memcpy(hdr->reply_addr.ip6, dps_server_ip, dps_server_ip_size);
@@ -3225,88 +3225,6 @@ PyObject * dps_policy_bulk_replicate(PyObject *self, PyObject *args)
 
 /*
  ******************************************************************************
- * dps_ipsubnet_replicate --                                              *//**
- *
- * \brief This is the routine that the PYTHON Scripts calls to replicate subnet 
- *        configuration to other DPS nodes
- *
- * \param[in] self  PyObject
- * \param[in] args  The input must be the following:
- *
- * \retval 0 Success
- * \retval -1 Failure
- *
- ******************************************************************************/
-PyObject * dps_ipsubnet_replicate(PyObject *self, PyObject *args)
-{
-	PyObject *ret_val;
-	char *dps_node_ip, *subnet, *mask, *gw;
-	uint32_t vnid, add, mode;
-	int dps_node_sz,subnet_sz, mask_sz, gw_sz,status = 0;
-	char dps_node_str[INET6_ADDRSTRLEN], subnet_str[INET6_ADDRSTRLEN],mask_str[INET6_ADDRSTRLEN],gw_str[INET6_ADDRSTRLEN];
-
-	log_info(PythonDataHandlerLogLevel, "Enter");
-	//Py_BEGIN_ALLOW_THREADS
-
-	do
-	{
-		// Domain, DVG,
-		if (!PyArg_ParseTuple(args, "IIz#z#z#Iz#",
-		                      &add, &vnid, &subnet, &subnet_sz, &mask, &mask_sz, &gw, &gw_sz, &mode,
-		                      &dps_node_ip, &dps_node_sz))
-		{
-			log_alert(PythonDataHandlerLogLevel,
-			          "Cannot parse arguments");
-			break;
-		}
-		if (dps_node_sz == 4)
-		{
-			inet_ntop(AF_INET, dps_node_ip, dps_node_str, INET_ADDRSTRLEN);
-		}
-		else
-		{
-			inet_ntop(AF_INET6, dps_node_ip, dps_node_str, INET6_ADDRSTRLEN);
-		}
-
-		if (subnet_sz == 4)
-		{
-			inet_ntop(AF_INET, subnet, subnet_str, INET_ADDRSTRLEN);
-			inet_ntop(AF_INET, mask, mask_str, INET_ADDRSTRLEN);
-			inet_ntop(AF_INET, gw, gw_str, INET_ADDRSTRLEN);
-		}
-		else
-		{
-			inet_ntop(AF_INET6, subnet, subnet_str, INET6_ADDRSTRLEN);
-			inet_ntop(AF_INET6, mask, mask_str, INET6_ADDRSTRLEN);
-			inet_ntop(AF_INET6, gw, gw_str, INET6_ADDRSTRLEN);
-		}
-		log_info(PythonDataHandlerLogLevel,
-		         "Sending to Dps Node %s Vnid %d Crud %d Subnet %s Mask %s Nexthop %s Mode %d",
-		         dps_node_str, vnid, add, subnet_str, mask_str, gw_str, mode);
-		if (subnet_sz == 4)
-		{
-			status = dps_cluster_ipsubnet4_replication(dps_node_str, add, vnid,  subnet_str, mask_str, 
-			                                           gw_str, mode);
-		}
-#if 0
-		else
-		{
-			status = dps_cluster_ipsubnet6_replication(dps_node_str, add, vnid,  subnet_str, mask_str, 
-			                                           gw_str, mode);
-		}
-#endif
-		log_debug(PythonDataHandlerLogLevel,"Return status %d", status);
-	}while(0);
-
-	//Py_END_ALLOW_THREADS
-	ret_val = Py_BuildValue("i", status);
-	log_info(PythonDataHandlerLogLevel, "Exit status %d", status);
-
-	return ret_val;
-}
-
-/*
- ******************************************************************************
  * dps_ipsubnet_bulk_replicate --                                         *//**
  *
  * \brief This is the routine that the PYTHON Scripts calls to send a domains
@@ -3407,7 +3325,7 @@ PyObject *vnid_query_send_to_controller(PyObject *self, PyObject *args)
  *
  * \brief This is the routine that the PYTHON Replication Scripts calls to
  *        send a reply to a DPS Client Request which was replicated by the DPS
- *        Server. The DPS Server C code i.e. this routine MUST free up the
+ *        Server. The DCS Server C code i.e. this routine MUST free up the
  *        message buffer.
  *
  * \param[in] self  PyObject
@@ -3577,7 +3495,7 @@ PyObject *domain_query_policy_from_controller(PyObject *self, PyObject *args)
 
 /*
  ******************************************************************************
- * dps_protocol_handler_stop --                                           *//**
+ * dcs_protocol_handler_stop --                                           *//**
  *
  * \brief This routine stops the DPS Client Server Protocol Handler
  *
@@ -3585,7 +3503,7 @@ PyObject *domain_query_policy_from_controller(PyObject *self, PyObject *args)
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_protocol_handler_stop()
+dove_status dcs_protocol_handler_stop()
 {
 	PyObject *strargs;
 	PyGILState_STATE gstate;
@@ -3623,7 +3541,7 @@ dove_status dps_protocol_handler_stop()
 
 /*
  ******************************************************************************
- * dps_protocol_handler_start --                                           *//**
+ * dcs_protocol_handler_start --                                           *//**
  *
  * \brief This routine starts the DPS Client Server Protocol Handler
  *
@@ -3631,7 +3549,7 @@ dove_status dps_protocol_handler_stop()
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_protocol_handler_start()
+dove_status dcs_protocol_handler_start()
 {
 	PyObject *strargs;
 	PyGILState_STATE gstate;
@@ -3771,8 +3689,8 @@ static dps_return_status dps_form_endpoint_update_reply(dps_client_data_t *dps_m
 	}
 	else
 	{
-		// Message originated from a DPS Server (direct message).
-		// Reply to DPS Server
+		// Message originated from a DCS Server (direct message).
+		// Reply to DCS Server
 		memcpy(&dps_msg_reply->hdr.reply_addr, &dps_msg->hdr.reply_addr,
 		       sizeof(ip_addr_t));
 	}
@@ -3846,8 +3764,8 @@ static dps_return_status dps_form_tunnel_register_reply(dps_client_data_t *dps_m
 	}
 	else
 	{
-		// Message originated from a DPS Server (direct message).
-		// Reply to DPS Server
+		// Message originated from a DCS Server (direct message).
+		// Reply to DCS Server
 		memcpy(&dps_msg_reply->hdr.reply_addr, &dps_msg->hdr.reply_addr,
 		       sizeof(ip_addr_t));
 	}
@@ -3858,7 +3776,7 @@ static dps_return_status dps_form_tunnel_register_reply(dps_client_data_t *dps_m
  ******************************************************************************
  * dps_msg_update_reply --                                                *//**
  *
- * \brief This routine handles Update Reply (from other DPS Servers) i.e.
+ * \brief This routine handles Update Reply (from other DCS Servers) i.e.
  *        Endpoint and Tunnel Updates
  *
  * \param domain_id The Domain ID
@@ -4046,7 +3964,7 @@ static dps_resp_status_t dps_update_replicate(uint32_t domain_id,
 			break;
 		}
 
-		// Parse the return value (DOVEStatus, DPS Servers List, Query ID List)
+		// Parse the return value (DOVEStatus, DCS Servers List, Query ID List)
 		PyArg_ParseTuple(strret, "IOO", &dps_status, &py_ipaddress_list, &py_queryid_list);
 
 		ret_code = (dps_resp_status_t)dps_status;
@@ -4059,14 +3977,14 @@ static dps_resp_status_t dps_update_replicate(uint32_t domain_id,
 			break;
 		}
 
-		// Parse the DPS Server List and the Query ID List
+		// Parse the DCS Server List and the Query ID List
 		list_size = PyList_Size(py_ipaddress_list);
 
 		log_debug(PythonDataHandlerLogLevel,
 		          "ReplicationQueryIDGenerate List Size %d",
 		          list_size);
 
-		// Iterate through the List of DPS Server Addresses to determine which
+		// Iterate through the List of DCS Server Addresses to determine which
 		// nodes to replicate to.
 		for (i = 0; i < list_size; i++)
 		{
@@ -4109,7 +4027,7 @@ static dps_resp_status_t dps_update_replicate(uint32_t domain_id,
 			log_info(PythonDataHandlerLogLevel,
 			         "sending [REPLICATION] request [qId = %d] to DPS [%s:%d]",
 			         pupdate_replicated->hdr.query_id, str, port);
-			if (!memcmp(IP_packed, dps_local_ip.ip6, IP_packed_size))
+			if (!memcmp(IP_packed, dcs_local_ip.ip6, IP_packed_size))
 			{
 				log_info(PythonDataHandlerLogLevel,
 				          "Local Node %s: Not replicating, local replication query Id %d",
@@ -4431,7 +4349,7 @@ static dps_return_status dps_msg_endpoint_update(uint32_t domain_id,
 			dps_msg->endpoint_update.version = 0;
 			// Replace the Sender IP with local IP so that the reply
 			// comes back here
-			memcpy(&dps_msg->hdr.reply_addr, &dps_local_ip, sizeof(ip_addr_t));
+			memcpy(&dps_msg->hdr.reply_addr, &dcs_local_ip, sizeof(ip_addr_t));
 			if (dps_msg->hdr.reply_addr.family == AF_INET)
 			{
 				dps_msg->hdr.reply_addr.ip4 = ntohl(dps_msg->hdr.reply_addr.ip4);
@@ -5183,7 +5101,7 @@ static dps_return_status dps_msg_policy_request(uint32_t domain,
 					pdps_msg_reply->policy_reply.dps_policy_info.dps_policy.vnid_policy.num_permit_rules = 0;
 				}
 				pdps_msg_reply->policy_reply.dps_policy_info.dps_policy.vnid_policy.src_dst_vnid[0].dvnid = dvg;
-				pdps_msg_reply->policy_reply.dps_policy_info.dps_policy.vnid_policy.src_dst_vnid[0].svnid = (uint16_t)policy_req_msg->src_endpoint.vnid;
+				pdps_msg_reply->policy_reply.dps_policy_info.dps_policy.vnid_policy.src_dst_vnid[0].svnid = policy_req_msg->src_endpoint.vnid;
 #if defined(NDEBUG)
 				if ((dps_policy_action != NULL) && (dps_policy_action->connectivity == DPS_CONNECTIVITY_ALLOW))
 				{
@@ -6377,7 +6295,7 @@ static dps_return_status dps_form_multicast_sender_register_reply(dps_client_dat
 	else
 	{
 		// Message originated from a DPS Server (direct message).
-		// Reply to DPS Server
+		// Reply to DCS Server
 		memcpy(&dps_msg_reply->hdr.reply_addr, &dps_msg->hdr.reply_addr,
 		       sizeof(ip_addr_t));
 	}
@@ -6619,8 +6537,8 @@ static dps_return_status dps_form_multicast_receiver_register_reply(dps_client_d
 	}
 	else
 	{
-		// Message originated from a DPS Server (direct message).
-		// Reply to DPS Server
+		// Message originated from a DCS Server (direct message).
+		// Reply to DCS Server
 		memcpy(&dps_msg_reply->hdr.reply_addr, &dps_msg->hdr.reply_addr,
 		       sizeof(ip_addr_t));
 	}
@@ -7481,7 +7399,7 @@ static dove_status python_client_protocol_handler_init(char *pythonpath)
  *
  * \brief This routine gets references to all functions in the PYTHON data
  *        handler code (DPSReplicationTracker) that are needed for processing
- *        replication replies received from DPS Server and Client.
+ *        replication replies received from DCS Server and Client.
  *
  * \param pythonpath - Pointer to the PYTHON Path. If this value is NULL, it
  *                     assumes the PYTHON path to be in the same directory.
@@ -7560,7 +7478,7 @@ static dove_status python_replication_handler_init(char *pythonpath)
  *
  * \brief This routine gets references to all functions in the PYTHON data
  *        handler code (DPSMassTransfer) that are needed for processing
- *        mass transfer replies received from DPS Servers.
+ *        mass transfer replies received from DCS Servers.
  *
  * \param pythonpath - Pointer to the PYTHON Path. If this value is NULL, it
  *                     assumes the PYTHON path to be in the same directory.
@@ -7622,7 +7540,7 @@ static dove_status python_mass_transfer_handler_init(char *pythonpath)
 
 /*
  ******************************************************************************
- * python_init_dps_protocol_interface --                                  *//**
+ * python_init_dcs_protocol_interface --                                  *//**
  *
  * \brief This routine initializes the functions needed to handle the DPS
  *        Client Protocol Messages.
@@ -7634,7 +7552,7 @@ static dove_status python_mass_transfer_handler_init(char *pythonpath)
  *
  *****************************************************************************/
 
-dove_status python_init_dps_protocol_interface(char *pythonpath)
+dove_status python_init_dcs_protocol_interface(char *pythonpath)
 {
 	dove_status status = DOVE_STATUS_OK;
 
@@ -7675,7 +7593,7 @@ dove_status python_init_dps_protocol_interface(char *pythonpath)
  ******************************************************************************
  * dps_protocol_send_to_server --                                         *//**
  *
- * \brief This routine sends a request to the PYTHON based DPS Server Data
+ * \brief This routine sends a request to the PYTHON based DCS Server Data
  *        Handler
  *
  * \param client_data - Pointer to DPS Client Server Protocol Message

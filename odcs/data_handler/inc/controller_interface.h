@@ -463,24 +463,6 @@ typedef struct dps_object_query_vnid_s{
 typedef dps_object_ip_subnet_list_t dps_object_ip_subnet_flush_t;
 
 /**
- * \brief The structure for getting all IDs of a IP subnet list
- */
-typedef struct dps_object_ip_subnet_getallids_s{
-	/*
-	 * \brief The Associated Type (Domain or VNID)
-	 */
-	uint32_t associated_type;
-	/*
-	 * \brief The Associated ID
-	 */
-	uint32_t associated_id;
-	/*
-	 * \brief The IP type AF_INET or AF_INET6
-	 */
-	uint32_t IP_type;
-}dps_object_ip_subnet_getallids_t;
-
-/**
  * \brief The structure for Service Role Start/Stop
  */
 typedef struct dps_object_service_role_s{
@@ -499,7 +481,7 @@ typedef struct dps_object_mass_transfer_start_s{
 	 */
 	uint32_t domain_id;
 	/**
-	 * \brief Remote DPS Server Address
+	 * \brief Remote DCS Server Address
 	 * \note IPv4 and IPv6 Address MUST be in network byte order
 	 */
 	ip_addr_t dps_server;
@@ -624,10 +606,6 @@ typedef struct dps_controller_data_op_s{
 		 */
 		dps_object_ip_subnet_flush_t ip_subnet_flush;
 		/**
-		 * \brief Get all IDs of a IP subnet list
-		 */
-		dps_object_ip_subnet_getallids_t ip_subnet_getallids;
-		/**
 		 * \brief Show the Domain details
 		 */
 		dps_object_vnid_show_t vnid_show;
@@ -652,7 +630,7 @@ typedef struct dps_controller_data_op_s{
 
 /*
  ******************************************************************************
- * python_init_dps_controller_interface --                                *//**
+ * python_init_controller_interface --                                *//**
  *
  * \brief This routine initializes the DPS Controller Interface to PYTHON
  *        OBHECTS
@@ -663,11 +641,11 @@ typedef struct dps_controller_data_op_s{
  *
  *****************************************************************************/
 
-dove_status python_init_dps_controller_interface(char *pythonpath);
+dove_status python_init_controller_interface(char *pythonpath);
 
 /*
  ******************************************************************************
- * dps_controller_interface_stop --                                       *//**
+ * dcs_controller_interface_stop --                                       *//**
  *
  * \brief This routine stops the DPS Controller Interface
  *
@@ -675,11 +653,11 @@ dove_status python_init_dps_controller_interface(char *pythonpath);
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_controller_interface_stop();
+dove_status dcs_controller_interface_stop();
 
 /*
  ******************************************************************************
- * dps_controller_interface_start --                                       *//**
+ * dcs_controller_interface_start --                                       *//**
  *
  * \brief This routine starts the DPS Controller Interface
  *
@@ -687,7 +665,7 @@ dove_status dps_controller_interface_stop();
  * \retval DOVE_STATUS_NO_RESOURCES No resources
  *
  *****************************************************************************/
-dove_status dps_controller_interface_start();
+dove_status dcs_controller_interface_start();
 
 /*
  ******************************************************************************

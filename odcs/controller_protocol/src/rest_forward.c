@@ -102,7 +102,7 @@ static bool dps_rest_forward_source_check(struct evhttp_request *req)
 #if 1
 		//TODO: Re-enable this logic when controller sends the VRRP IP of DMC (HA)
 		if (strcmp(remote_host, controller_location_ip_string) &&
-		    strcmp(remote_host, dps_local_ip_string))
+		    strcmp(remote_host, dcs_local_ip_string))
 		{
 			log_info(RESTHandlerLogLevel,
 			          "[%s] receive from non-DMC or non-local node [%s], forwarding logic not invoked",
@@ -277,7 +277,7 @@ static int dps_rest_forward_sequence_process(struct evhttp_request *req,
 		 */
 		for(i = 0; i < nodes_count; i++)
 		{
-			if (nodes[i].ip4 == dps_local_ip.ip4)
+			if (nodes[i].ip4 == dcs_local_ip.ip4)
 			{
 				log_info(RESTHandlerLogLevel, "[Local Node] handling the domain");
 				*local_process = true;
@@ -289,7 +289,7 @@ static int dps_rest_forward_sequence_process(struct evhttp_request *req,
 		for(i = 0; i < nodes_count; i++)
 		{
 			/* check if leader is one of nodes which handle the domain. If yes, skip it */
-			if (nodes[i].ip4 == dps_local_ip.ip4)
+			if (nodes[i].ip4 == dcs_local_ip.ip4)
 			{
 				continue;
 			}

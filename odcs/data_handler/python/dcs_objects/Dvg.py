@@ -166,7 +166,7 @@ class DVG(dcs_object):
                     tunnel = ip_hash[ip_value]
                     if tunnel != tunnel_endpoint:
                         IP = IPAddressLocation(socket.AF_INET, ip_value, 0)
-                        message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DPS Server'%IP.show()
+                        message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DCS Server'%IP.show()
                         dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
                         ip_hash[ip_value] = tunnel_endpoint
                         new_tunnel = True
@@ -179,7 +179,7 @@ class DVG(dcs_object):
                     tunnel = ip_hash[ip_value]
                     if tunnel != tunnel_endpoint:
                         IP = IPAddressLocation(socket.AF_INET6, ip_value, 0)
-                        message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DPS Server'%IP.show()
+                        message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DCS Server'%IP.show()
                         dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
                         ip_hash[ip_value] = tunnel_endpoint
                         new_tunnel = True
@@ -279,7 +279,7 @@ class DVG(dcs_object):
                 tunnel = ip_hash[ip_value]
                 if tunnel != tunnel_endpoint:
                     IP = IPAddressLocation(socket.AF_INET, ip_value, 0)
-                    message = 'tunnel_endpoint_add_IP. Tunnel IP %s migrated without informing DPS Server'%(IP.show_ip())
+                    message = 'tunnel_endpoint_add_IP. Tunnel IP %s migrated without informing DCS Server'%(IP.show_ip())
                     dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
                     ip_hash[ip_value] = tunnel_endpoint
                     new_tunnel = True
@@ -564,14 +564,6 @@ class DVG(dcs_object):
         @rtype: dove_status (defined in include/status.h) Integer
         '''
         return self.IP_Subnet_List.flush()
-
-    def ip_subnet_getallids(self):
-        '''
-        Get all IDs from list
-        @return: status, subnet_ids
-        @rtype: Integer, Long
-        '''
-        return self.IP_Subnet_List.getallids()
 
     def send_policies_to(self, dps_client, solicited, query_id):
         '''

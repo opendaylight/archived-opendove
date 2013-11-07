@@ -55,11 +55,14 @@
 
 #include "dps_client_common.h"
 #include "dps_pkt.h"
+#include "dove-dmc-client.h"
 
 VLOG_DEFINE_THIS_MODULE(controller);
 
 #define MAX_SWITCHES 16
 #define MAX_LISTENERS 16
+
+#define DMC_HB_INTERVAL 120
 
 int dcLogLevel = 0;
 int dcLogModule = 1;
@@ -108,19 +111,21 @@ static void new_switch(struct switch_ *, struct vconn *);
 static void parse_options(int argc, char *argv[]);
 static void usage(void) NO_RETURN;
 
-int dpsa_response(void* rsp);
+static bool dps_is_connected = false;
+
+static int dpsa_response(void* rsp);
 
 //static void dove_resolve_cb(unsigned long domainID __attribute__((unused)),
 //			    DC_Address srcIp,
 //			    uint8_t *srcMAC,
 //			    DC_Address dstIp);
 
-static char * dpsIP;
-static char * dmcIP;
+static char * dmcIP = NULL;
 
 static struct pollfd dps_fd;
-static poll_event_callback dps_cb;
-static void * dps_ctx;
+static poll_event_callback dps_cb = NULL;
+static void * dps_ctx = NULL;
+static bool is_first_switch = true;
 
 static void dps_wait(void)
 {
@@ -129,7 +134,65 @@ static void dps_wait(void)
 
 static void dps_run(void)
 {
+  if(dps_cb != NULL) {
     dps_cb(dps_fd.fd, dps_ctx);
+  }
+}
+
+static void send_hb_to_dmc(void)
+{
+  dove_dmc_send_hb(dmcIP);
+  
+  return;
+}
+
+static int get_dps_node(struct in_addr *ip, short *port)
+{
+  int ret;
+  
+  if(dmcIP != NULL) {
+    ret = dove_dmc_get_leader(dmcIP, ip, port);
+  } else {
+    ovs_error(0, "No DMC IP");
+    ret = -1;
+  }
+  return ret;
+}
+
+static void disconnect_dps(void)
+{
+  
+}
+
+static void connect_dps(void)
+{
+  struct in_addr dps_ip;
+  short dps_port;
+  ip_addr_t dps_svr_node;
+  int ret;
+
+  ret = get_dps_node(&dps_ip, &dps_port);
+  
+  if (ret == 0) {  
+    printf("using %s:%d as DCS address\n",  inet_ntoa(dps_ip), ntohs(dps_port));
+      
+    memset(&dps_svr_node, 0, sizeof(dps_svr_node));
+    dps_svr_node.family = AF_INET;
+    dps_svr_node.ip4 = ntohl(dps_ip.s_addr);
+    dps_svr_node.port = ntohs(dps_port);
+    dps_svr_node.xport_type = SOCK_DGRAM;
+    
+    if (dps_server_add(0, &dps_svr_node) != DPS_SUCCESS)
+      {
+	ovs_error(0, "adding DCS server failed");
+      }
+    else
+      {
+	dps_is_connected = true;
+      }
+  } else {
+    ovs_error(0, "Can not retrieve DCS address");
+  } 
 }
 
 int
@@ -141,7 +204,9 @@ main(int argc, char *argv[])
     int n_switches, n_listeners;
     int retval;
     int i;
-    ip_addr_t dps_svr_node;
+    time_t cur_time, last_hb_time;
+    
+    cur_time = last_hb_time = time(NULL);
 
     proctitle_init(argc, argv);
     set_program_name(argv[0]);
@@ -155,25 +220,7 @@ main(int argc, char *argv[])
 
     dps_client_init();
     
-    if (dpsIP == NULL) {
-      ovs_error(0, "WARNING: starting in single-NOX mode; "
-		"use -d to specify IP address of the DPS server");
-    }
-    else {
-      printf("using %s as DPS address\n", dpsIP);     
-      
-      memset(&dps_svr_node, 0, sizeof(dps_svr_node));
-      dps_svr_node.family = AF_INET;
-      dps_svr_node.ip4 = ntohl(inet_addr(dpsIP));
-      dps_svr_node.port = 902;
-      dps_svr_node.xport_type = SOCK_DGRAM;
-      
-      if (dps_server_add(0, &dps_svr_node) != DPS_SUCCESS)
-        {
-	  ovs_error(0, "adding DCS server failed");
-	  return 1;
-        }  
-    }
+    connect_dps();
     
     n_switches = n_listeners = 0;
     for (i = optind; i < argc; i++) {
@@ -186,8 +233,8 @@ main(int argc, char *argv[])
             if (n_switches >= MAX_SWITCHES) {
                 ovs_fatal(0, "max %d switch connections", n_switches);
             }
-            new_switch(&switches[n_switches++], vconn);
-            continue;
+            new_switch(&switches[n_switches++], vconn); 
+	    continue;
         } else if (retval == EAFNOSUPPORT) {
             struct pvconn *pvconn;
             retval = pvconn_open(name, get_allowed_ofp_versions(),
@@ -232,18 +279,28 @@ main(int argc, char *argv[])
                 listeners[i] = listeners[--n_listeners];
             }
         }
-
-        /* Do some switching work.  . */
+	
+	if(dps_is_connected == false) {
+	  connect_dps();
+	}
+	
+	cur_time = time(NULL);
+	if(difftime(cur_time, last_hb_time) >= DMC_HB_INTERVAL) {
+	  send_hb_to_dmc();
+	  last_hb_time = cur_time;
+	}
+        
+	/* Do some switching work.  . */
         for (i = 0; i < n_switches; ) {
             struct switch_ *this = &switches[i];
             dswitch_run(this->dswitch);
             if (dswitch_is_alive(this->dswitch)) {
                 i++;
-            } else {
-                dswitch_destroy(this->dswitch);
-                switches[i] = switches[--n_switches];
+	    } else {
+	        dswitch_destroy(this->dswitch);
+	        switches[i] = switches[--n_switches];
             }
-        }
+	}
 	
         dps_run();
 
@@ -263,7 +320,9 @@ main(int argc, char *argv[])
         unixctl_server_wait(unixctl);
         poll_block();
     }
-
+    
+    dove_dmc_client_cleanup();
+    
     return 0;
 }
 
@@ -272,9 +331,12 @@ new_switch(struct switch_ *sw, struct vconn *vconn)
 {
     struct dove_switch_config cfg;
     struct rconn *rconn;
+    ovs_be32 switch_ip;
 
     rconn = rconn_create(60, 0, DSCP_DEFAULT, get_allowed_ofp_versions());
     rconn_connect_unreliably(rconn, vconn, NULL);
+
+    switch_ip = vconn_get_remote_ip(vconn);  
 
     cfg.wildcards = wildcards;
     cfg.max_idle = set_up_flows ? max_idle : -1;
@@ -284,7 +346,17 @@ new_switch(struct switch_ *sw, struct vconn *vconn)
     cfg.default_queue = default_queue;
     cfg.port_queues = &port_queues;
     cfg.mute = mute;
-    sw->dswitch = dove_switch_create(rconn, &cfg, vconn_get_remote_ip(vconn));
+
+    sw->dswitch = dove_switch_create(rconn, &cfg, switch_ip);
+    
+    if(is_first_switch) {
+      struct in_addr addr = {.s_addr = switch_ip};
+      
+      if(dove_dmc_client_init(dmcIP, inet_ntoa(addr)) != 0) {
+	ovs_fatal(0, "DMC client failed to init");
+      }
+      is_first_switch = false;
+    }
 }
 
 static void
@@ -321,7 +393,7 @@ parse_options(int argc, char *argv[])
         OFP_VERSION_OPTION_ENUMS
     };
     static struct option long_options[] = {
-        {"dcs",         required_argument, NULL, 'd'},
+        {"dmc",         required_argument, NULL, 'd'},
         {"dmc",         required_argument, NULL, 'D'},
         {"hub",         no_argument, NULL, 'H'},
         {"noflow",      no_argument, NULL, 'n'},
@@ -387,7 +459,7 @@ parse_options(int argc, char *argv[])
             break;
 
         case 'd':
-            dpsIP = optarg;
+            dmcIP = optarg;
             break;
 
         case 'D':
@@ -464,7 +536,8 @@ usage(void)
     ofp_version_usage();
     vlog_usage();
     printf("\nOther options:\n"
-           "  -H, --hub               act as hub instead of learning switch\n"
+           "  -d <DMC IP>             Connect to the specified DMC"
+	   "  -H, --hub               act as hub instead of learning switch\n"
            "  -n, --noflow            pass traffic, but don't add flows\n"
            "  --max-idle=SECS         max idle time for new flows\n"
            "  -N, --normal            use OFPP_NORMAL action\n"
@@ -498,6 +571,95 @@ int fd_process_add_fd(int fd, poll_event_callback callback, void *context)
     return DPS_SUCCESS;
 }
 
+static int dpsa_response(void* rsp)
+{
+    uint32_t    u4RetVal = 0;
+    uint32_t    rspType;
+    uint32_t    vnid;
+    uint32_t    rsp_status;
+    //uint32_t  context;
+    //uint32_t    rspSubType;
+    void*   p_context;
+
+    rspType = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).type;
+    //rspSubType = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).sub_type;
+    vnid = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).vnid;
+    p_context = (void*)((dps_client_data_t*) rsp)->context;
+    //context = (uint32_t) p_context;
+    rsp_status = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).resp_status;
+
+    if (rspType > DPS_MAX_MSG_TYPE)
+    {
+        u4RetVal = 1;
+        goto dpsa_response_exit;
+    }
+
+    printf("Received Response from DPS Client, response type = 0x%x, response status = 0x%x \n", rspType, rsp_status);
+
+    switch (rspType)
+    {
+        case DPS_UNSOLICITED_ENDPOINT_LOC_REPLY:
+            break;
+
+        case DPS_POLICY_REPLY:
+        {
+            if (rsp_status == DPS_NO_ERR)
+            {
+                dps_policy_reply_t * policy_reply = &((dps_client_data_t*) rsp)->policy_reply;
+                dps_endpoint_loc_reply_t* p_loc_reply = &((dps_client_data_t*) rsp)->policy_reply.dst_endpoint_loc_reply;
+                int allow = policy_reply->dps_policy_info.dps_policy.vnid_policy.num_permit_rules > 0;
+
+                if (allow)
+                {
+                    struct packet_in_params * params = (struct packet_in_params *) p_context;
+
+                    DC_PolicyKey key = {
+                        .domainID = vnid,
+                        .source = params->src_vIP,
+                        .target.kind = IPv4,
+                        .target.addr.ipv4.s_addr = ntohl(p_loc_reply->vm_ip_addr.ip4)
+                    };
+                    DC_Policy policy = {.action = FORWARD};
+
+                    memcpy(policy.vMAC, p_loc_reply->mac, 6);
+                    policy.host.addr.ipv4.s_addr = ntohl(p_loc_reply->tunnel_info.tunnel_list[0].ip4);
+		    policy.ttl = policy_reply->dps_policy_info.ttl;
+                    dove_policy_cb(&key, &policy, 0, p_context);
+                }
+                else
+                {
+                    printf("communication prohibited by policy\n");
+                }
+            }
+            else
+                printf("Policy resolution failed\n");
+        }
+        break;
+
+        case DPS_ENDPOINT_UPDATE_REPLY:
+        case DPS_ADDR_RESOLVE:
+        case DPS_INTERNAL_GW_REPLY:
+        case DPS_BCAST_LIST_REPLY:
+        case DPS_UNSOLICITED_BCAST_LIST_REPLY:
+        case DPS_UNSOLICITED_VNID_POLICY_LIST:
+        case DPS_VNID_POLICY_LIST_REPLY:
+        case DPS_UNSOLICITED_EXTERNAL_GW_LIST:
+        case DPS_EXTERNAL_GW_LIST_REPLY:
+        case DPS_UNSOLICITED_VLAN_GW_LIST:
+        case DPS_VLAN_GW_LIST_REPLY:
+        case DPS_MCAST_RECEIVER_DS_LIST:
+        case DPS_REG_DEREGISTER_ACK:
+        case DPS_UNSOLICITED_VNID_DEL_REQ:
+        case DPS_ENDPOINT_LOC_REPLY:
+            break;
+        default:
+            u4RetVal = 1;
+        break;
+    }
+dpsa_response_exit:
+    return (u4RetVal ? DPS_ERROR : DPS_SUCCESS);
+}
+
 void dps_protocol_send_to_client(dps_client_data_t *msg)
 {
 #if 0
@@ -519,6 +681,11 @@ void dps_protocol_send_to_client(dps_client_data_t *msg)
     printf("Response from DCS, type = %d:%d, status = %d\n", rspType, rspSubType, rsp_status);
 
 #else
-    dpsa_response(msg);
+    if(msg->hdr.type == DPS_GET_DCS_NODE) {
+      disconnect_dps();
+      dps_is_connected = false;
+    } else {
+      dpsa_response(msg);
+    }
 #endif
 }

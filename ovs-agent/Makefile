@@ -12,6 +12,9 @@
 OVS_DIR = ../third-party/openvswitch
 OVS_LIB = $(OVS_DIR)/lib/libopenvswitch.a
 
+CURL_DIR = ../third-party
+CURL_LIB = $(CURL_DIR)/lib/libcurl.so
+
 BUILD_TYPE := debug
 #End of Variables
 CP=cp
@@ -39,6 +42,7 @@ ODCS_INCLUDE		   = $(MODULE_ODCS)/inc
 DPS_PROTOCOL_INCLUDE       = $(MODULE_ODCS_DPS_PROTOCOL)/inc
 DATA_HANDLER_INCLUDE       = $(MODULE_ODCS_DATA_HANDLER)/inc
 TIMER_INCLUDE              = $(MODULE_ODCS_TIMER)/inc
+CURL_INCLUDE               = $(CURL_DIR)/include
 
 CLIENT_PROT_INCFLAGS = -I$(ODCS_INCLUDE)       \
            -I$(DPS_PROTOCOL_INCLUDE)       \
@@ -48,11 +52,13 @@ CLIENT_PROT_INCFLAGS = -I$(ODCS_INCLUDE)       \
 INCFLAGS =  $(OVS_INCLUDE)                \
            -I$(INCLUDE_LIBEV)              \
            -I$(INCLUDE_JANSSON)            \
-           -I$(INCLUDE_LIBEVENT2)
+           -I$(INCLUDE_LIBEVENT2)          \
+           -I$(CURL_INCLUDE)
 
 OVS_AGENT = dove-controller
 OVS_AGENT_SOURCES = dove-switch.c
 OVS_AGENT_SOURCES += dove-controller.c
+OVS_AGENT_SOURCES += dove-dmc-client.c
 
 CLIENT_PROT_SOURCES = $(MODULE_ODCS_DPS_PROTOCOL)/src/dps_pkt_process.c
 CLIENT_PROT_SOURCES += $(MODULE_ODCS_DPS_PROTOCOL)/src/dps_log.c
@@ -69,7 +75,7 @@ OVS_AGENT_OBJECTS = $(OVS_AGENT_SOURCES:.c=.o)
 CLIENT_PROT_OBJECTS=$(CLIENT_PROT_SOURCES:.c=.o)
 TIMER_OBJECTS=$(TIMER_SOURCES:.c=.o)
 
-OVS_AGENT_LDFLAGS = -lssl -lcrypto  -lstdc++ -lpthread -lrt -lm
+OVS_AGENT_LDFLAGS = -lssl -lcrypto  -lpthread -lrt -lm -ljansson
 
 
 all: $(OVS_AGENT)
@@ -81,7 +87,7 @@ $(CLIENT_PROT_OBJECTS):
 #	$(CC) -c $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
 
 dove-controller:  $(CLIENT_PROT_OBJECTS) $(OVS_AGENT_OBJECTS) $(OVS_LIB) 
-	$(CC) -o $@ $(OVS_AGENT_OBJECTS) $(OVS_DIR)/lib/libopenvswitch.a $(CLIENT_PROT_OBJECTS) $(TIMER_OBJECTS) $(OVS_AGENT_LDFLAGS) 
+	$(CC) -o $@ $(OVS_AGENT_OBJECTS) $(OVS_DIR)/lib/libopenvswitch.a $(CURL_LIB) $(CLIENT_PROT_OBJECTS) $(TIMER_OBJECTS) $(OVS_AGENT_LDFLAGS) 
 
 dove-switch.o: dove-switch.c dove-switch.h 
 	$(CC) -c $(INCFLAGS) $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@

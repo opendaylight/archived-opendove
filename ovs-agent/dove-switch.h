@@ -107,6 +107,12 @@ struct dove_switch_config {
     bool mute;
 };
 
+struct packet_in_params {
+  struct dove_switch *sw;
+  struct ofpbuf *msg;
+  DC_Address src_vIP;
+};
+
 struct dove_switch *dove_switch_create(struct rconn *, 
 				       const struct dove_switch_config *,
 				       uint32_t);

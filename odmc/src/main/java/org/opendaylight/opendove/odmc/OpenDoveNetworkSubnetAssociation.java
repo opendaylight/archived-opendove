@@ -58,6 +58,7 @@ public class OpenDoveNetworkSubnetAssociation extends OpenDoveObject
     }
 
     public String getSBDgwUri() {
-        return "/controller/sb/v2/opendove/odmc/networkSubnets/"+uuid;
+        //return "/controller/sb/v2/opendove/odmc/networkSubnets/"+uuid;
+        return "/controller/sb/v2/opendove/odmc/networks/"+openDoveNetworkVnid+"/networkSubnets/"+openDoveNetworkSubnetUuid;
     }
 }

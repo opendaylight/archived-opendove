@@ -98,6 +98,12 @@ INeutronRouterAware, INeutronFloatingIPAware {
             String networkName = "Ext_MCast_"+vnid;
             OpenDoveNetwork extMCastNet = new OpenDoveNetwork(networkName, vnid, domain, 1, "");
             doveNetworkDB.addNetwork(extMCastNet.getUUID(), extMCastNet);
+
+            /*
+             *  Set the Ext Mcast Network for the Domain Here.
+             *  This is needed for EXT-GW SNAT Pool Creation
+             */
+            domain.setExtMCastNetwork(extMCastNet);
         } else {
             domain = domainDB.getDomainByName(domainName);
         }

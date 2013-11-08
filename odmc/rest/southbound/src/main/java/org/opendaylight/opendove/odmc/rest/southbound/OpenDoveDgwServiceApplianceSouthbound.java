@@ -130,24 +130,24 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  Registration from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict, Registration will be rejected in this case.
          */
-        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
+        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID)) {
             throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+        }
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
+        appliance.set_canBeDCS(false);
+        appliance.set_isDCS(false);
+        appliance.set_isDGW(false);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
 
-             appliance.set_canBeDCS(false);
-             appliance.set_isDCS(false);
              sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
 
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
-             return Response.status(200).entity(appliance).build();
+             return Response.status(200).entity(sbInterface.getDoveServiceAppliance(dsaUUID)).build();
         } else {
-             appliance.set_canBeDCS(false);
-             appliance.set_isDCS(false);
              sbInterface.addDoveServiceAppliance(dsaUUID, appliance);
         }
 
@@ -225,17 +225,18 @@ public class OpenDoveDgwServiceApplianceSouthbound {
          *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict
          */
-        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID))
+        if (sbInterface.dsaIPConflict(dsaIP, dsaUUID)) {
             throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+        }
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
+        appliance.set_canBeDCS(false);
+        appliance.set_isDCS(false);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
 
-             appliance.set_canBeDCS(false);
-             appliance.set_isDCS(false);
             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
         } else {
             /*

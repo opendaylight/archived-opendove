@@ -10,6 +10,7 @@ package org.opendaylight.opendove.odmc;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -34,6 +35,7 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
     String associatedOSTenantUUID;
 
     Integer domain_id;
+    OpenDoveNetwork extMCastNetwork;
 
     public OpenDoveDomain() {
         scopedNetworks = new ArrayList<OpenDoveNetwork>();
@@ -83,6 +85,15 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
         this.replicationFactor = replicationFactor;
     }
 
+    public OpenDoveNetwork getExtMCastNetwork() {
+        return extMCastNetwork;
+    }
+
+    public void setExtMCastNetwork(OpenDoveNetwork mcastVnid) {
+        extMCastNetwork = mcastVnid;
+    }
+
+
     public boolean isTrackedByDCS() {
         return true;
     }
@@ -105,7 +116,6 @@ public class OpenDoveDomain extends OpenDoveObject implements IfOpenDCSTrackedOb
 
     // changed from uuid to createVersion to make oDCS life easier.
     public String getSBDcsUri() {
-        //return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + createVersion;
         domain_id = createVersion;
         return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id;
     }

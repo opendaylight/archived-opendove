@@ -51,15 +51,15 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public OpenDoveNetwork(String name, int vnid, OpenDoveDomain scopingDomain, int type, String oSNetworkUUID) {
-        this.uuid = java.util.UUID.randomUUID().toString();
+        uuid = java.util.UUID.randomUUID().toString();
         this.vnid = vnid;
         this.name = name;
         this.scopingDomain = scopingDomain;
-        this.domain_uuid = scopingDomain.getUUID();
-        this.domain_id = scopingDomain.getDomainId();
-        this.tombstoneFlag = false;
-        this.networkType = type;
-        this.associatedOSNetworkUUID = oSNetworkUUID;
+        domain_uuid = scopingDomain.getUUID();
+        domain_id = scopingDomain.getDomainId();
+        tombstoneFlag = false;
+        networkType = type;
+        associatedOSNetworkUUID = oSNetworkUUID;
         gateways = new ArrayList<OpenDoveServiceAppliance>();
         hostingSwitches = new ArrayList<OpenDoveSwitch>();
     }
@@ -122,8 +122,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public String getSBDcsUri() {
-        //return "/controller/sb/v2/opendove/odmc/domains/" + domain_uuid + "/networks/" + vnid;
-        this.domain_id = scopingDomain.getDomainId();
+        domain_id = scopingDomain.getDomainId();
         return "/controller/sb/v2/opendove/odmc/domains/bynumber/" + domain_id + "/networks/" + vnid;
     }
 
@@ -151,8 +150,9 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
         Iterator<OpenDoveServiceAppliance> iterator = gateways.iterator();
         while (iterator.hasNext()) {
             OpenDoveServiceAppliance testDSA = iterator.next();
-            if (testDSA.getUUID().equalsIgnoreCase(gatewayUUID))
+            if (testDSA.getUUID().equalsIgnoreCase(gatewayUUID)) {
                 return true;
+            }
         }
         return false;
     }
@@ -178,7 +178,8 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public void removeScopingDomain(OpenDoveDomain d) {
-        if (scopingDomain.equals(d))
+        if (scopingDomain.equals(d)) {
             scopingDomain = null;
+        }
     }
 }

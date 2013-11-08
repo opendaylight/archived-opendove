@@ -52,7 +52,7 @@ public class OpenDoveEGWSNATPoolSouthbound {
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 404, condition = "Not Found"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response showPool(
+    public Response showEGWSNATInfo(
             @PathParam("poolUUID") String poolUUID
             ) {
         IfSBDoveEGWSNATPoolCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
@@ -60,9 +60,10 @@ public class OpenDoveEGWSNATPoolSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.egwSNATPoolExists(poolUUID))
+        if (!sbInterface.egwSNATPoolExists(poolUUID)) {
             return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getEgwSNATPool(poolUUID)).build();
+        }
+        return Response.status(200).entity(new OpenDoveEGWSNATPoolRequest(sbInterface.getEgwSNATPool(poolUUID))).build();
     }
 
     @GET
@@ -72,7 +73,7 @@ public class OpenDoveEGWSNATPoolSouthbound {
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response listPolicies() {
+    public Response showEGWSNATPool() {
         IfSBDoveEGWSNATPoolCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

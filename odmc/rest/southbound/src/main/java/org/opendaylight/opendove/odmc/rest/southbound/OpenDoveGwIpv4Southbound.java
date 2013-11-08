@@ -40,10 +40,10 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
  *
  */
 
-@Path("/gw-ipv4")
+@Path("/odgw/ipv4")
 public class OpenDoveGwIpv4Southbound {
 
-    @Path("{ipv4UUID}")
+    @Path("/{ipv4UUID}")
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @StatusCodes({
@@ -60,9 +60,10 @@ public class OpenDoveGwIpv4Southbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.gwIpv4Exists(ipv4UUID))
+        if (!sbInterface.gwIpv4Exists(ipv4UUID)) {
             return Response.status(404).build();
-        return Response.status(200).entity(sbInterface.getGwIpv4(ipv4UUID)).build();
+        }
+        return Response.status(200).entity(new OpenDoveGwIpv4Request(sbInterface.getGwIpv4(ipv4UUID))).build();
     }
 
     @GET
@@ -72,7 +73,7 @@ public class OpenDoveGwIpv4Southbound {
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response listPolicies() {
+    public Response listIpv4Interfaces() {
         IfSBDoveGwIpv4CRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

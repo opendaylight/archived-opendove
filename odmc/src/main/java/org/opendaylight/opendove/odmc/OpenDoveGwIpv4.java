@@ -49,14 +49,14 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     public OpenDoveGwIpv4() { }
 
     public OpenDoveGwIpv4(String ip, String mask, String nexthop, String type, String gwUUID, Integer vlan) {
-        this.uuid = java.util.UUID.randomUUID().toString();
+        uuid = java.util.UUID.randomUUID().toString();
         this.ip = ip;
         this.mask = mask;
         this.nexthop = nexthop;
         this.type = type;
         this.gwUUID = gwUUID;
         this.vlan = vlan;
-        this.tombstoneFlag = false;
+        tombstoneFlag = false;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     }
 
     public String getSBDgwUri() {
-        return "/controller/sb/v2/opendove/odmc/odgw-ipv4/" + uuid;
+        return "/controller/sb/v2/opendove/odmc/odgw/ipv4/" + uuid;
     }
 
     public static void assignEGWs(IfOpenDoveServiceApplianceCRUD serviceApplianceDB, IfSBDoveGwIpv4CRUD gatewayIPDB,
@@ -132,7 +132,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         SubnetInfo info = util.getInfo();
         while (replicationFactor > 0 && oDSAs.size() > 0) {
             Integer count = oDSAs.size();
-            int index = OpenDoveUtils.getNextInt() % count;
+            int index = Math.abs(OpenDoveUtils.getNextInt()) % count;
             OpenDoveServiceAppliance target = oDSAs.get(index);
             //if target doesn't have address in this subnet, assign one
             List<OpenDoveGwIpv4> gwIPs= gatewayIPDB.getGwIpv4Pool();
@@ -141,8 +141,9 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
             while (ipIterator.hasNext()) {
                 OpenDoveGwIpv4 gwIP = ipIterator.next();
                 if (gwIP.getGWIndex().equalsIgnoreCase(target.getUUID()) &&
-                    info.isInRange(gwIP.getIP()))
+                    info.isInRange(gwIP.getIP())) {
                     found = true;
+                }
             }
             if (!found) {
                 String gwAddress = neutronSubnet.getLowAddr();

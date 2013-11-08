@@ -45,8 +45,11 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
     @XmlElement(name="extmcastvnid")
     Integer externalMulticastVNID;
 
-    @XmlElement(name="domain_id")
+    @XmlElement(name="domain_uuid")
     String domainUUID;
+
+    @XmlElement(name="domain_id")
+    Integer domainID;
 
     @XmlElement(name="ext_ip")
     String externalIP;
@@ -57,12 +60,15 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
     }
 
     public OpenDoveEGWSNATPool(String uuid2, String ip_low, String ip_high,
-            String domain_uuid, Integer vnid2, int i, int j) {
+            String domain_uuid, Integer domain_id, Integer ext_mcast_vnid,
+            Integer vnid2, int i, int j) {
         uuid = java.util.UUID.randomUUID().toString();
         gatewayUUID = uuid2;
         minIP = ip_low;
         maxIP = ip_high;
         domainUUID = domain_uuid;
+        domainID = domain_id;
+        externalMulticastVNID = ext_mcast_vnid;
         vnid = vnid2;
         minPort = i;
         maxPort = j;
@@ -184,8 +190,12 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
                     break;
                 }
             }
-            OpenDoveEGWSNATPool snatPool = new OpenDoveEGWSNATPool(oDSA.getUUID(), ip_low,
-                    ip_high, oldODN.getDomain_uuid(), oldODN.getVnid(), 8000, 9000); //TODO add control for low and high
+            OpenDoveDomain d = oldODN.getScopingDomain();
+            OpenDoveNetwork extMCastNet = d.getExtMCastNetwork();
+            OpenDoveEGWSNATPool snatPool = new OpenDoveEGWSNATPool(oDSA.getUUID(), ip_low, ip_high,
+                                                                   oldODN.getDomain_uuid(), oldODN.getDomain_id(),
+                                                                   extMCastNet.getVnid(), oldODN.getVnid(),
+                                                                   8000, 9000);//TODO add control for low and high
             snatPoolDB.addEgwSNATPool(snatPool.getUUID(), snatPool);
         }
     }

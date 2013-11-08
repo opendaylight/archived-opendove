@@ -131,13 +131,17 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Registration from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict, Registration will be rejected in this case.
          */
-        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
+        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID)) {
             throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+        }
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
 
+        appliance.set_isDCS(false);
+        appliance.set_canBeDGW(false);
+        appliance.set_isDGW(false);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
              //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
@@ -151,26 +155,23 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                  OpenDoveRestClient sbRestClient =    new OpenDoveRestClient(sbInterface);
                  Integer http_response = sbRestClient.assignDcsServiceApplianceRole(dcsNode);
 
-                 if ( http_response == 200 || http_response == 204 ) {
+                 if ( http_response > 199 && http_response < 300 ) {
 
                     // Set the isDCS field.
                     isDCS = true;
-                    dcsNode.set_isDCS(isDCS);
-
-                    if (sbInterface.applianceExists(dsaUUID) ) {
-                        sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
-                    }
+                    appliance.set_isDCS(isDCS);
 
                     // Send Updated List of DCS Nodes to All the Nodes that are in Role Assigned State
                     sbRestClient.sendDcsClusterInfo();
+                 } else {
+                    appliance.set_isDCS(false);
                  }
              }
-             // Just Update the Timestamp
-             dcsNode.setTimestamp(timestamp);
-             sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
+//             sbInterface.updateDoveServiceAppliance(dsaUUID, dcsNode);
+             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
 
              /* Service Appliance Exists in Cache, Just Return HTTP_OK(200) in this Case */
-             return Response.status(200).entity(appliance).build();
+             return Response.status(200).entity(sbInterface.getDoveServiceAppliance(dsaUUID)).build();
         } else {
              sbInterface.addDoveServiceAppliance(dsaUUID, appliance);
         }
@@ -245,12 +246,15 @@ public class OpenDoveDcsServiceApplianceSouthbound {
          *  Heart-Beat from different UUID with an  IP that already exists in DMC Cache will
          *  treated as a conflict
          */
-        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID))
+        if (sbInterface.dsaIPConflict(appliance.getIP(), dsaUUID)) {
             throw new ResourceConflictException("Another device already is registered at that IP, remove that device first");
+        }
 
         // Set the Timestamp
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
+        appliance.set_canBeDGW(false);
+        appliance.set_isDGW(false);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
              //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
@@ -314,8 +318,9 @@ public class OpenDoveDcsServiceApplianceSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         OpenDoveServiceAppliance seed = sbInterface.getDCSSeed();
-        if (seed == null)
+        if (seed == null) {
             throw new ResourceNotFoundException("No oDCS has been assigned");
+        }
         return Response.status(200).entity(seed).build();
     }
 }

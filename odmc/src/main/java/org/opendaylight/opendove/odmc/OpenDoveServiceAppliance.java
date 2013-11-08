@@ -106,7 +106,7 @@ public class OpenDoveServiceAppliance  {
     }
 
     public String setUUID( String dsaUUID) {
-        return this.uuid = dsaUUID;
+        return uuid = dsaUUID;
     }
 
     public Integer getDcsRestServicePort () {
@@ -174,7 +174,7 @@ public class OpenDoveServiceAppliance  {
     }
 
     public void set_canBeDGW ( Boolean canBeDGW) {
-       this.canBeDCS = canBeDGW;
+       this.canBeDGW = canBeDGW;
     }
     public Boolean get_isDCS () {
        return isDCS;

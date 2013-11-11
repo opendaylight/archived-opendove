@@ -68,7 +68,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
      * Request body in JSON:
      * {
      *    "service_appliance": {
-     *      "is_DGW": true
+     *      "isDGW": true
      *    }
      * }
      *

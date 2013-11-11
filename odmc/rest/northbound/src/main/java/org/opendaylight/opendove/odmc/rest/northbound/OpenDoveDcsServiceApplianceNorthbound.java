@@ -66,7 +66,7 @@ public class OpenDoveDcsServiceApplianceNorthbound {
      * Request body in JSON:
      * {
      *    "service_appliance": {
-     *      "is_DCS": true
+     *      "isDCS": true
      *    }
      * }
      *

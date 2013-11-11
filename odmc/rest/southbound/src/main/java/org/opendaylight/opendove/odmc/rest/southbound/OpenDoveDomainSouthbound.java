@@ -94,8 +94,9 @@ public class OpenDoveDomainSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExists(domainUUID))
+        if (!sbInterface.domainExists(domainUUID)) {
             throw new ResourceNotFoundException("Domain not found");
+        }
         return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(domainUUID))).build();
     }
 
@@ -152,13 +153,16 @@ public class OpenDoveDomainSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbDomainInterface.domainExists(domainUUID))
+        if (!sbDomainInterface.domainExists(domainUUID)) {
             throw new ResourceNotFoundException("Domain not found");
-        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid)))
+        }
+        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid))) {
             throw new ResourceNotFoundException("Network not found");
+        }
         OpenDoveNetwork oDN = sbNetworkInterface.getNetworkByVnid(Integer.parseInt(vnid));
-        if (!domainUUID.equalsIgnoreCase(oDN.getDomain_uuid()))
+        if (!domainUUID.equalsIgnoreCase(oDN.getDomain_uuid())) {
             throw new ResourceNotFoundException("network not scoped by domain");
+        }
         return Response.status(200).entity(oDN).build();
     }
 
@@ -215,14 +219,17 @@ public class OpenDoveDomainSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbDomainInterface.domainExistsByNumber(domainID))
+        if (!sbDomainInterface.domainExistsByNumber(domainID)) {
             throw new ResourceNotFoundException("Domain not found");
-        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid)))
+        }
+        if (!sbNetworkInterface.networkExistsByVnid(Integer.parseInt(vnid))) {
             throw new ResourceNotFoundException("Network not found");
+        }
         OpenDoveDomain oDD = sbDomainInterface.getDomainByNumber(domainID);
         OpenDoveNetwork oDN = sbNetworkInterface.getNetworkByVnid(Integer.parseInt(vnid));
-        if (!oDD.getUUID().equalsIgnoreCase(oDN.getDomain_uuid()))
+        if (!oDD.getUUID().equalsIgnoreCase(oDN.getDomain_uuid())) {
             throw new ResourceNotFoundException("Network not scoped by domain");
+        }
         return Response.status(200).entity(oDN).build();
     }
 
@@ -282,13 +289,16 @@ public class OpenDoveDomainSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbDomainInterface.domainExists(domainUUID))
+        if (!sbDomainInterface.domainExists(domainUUID)) {
             throw new ResourceNotFoundException("Domain not found");
-        if (!sbPolicyInterface.policyExists(policyUUID))
+        }
+        if (!sbPolicyInterface.policyExists(policyUUID)) {
             throw new ResourceNotFoundException("Policy not found");
+        }
         OpenDovePolicy oDP = sbPolicyInterface.getPolicy(policyUUID);
-        if (!domainUUID.equalsIgnoreCase(oDP.getDomainUUID()))
+        if (!domainUUID.equalsIgnoreCase(oDP.getDomainUUID())) {
             throw new ResourceNotFoundException("Policy not scoped by domain");
+        }
         return Response.status(200).entity(oDP).build();
     }
 
@@ -381,9 +391,76 @@ public class OpenDoveDomainSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExistsByNumber(domainID))
+        if (!sbInterface.domainExistsByNumber(domainID)) {
             throw new ResourceNotFoundException("Domain not found");
+        }
         return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomainByNumber(domainID))).build();
+    }
+
+    /**
+     * Show policy scoped by domain (byNumber)
+     *
+     * @param domainID
+     *            ID of domain
+     * @param policyUUID
+     *            UUID of policy
+     * @return policy Information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://127.0.0.1:8080/controller/sb/v2/opendove/odmc/domains/bynumber/domainID/policy/b68088f9-ce4a-48fc-839e-b376f81aac70
+     *
+     * Response body in JSON:
+     * {
+     *   "is_tombstone": false,
+     *   "change_version": 9,
+     *   "create_version": 9,
+     *   "id": "b68088f9-ce4a-48fc-839e-b376f81aac70",
+     *   "type": 1,
+     *   "src_network": 11099999,
+     *   "dst_network": 9220207,
+     *   "ttl": 1000,
+     *   "action": 1,
+     *   "domain_id": "7c1a671d-f2fd-4c3e-ad7b-097263abc3ff",
+     *   "traffic_type": 0
+     * }
+     * </pre>
+     */
+    @Path("/bynumber/{domainID}/policy/{policyUUID}")
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDovePolicy.class)
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response showPolicyForDomainBynumber(
+            @PathParam("domainID") String domainID,
+            @PathParam("policyUUID") String policyUUID
+            ) {
+        IfOpenDoveDomainCRUD sbDomainInterface = OpenDoveCRUDInterfaces.getIfDoveDomainCRU(this);
+        if (sbDomainInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        IfSBDovePolicyCRUD sbPolicyInterface = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
+        if (sbPolicyInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbDomainInterface.domainExistsByNumber(domainID)) {
+            throw new ResourceNotFoundException("Domain not found");
+        }
+        if (!sbPolicyInterface.policyExists(policyUUID)) {
+            throw new ResourceNotFoundException("Policy not found");
+        }
+        OpenDovePolicy oDP = sbPolicyInterface.getPolicy(policyUUID);
+        return Response.status(200).entity(oDP).build();
     }
 }
 

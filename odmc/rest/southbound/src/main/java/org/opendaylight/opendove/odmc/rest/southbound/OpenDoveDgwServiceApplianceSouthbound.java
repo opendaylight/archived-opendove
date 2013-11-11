@@ -139,7 +139,6 @@ public class OpenDoveDgwServiceApplianceSouthbound {
         appliance.setTimestamp(timestamp);
         appliance.set_canBeDCS(false);
         appliance.set_isDCS(false);
-        appliance.set_isDGW(false);
 
         if (sbInterface.applianceExists(dsaUUID) ) {
 

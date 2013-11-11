@@ -245,9 +245,10 @@ public class OpenDoveRestClient {
 
         /* Get Domain_id for domain_uuid  */
         OpenDoveDomain domain = sbDomainInterface.getDomain(domainUUID);
-        if (domain == null)
+        if (domain == null) {
             return answer;
-        Integer domain_id = Integer.valueOf(domain.getUUID());
+        }
+        Integer domain_id = domain.getDomainId();
         List<OpenDoveServiceAppliance> oDCSs = sbDSAInterface.getRoleAssignedDcsAppliances();
 
         Iterator<OpenDoveServiceAppliance> iterator = oDCSs.iterator();
@@ -375,8 +376,9 @@ public class OpenDoveRestClient {
         request.setHeaders(headers);
         try {
             HTTPResponse response = HTTPClient.sendRequest(request);
-            if (response.getStatus() < 200 && response.getStatus() > 299)
+            if (response.getStatus() < 200 && response.getStatus() > 299) {
                 return null;
+            }
             JAXBContext jc = JAXBContext.newInstance(OpenDoveSwitchStatsRequest.class);
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
@@ -413,8 +415,9 @@ public class OpenDoveRestClient {
         request.setHeaders(headers);
         try {
             HTTPResponse response = HTTPClient.sendRequest(request);
-            if (response != null)
+            if (response != null) {
                 return response.getStatus();
+            }
             return 404;  // nothing found
         }  catch (Exception e) {
             return 504;
@@ -458,8 +461,9 @@ public class OpenDoveRestClient {
 
           try {
               HTTPResponse response = HTTPClient.sendRequest(request);
-              if (response.getStatus() < 200 && response.getStatus() > 299)
+              if (response.getStatus() < 200 && response.getStatus() > 299) {
                 return null;
+            }
               JAXBContext jc = JAXBContext.newInstance(OpenDoveGWStats.class);
               Unmarshaller unmarshaller = jc.createUnmarshaller();
               unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
@@ -510,8 +514,9 @@ public class OpenDoveRestClient {
 
        try {
           HTTPResponse response = HTTPClient.sendRequest(request);
-          if (response.getStatus() < 200 && response.getStatus() > 299)
-             return null;
+          if (response.getStatus() < 200 && response.getStatus() > 299) {
+            return null;
+        }
           JAXBContext jc = JAXBContext.newInstance(OpenDoveGWSessionStatsRequest.class);
           Unmarshaller unmarshaller = jc.createUnmarshaller();
           unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
@@ -564,8 +569,9 @@ public OpenDoveVNIDStats getDgwVNIDStats(OpenDoveServiceAppliance appliance, Str
 
     try {
        HTTPResponse response = HTTPClient.sendRequest(request);
-       if (response.getStatus() < 200 && response.getStatus() > 299)
-          return null;
+       if (response.getStatus() < 200 && response.getStatus() > 299) {
+        return null;
+    }
        JAXBContext jc = JAXBContext.newInstance(OpenDoveVNIDStats.class);
        Unmarshaller unmarshaller = jc.createUnmarshaller();
        unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");

@@ -139,7 +139,6 @@ public class OpenDoveDcsServiceApplianceSouthbound {
         String timestamp = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").format(Calendar.getInstance().getTime());
         appliance.setTimestamp(timestamp);
 
-        appliance.set_isDCS(false);
         appliance.set_canBeDGW(false);
         appliance.set_isDGW(false);
 

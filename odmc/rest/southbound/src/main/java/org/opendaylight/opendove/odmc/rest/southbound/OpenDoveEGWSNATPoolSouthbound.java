@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWSNATPoolCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -61,7 +62,7 @@ public class OpenDoveEGWSNATPoolSouthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (!sbInterface.egwSNATPoolExists(poolUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("EGW SNAT pool doesn't exist");
         }
         return Response.status(200).entity(new OpenDoveEGWSNATPoolRequest(sbInterface.getEgwSNATPool(poolUUID))).build();
     }

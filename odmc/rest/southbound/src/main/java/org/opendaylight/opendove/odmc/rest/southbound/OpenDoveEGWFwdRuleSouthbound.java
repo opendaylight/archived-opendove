@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveEGWFwdRuleCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -60,8 +61,9 @@ public class OpenDoveEGWFwdRuleSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.egwFwdRuleExists(ruleUUID))
-            return Response.status(404).build();
+        if (!sbInterface.egwFwdRuleExists(ruleUUID)) {
+            throw new ResourceNotFoundException("EGW forward rule doesn't exist");
+        }
         return Response.status(200).entity(sbInterface.getEgwFwdRule(ruleUUID)).build();
     }
 

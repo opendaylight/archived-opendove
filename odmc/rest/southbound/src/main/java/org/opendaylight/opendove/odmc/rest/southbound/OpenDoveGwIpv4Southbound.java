@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -61,7 +62,7 @@ public class OpenDoveGwIpv4Southbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (!sbInterface.gwIpv4Exists(ipv4UUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("Gateway IPv4 record doesn't exist");
         }
         return Response.status(200).entity(new OpenDoveGwIpv4Request(sbInterface.getGwIpv4(ipv4UUID))).build();
     }

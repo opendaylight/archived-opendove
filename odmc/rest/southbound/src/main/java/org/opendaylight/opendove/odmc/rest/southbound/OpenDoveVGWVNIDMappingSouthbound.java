@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -60,8 +61,9 @@ public class OpenDoveVGWVNIDMappingSouthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.vgwVNIDMappingExists(mappingUUID))
-            return Response.status(404).build();
+        if (!sbInterface.vgwVNIDMappingExists(mappingUUID)) {
+            throw new ResourceNotFoundException("VNID Mapping doesn't exist");
+        }
         return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
     }
 

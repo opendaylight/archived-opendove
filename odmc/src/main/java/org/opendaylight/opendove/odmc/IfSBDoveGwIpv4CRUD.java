@@ -21,4 +21,6 @@ public interface IfSBDoveGwIpv4CRUD {
     public List<OpenDoveGwIpv4> getGwIpv4Pool();
 
     public void removeGwIpv4(String ipv4UUID);
+
+    public void updateGwIpv4(OpenDoveGwIpv4 gwIP);
 }

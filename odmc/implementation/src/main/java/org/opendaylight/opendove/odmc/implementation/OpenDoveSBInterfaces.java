@@ -449,6 +449,10 @@ public class OpenDoveSBInterfaces implements IfSBDoveSubnetCRUD, IfSBDovePolicyC
         return answer;
     }
 
+    public void updateGwIpv4(OpenDoveGwIpv4 ipv4) {
+        gwIpv4Map.update(ipv4.getUUID(), ipv4);
+    }
+
     public void removeGwIpv4(String ipv4UUID) {
         gwIpv4Map.remove(ipv4UUID);
     }

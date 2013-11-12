@@ -221,9 +221,21 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public int canDeleteSubnet(NeutronSubnet subnet) {
-        /* TODO: check if router external - if so, check for EGW assignments or SNAT pool assignments
+        /* check if router external - if so, check for EGW assignments or SNAT pool assignments
          * if either exist, can't delete router external subnet
          */
+        INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+        NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(subnet.getNetworkUUID());
+        if (neutronNetwork.isRouterExternal()) {
+            IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
+            if (snatPoolDB.getEgwSNATPools().size() > 0 ) {
+                return 409;
+            }
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            if (gatewayIPDB.getGwIpv4Pool().size() > 0 ) {
+                return 409;
+            }
+        }
         return 200;
     }
 
@@ -240,7 +252,13 @@ INeutronRouterAware, INeutronFloatingIPAware {
         if (!neutronNetwork.isRouterExternal()) {
             if (neutronNetwork.isShared()) {
                 if (!controlBlock.getDomainSeparation()) {
-                    // TODO: tombstone EGW IPv4 information
+                    // tombstone EGW IPv4 information
+                    IfOpenDoveNetworkCRUD networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+                    IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+                    String networkName = "Neutron "+subnet.getNetworkUUID();
+                    OpenDoveNetwork network = networkDB.getNetworkByName(networkName);
+                    OpenDoveGwIpv4.tombstoneEGWs(serviceApplianceDB, gatewayIPDB, subnet, network);
                 }
             }
             // tombstone networkSubnetAssociation
@@ -559,10 +577,8 @@ INeutronRouterAware, INeutronFloatingIPAware {
                 if ((!negate && controlBlock.getDomainSeparation()) ||
                         (negate && !controlBlock.getDomainSeparation())) {
                     IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                    List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
-                    Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
-                    while (iterator.hasNext()) {
-                        if (iterator.next().get_isDGW()) {
+                    for (OpenDoveServiceAppliance oDSA : serviceApplianceDB.getAppliances()) {
+                        if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null){
                             return 200;
                         }
                     }

@@ -172,6 +172,9 @@ public class OpenDoveDgwServiceApplianceSouthbound {
      *   "ip_family": 0,
      *   "ip": "1.1.1.1",
      *   "dgw_config_version": 1
+     *   "canBeDGW": true,
+     *   "isDGW": true|false
+     *
      * }
      *
      * Response body in JSON:
@@ -236,6 +239,16 @@ public class OpenDoveDgwServiceApplianceSouthbound {
 
         if (sbInterface.applianceExists(dsaUUID) ) {
 
+            //  Get the Service Appliance from the Infinispan Cache if the Appliance Already exists.
+            OpenDoveServiceAppliance  dgwNode = sbInterface.getDoveServiceAppliance(dsaUUID);
+            /*
+             * if isDGW field is 'true' in Cache but the Received Heart-Beat message from oDGW has
+             * isDGW field set to 'false', Preserve the State that is in local Cache.
+             */
+             Boolean isDGW  = dgwNode.get_isDGW();
+             if (isDGW == true ) {
+                appliance.set_isDGW(true);
+             }
             sbInterface.updateDoveServiceAppliance(dsaUUID, appliance);
         } else {
             /*

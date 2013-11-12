@@ -50,6 +50,7 @@ public class Activator extends ComponentActivatorAbstractBase {
      * ComponentActivatorAbstractBase.
      *
      */
+    @Override
     public void init() {
         openDoveGC = new OpenDoveGC();
         scheduler = new HashedWheelTimer(1000, TimeUnit.MILLISECONDS);
@@ -63,6 +64,7 @@ public class Activator extends ComponentActivatorAbstractBase {
      * cleanup done by ComponentActivatorAbstractBase
      *
      */
+    @Override
     public void destroy() {
         scheduler.stop();
     }
@@ -76,6 +78,7 @@ public class Activator extends ComponentActivatorAbstractBase {
      * instantiated in order to get an fully working implementation
      * Object
      */
+    @Override
     public Object[] getImplementations() {
         Object[] res = { OpenDoveNBInterfaces.class,
                 OpenDoveSBInterfaces.class,
@@ -97,6 +100,7 @@ public class Activator extends ComponentActivatorAbstractBase {
      * also optional per-container different behavior if needed, usually
      * should not be the case though.
      */
+    @Override
     public void configureInstance(Component c, Object imp, String containerName) {
         if (imp.equals(OpenDoveNBInterfaces.class)) {
             c.setInterface(

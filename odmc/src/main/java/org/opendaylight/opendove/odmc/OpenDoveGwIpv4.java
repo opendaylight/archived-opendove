@@ -9,6 +9,7 @@
 
 package org.opendaylight.opendove.odmc;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     @XmlElement(name="nexthop")
     String nexthop;
 
-    @XmlElement (name="type")
+    @XmlElement (name="intf_type")
     String type;
 
     @XmlElement (name="gwUUID")
@@ -45,6 +46,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     @XmlElement (name="vlan")
     Integer vlan;
 
+    NeutronSubnet neutronSubnet;
 
     public OpenDoveGwIpv4() { }
 
@@ -100,11 +102,11 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         this.type = type;
     }
 
-    public String getGWIndex() {
+    public String getGWUUID() {
         return gwUUID;
     }
 
-    public void setGWIndex(String gwUUID) {
+    public void setGWUUID(String gwUUID) {
         this.gwUUID = gwUUID;
     }
 
@@ -120,6 +122,14 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         return true;
     }
 
+    public void setNeutronSubnet(NeutronSubnet subnet) {
+        neutronSubnet = subnet;
+    }
+
+    public NeutronSubnet getNeutronSubnet() {
+        return neutronSubnet;
+    }
+
     public String getSBDgwUri() {
         return "/controller/sb/v2/opendove/odmc/odgw/ipv4/" + uuid;
     }
@@ -127,7 +137,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     public static void assignEGWs(IfOpenDoveServiceApplianceCRUD serviceApplianceDB, IfSBDoveGwIpv4CRUD gatewayIPDB,
             NeutronSubnet neutronSubnet, OpenDoveNeutronControlBlock controlBlock, OpenDoveNetwork network) {
         Integer replicationFactor = controlBlock.getEgwReplicationFactor();
-        List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
+        List<OpenDoveServiceAppliance> oDSAs = getAssignableDGWs(serviceApplianceDB);
         SubnetUtils util = new SubnetUtils(neutronSubnet.getCidr());
         SubnetInfo info = util.getInfo();
         while (replicationFactor > 0 && oDSAs.size() > 0) {
@@ -140,7 +150,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
             boolean found = false;
             while (ipIterator.hasNext()) {
                 OpenDoveGwIpv4 gwIP = ipIterator.next();
-                if (gwIP.getGWIndex().equalsIgnoreCase(target.getUUID()) &&
+                if (gwIP.getGWUUID().equalsIgnoreCase(target.getUUID()) &&
                     info.isInRange(gwIP.getIP())) {
                     found = true;
                 }
@@ -150,6 +160,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
                 neutronSubnet.allocateIP(gwAddress);
                 OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwAddress, OpenDoveSubnet.getIPMask(neutronSubnet.getCidr()), neutronSubnet.getGatewayIP(),
                         "external", target.getUUID(), 0);
+                newGWIP.setNeutronSubnet(neutronSubnet);
                 gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);
             }
             //link egw to dove network
@@ -157,6 +168,31 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
             //prepare for next assignment
             replicationFactor--;
             oDSAs.remove(index);
+        }
+    }
+
+    private static List<OpenDoveServiceAppliance> getAssignableDGWs(
+            IfOpenDoveServiceApplianceCRUD serviceApplianceDB) {
+        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
+        for (OpenDoveServiceAppliance oDSA: serviceApplianceDB.getAppliances()) {
+            if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null) {
+                answer.add(oDSA);
+            }
+        }
+        return answer;
+    }
+
+    public static void tombstoneEGWs(
+            IfOpenDoveServiceApplianceCRUD serviceApplianceDB,
+            IfSBDoveGwIpv4CRUD gatewayIPDB, NeutronSubnet subnet,
+            OpenDoveNetwork network) {
+        for (OpenDoveGwIpv4 gwIP: gatewayIPDB.getGwIpv4Pool()) {
+            if (subnet.isValidIP(gwIP.getIP())) {
+                subnet.releaseIP(gwIP.getIP());
+                gwIP.setTombstoneFlag(true);
+                gatewayIPDB.updateGwIpv4(gwIP);
+                network.removeEGW(serviceApplianceDB.getDoveServiceAppliance(gwIP.getGWUUID()));
+            }
         }
     }
 }

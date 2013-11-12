@@ -30,6 +30,9 @@ import org.opendaylight.opendove.odmc.rest.OpenDoveRestClient;
 import org.opendaylight.opendove.odmc.rest.OpenDoveServiceApplianceRequest;
 import org.opendaylight.opendove.odmc.rest.OpenDoveVNIDStats;
 import org.opendaylight.opendove.odmc.OpenDoveServiceAppliance;
+import org.opendaylight.opendove.odmc.OpenDoveGwIpv4;
+import org.opendaylight.opendove.odmc.rest.OpenDoveGwIpv4Request;
+import org.opendaylight.opendove.odmc.IfSBDoveGwIpv4CRUD;
 
 /**
  * Open DOVE Northbound REST APIs for DGW Service Appliance.<br>
@@ -114,23 +117,126 @@ public class OpenDoveDgwServiceApplianceNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.applianceExists(odgwUUID))
+        if (!sbInterface.applianceExists(odgwUUID)) {
             return Response.status(404).build();
-        if (!request.isSingleton())
+        }
+        if (!request.isSingleton()) {
             return Response.status(400).build();
+        }
         OpenDoveServiceAppliance delta = request.getSingleton();
-        if (delta.get_isDGW() == null)
+        if (delta.get_isDGW() == null) {
             return Response.status(400).build();
+        }
 
-        OpenDoveServiceAppliance dcsAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
-        if (!dcsAppliance.get_canBeDGW())
+        OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
+        if (!dgwAppliance.get_canBeDGW())
+         {
             return Response.status(400).build();
-        dcsAppliance.set_isDGW(delta.get_isDGW());
+        //dgwAppliance.set_isDGW(delta.get_isDGW());
+        }
 
-        OpenDoveRestClient sbRestClient = new OpenDoveRestClient();
-        sbRestClient.assignDcsServiceApplianceRole(dcsAppliance);
-
+        /*
+         *   No Need to send the REST Request to O-DGW, Just update the isDGW field in the Cache.
+         *   OpenDoveRestClient sbRestClient = new OpenDoveRestClient();
+         */
+         //   sbRestClient.assignDgwServiceApplianceRole(dgwAppliance);
+        sbInterface.updateDoveServiceAppliance(odgwUUID, delta);
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(odgwUUID))).build();
+    }
+
+    /**
+     * Creates odgw IPv4 Interface ("dovetunnel"/"external")  on a service appliance
+     *
+     * @param odgwUUID
+     *            serivce appliance UUID to modify
+     * @return Updated DGW IPv4 Interface information
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odgw/uuid/ipv4
+     *
+     * Request body in JSON:
+     * {
+     *    "gw_ipv4_assignment": {
+     *      "id"         : STRING
+     *      "ip"         : STRING
+     *      "mask"       : STRING
+     *      "nexthop"    : STRING
+     *      "intf_type"  : STRING  ("dovetunnel")
+     *      "vlan"       : INTEGER
+     *    }
+     * }
+     *
+     * Response body in JSON:
+     * {
+     *   "gw_ipv4_assignment": {
+     *      "id"         : STRING
+     *      "ip"         : STRING
+     *      "nexthop"    : STRING
+     *      "mask"       : STRING
+     *      "intf_type"  : STRING  ("dovetunnel")
+     *      "gwUUID"     : STRING  ("dovetunnel")
+     *      "vlan"       : INTEGER
+     *   }
+     * }
+     * </pre>
+     */
+    @Path("/{odgwUUID}/ipv4")
+    @PUT
+    @Consumes({ MediaType.APPLICATION_JSON })
+    @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveServiceApplianceRequest.class)
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 409, condition = "DGW is in a Conflicted State"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error")
+            })
+    public Response nbCreateDgwIPv4Interface(
+            @PathParam("odgwUUID") String odgwUUID,
+            OpenDoveGwIpv4Request request
+            ) {
+        IfOpenDoveServiceApplianceCRUD sbInterface = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+        IfSBDoveGwIpv4CRUD sbGWIpv4Interface = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.applianceExists(odgwUUID)) {
+            return Response.status(404).build();
+        }
+        if (!request.isSingleton()) {
+            return Response.status(400).build();
+        }
+
+        OpenDoveGwIpv4 gwIpv4 = request.getSingleton();
+        if (gwIpv4.getIP() == null) {
+            return Response.status(400).build();
+        }
+
+        OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
+        if (!dgwAppliance.get_canBeDGW()) {
+            return Response.status(400).build();
+        }
+
+        String ipv4UUID;
+        if (!dgwAppliance.get_isDGW()) {
+            return Response.status(400).build();
+        } else {
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwIpv4.getIP(), gwIpv4.getMask(), gwIpv4.getNexthop(), gwIpv4.getType(), odgwUUID, 0);
+            gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);
+            dgwAppliance.setDoveTunnel(newGWIP);
+            ipv4UUID = newGWIP.getUUID();
+        }
+
+        // return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(odgwUUID))).build();
+        return Response.status(200).entity(new OpenDoveGwIpv4Request(sbGWIpv4Interface.getGwIpv4(ipv4UUID))).build();
     }
 
     /**
@@ -189,8 +295,9 @@ public class OpenDoveDgwServiceApplianceNorthbound {
         }
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
 
-        if (!sbInterface.applianceExists(odgwUUID))
+        if (!sbInterface.applianceExists(odgwUUID)) {
             return Response.status(404).build();
+        }
 
         OpenDoveRestClient client = new OpenDoveRestClient();
         OpenDoveGWStats answer = client.getDgwAllStats(dgwAppliance, odgwUUID);
@@ -262,8 +369,9 @@ public class OpenDoveDgwServiceApplianceNorthbound {
         }
 
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
-        if (!sbInterface.applianceExists(odgwUUID))
+        if (!sbInterface.applianceExists(odgwUUID)) {
             return Response.status(404).build();
+        }
 
         OpenDoveRestClient client = new OpenDoveRestClient();
 
@@ -333,8 +441,9 @@ public class OpenDoveDgwServiceApplianceNorthbound {
         }
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
 
-        if (!sbInterface.applianceExists(odgwUUID))
+        if (!sbInterface.applianceExists(odgwUUID)) {
             return Response.status(404).build();
+        }
 
         OpenDoveRestClient client = new OpenDoveRestClient();
 

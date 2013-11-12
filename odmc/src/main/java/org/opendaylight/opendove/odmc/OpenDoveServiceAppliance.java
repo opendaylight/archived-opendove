@@ -82,6 +82,8 @@ public class OpenDoveServiceAppliance  {
     @XmlElement (name="isDGW")
     Boolean isDGW;
 
+    OpenDoveGwIpv4 doveTunnel;
+
     public OpenDoveServiceAppliance () {
     }
 
@@ -189,6 +191,14 @@ public class OpenDoveServiceAppliance  {
 
     public void set_isDGW ( Boolean isDGW) {
        this.isDGW = isDGW;
+    }
+
+    public OpenDoveGwIpv4 getDoveTunnel() {
+        return doveTunnel;
+    }
+
+    public void setDoveTunnel(OpenDoveGwIpv4 tunnel) {
+        doveTunnel = tunnel;
     }
 
     public void initDefaults() {

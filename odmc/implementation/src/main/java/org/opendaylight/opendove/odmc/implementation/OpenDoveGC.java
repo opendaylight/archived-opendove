@@ -102,6 +102,11 @@ public class OpenDoveGC implements TimerTask {
         }
         if (o instanceof OpenDoveGwIpv4) {
             openDoveSBInterfaces.removeGwIpv4(o.getUUID());
+            OpenDoveGwIpv4 gwIP = (OpenDoveGwIpv4) o;
+            if (gwIP.getNeutronSubnet() != null) {
+                gwIP.getNeutronSubnet().releaseIP(gwIP.getIP());
+                gwIP.setNeutronSubnet(null);
+            }
         }
         if (o instanceof OpenDoveNetwork) {
             for (OpenDoveDomain oDD: openDoveBidirectionalInterfaces.getDomains()) {

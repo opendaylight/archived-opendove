@@ -19,6 +19,7 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveNetworkCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -89,8 +90,9 @@ public class OpenDoveNetworksNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.networkExists(networkUUID))
-            return Response.status(404).build();
+        if (!sbInterface.networkExists(networkUUID)) {
+            throw new ResourceNotFoundException("OpenDove network doesn't exist");
+        }
         return Response.status(200).entity(new OpenDoveNetworkRequest(sbInterface.getNetwork(networkUUID))).build();
     }
 
@@ -137,8 +139,9 @@ public class OpenDoveNetworksNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.networkExists(networkUUID))
-            return Response.status(404).build();
+        if (!sbInterface.networkExists(networkUUID)) {
+            throw new ResourceNotFoundException("OpenDove network doesn't exist");
+        }
         return Response.status(200).entity(new OpenDoveEndpointRequest(sbInterface.getEndpoints(networkUUID))).build();
     }
 

@@ -19,6 +19,7 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -89,8 +90,9 @@ public class OpenDoveDomainNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.domainExists(domainUUID))
-            return Response.status(404).build();
+        if (!sbInterface.domainExists(domainUUID)) {
+            throw new ResourceNotFoundException("OpenDove domain doesn't exist");
+        }
         return Response.status(200).entity(new OpenDoveDomainRequest(sbInterface.getDomain(domainUUID))).build();
     }
 
@@ -148,8 +150,9 @@ public class OpenDoveDomainNorthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (!sbDomainInterface.domainExists(domainUUID))
-            return Response.status(404).build();
-        //return Response.status(200).entity(new OpenDoveDCSList(sbInterface.getDCSList(domainUUID))).build();
+         {
+            throw new ResourceNotFoundException("OpenDove domain doesn't exist");
+        }
 
         OpenDoveRestClient sbRestClient = new OpenDoveRestClient(sbDSAInterface, sbDomainInterface);
         return Response.status(200).entity(new OpenDoveDCSList(sbRestClient.getDomainDCSList(domainUUID))).build();

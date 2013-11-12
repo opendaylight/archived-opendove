@@ -23,6 +23,8 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfSBDoveVGWVNIDMappingCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -90,8 +92,9 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.vgwVNIDMappingExists(mappingUUID))
-            return Response.status(404).build();
+        if (!sbInterface.vgwVNIDMappingExists(mappingUUID)) {
+            throw new ResourceNotFoundException("VNID Mapping doesn't exist");
+        }
         return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
     }
 
@@ -191,7 +194,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
             /*
              * only singleton rule creates supported
              */
-            return Response.status(400).build();
+            throw new BadRequestException("only singleton creates supported");
         }
         return Response.status(201).entity(input).build();
     }
@@ -253,10 +256,12 @@ public class OpenDoveVGWVNIDMappingNorthbound {
         /*
          * rule has to exist and only a single delta can be supplied
          */
-        if (!sbInterface.vgwVNIDMappingExists(mappingUUID))
-            return Response.status(404).build();
-        if (!input.isSingleton())
-            return Response.status(400).build();
+        if (!sbInterface.vgwVNIDMappingExists(mappingUUID)) {
+            throw new ResourceNotFoundException("VNID Mapping doesn't exist");
+        }
+        if (!input.isSingleton()) {
+            throw new BadRequestException("only singleton edits supported");
+        }
         OpenDoveVGWVNIDMapping delta = input.getSingleton();
 
         /*
@@ -306,8 +311,9 @@ public class OpenDoveVGWVNIDMappingNorthbound {
         /*
          * verify that the rule exists and is not in use before removing it
          */
-        if (!sbInterface.vgwVNIDMappingExists(mappingUUID))
-            return Response.status(404).build();
+        if (!sbInterface.vgwVNIDMappingExists(mappingUUID)) {
+            throw new ResourceNotFoundException("VNID Mapping doesn't exist");
+        }
         OpenDoveVGWVNIDMapping mapping = sbInterface.getVgwVNIDMapping(mappingUUID);
         mapping.setTombstoneFlag(true);
         sbInterface.updateRule(mappingUUID, mapping);

@@ -21,6 +21,7 @@ import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
 import org.opendaylight.controller.northbound.commons.exception.ResourceConflictException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -128,11 +129,13 @@ public class OpenDoveServiceApplianceNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.applianceExists(saUUID))
-            return Response.status(404).build();
+        if (!sbInterface.applianceExists(saUUID)) {
+            throw new ResourceNotFoundException("Service appliance doesn't exist");
+        }
         OpenDoveServiceAppliance appliance = sbInterface.getDoveServiceAppliance(saUUID);
-        if (appliance.get_isDCS() || appliance.get_isDGW())
+        if (appliance.get_isDCS() || appliance.get_isDGW()) {
             throw new ResourceConflictException("cannot delete role assigned service appliance");
+        }
         sbInterface.deleteServiceAppliance(saUUID);
         return Response.status(204).build();
     }
@@ -189,8 +192,9 @@ public class OpenDoveServiceApplianceNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.applianceExists(saUUID))
-            return Response.status(404).build();
+        if (!sbInterface.applianceExists(saUUID)) {
+            throw new ResourceNotFoundException("service appliance doesn't exist");
+        }
         return Response.status(200).entity(new OpenDoveServiceApplianceRequest(sbInterface.getDoveServiceAppliance(saUUID))).build();
     }
 

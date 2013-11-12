@@ -21,6 +21,8 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.BadRequestException;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -118,21 +120,20 @@ public class OpenDoveDgwServiceApplianceNorthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (!sbInterface.applianceExists(odgwUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("oDGW doesn't exist");
         }
         if (!request.isSingleton()) {
-            return Response.status(400).build();
+            throw new BadRequestException("only singleton sets supported");
         }
         OpenDoveServiceAppliance delta = request.getSingleton();
         if (delta.get_isDGW() == null) {
-            return Response.status(400).build();
+            throw new BadRequestException("Missing necessary part of JSON object");
         }
 
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
         if (!dgwAppliance.get_canBeDGW())
          {
-            return Response.status(400).build();
-        //dgwAppliance.set_isDGW(delta.get_isDGW());
+            throw new BadRequestException("that appliance can not be made an oDGW");
         }
 
         /*
@@ -208,25 +209,25 @@ public class OpenDoveDgwServiceApplianceNorthbound {
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
         if (!sbInterface.applianceExists(odgwUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("oDGW doesn't exist");
         }
         if (!request.isSingleton()) {
-            return Response.status(400).build();
+            throw new BadRequestException("only singleton request supported");
         }
 
         OpenDoveGwIpv4 gwIpv4 = request.getSingleton();
         if (gwIpv4.getIP() == null) {
-            return Response.status(400).build();
+            throw new BadRequestException("request missing required information");
         }
 
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
         if (!dgwAppliance.get_canBeDGW()) {
-            return Response.status(400).build();
+            throw new BadRequestException("can't apply action to specified appliance");
         }
 
         String ipv4UUID;
         if (!dgwAppliance.get_isDGW()) {
-            return Response.status(400).build();
+            throw new BadRequestException("appliance must be an active oDGW");
         } else {
             IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
             OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwIpv4.getIP(), gwIpv4.getMask(), gwIpv4.getNexthop(), gwIpv4.getType(), odgwUUID, 0);
@@ -296,7 +297,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
 
         if (!sbInterface.applianceExists(odgwUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("oDGW doesn't exist");
         }
 
         OpenDoveRestClient client = new OpenDoveRestClient();
@@ -370,7 +371,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
 
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
         if (!sbInterface.applianceExists(odgwUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("oDGW doesn't exist");
         }
 
         OpenDoveRestClient client = new OpenDoveRestClient();
@@ -442,7 +443,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
         OpenDoveServiceAppliance dgwAppliance = sbInterface.getDoveServiceAppliance(odgwUUID);
 
         if (!sbInterface.applianceExists(odgwUUID)) {
-            return Response.status(404).build();
+            throw new ResourceNotFoundException("oDGW doesn't exist");
         }
 
         OpenDoveRestClient client = new OpenDoveRestClient();

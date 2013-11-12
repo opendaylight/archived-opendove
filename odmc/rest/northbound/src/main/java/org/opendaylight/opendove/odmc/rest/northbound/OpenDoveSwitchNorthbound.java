@@ -19,6 +19,7 @@ import org.codehaus.enunciate.jaxrs.ResponseCode;
 import org.codehaus.enunciate.jaxrs.StatusCodes;
 import org.codehaus.enunciate.jaxrs.TypeHint;
 import org.opendaylight.controller.northbound.commons.RestMessages;
+import org.opendaylight.controller.northbound.commons.exception.ResourceNotFoundException;
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
@@ -88,8 +89,9 @@ public class OpenDoveSwitchNorthbound {
             throw new ServiceUnavailableException("OpenDove SB Interface "
                     + RestMessages.SERVICEUNAVAILABLE.toString());
         }
-        if (!sbInterface.switchExists(switchUUID))
-            return Response.status(404).build();
+        if (!sbInterface.switchExists(switchUUID)) {
+            throw new ResourceNotFoundException("Switch doesn't exist");
+        }
         return Response.status(200).entity(new OpenDoveSwitchRequest(sbInterface.getSwitch(switchUUID))).build();
     }
 

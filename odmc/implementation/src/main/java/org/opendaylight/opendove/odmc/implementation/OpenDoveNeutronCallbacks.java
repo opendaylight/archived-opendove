@@ -522,9 +522,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
         OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
 
-        Iterator<NeutronRouter_Interface> interfaceIterator = router.getInterfaces().values().iterator();
-        while (interfaceIterator.hasNext()) {
-            NeutronRouter_Interface oldInterface = interfaceIterator.next();
+        for ( NeutronRouter_Interface oldInterface: router.getInterfaces().values()) {
             NeutronSubnet oldNeutronSubnet = neutronSubnetIf.getSubnet(oldInterface.getSubnetUUID());
             NeutronNetwork oldNeutronNetwork = neutronNetworkIf.getNetwork(oldNeutronSubnet.getNetworkUUID());
             String oldNetworkUUID = "Neutron " + oldNeutronNetwork.getID();
@@ -544,9 +542,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             }
                         }
                     } else {
-                        Iterator<OpenDoveSubnet> i = doveSubnetDB.getSubnets().iterator();
-                        while (i.hasNext()) {
-                            OpenDoveSubnet oDS = i.next();
+                        for ( OpenDoveSubnet oDS: doveSubnetDB.getSubnets()) {
                             if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(neutronSubnet.getID()) &&
                                     oDS.getDomainUUID() == newODN.getDomain_uuid()) {
                                 OpenDoveEGWSNATPool.removeEGWSNATPool(oldNeutronSubnet, snatPoolDB,

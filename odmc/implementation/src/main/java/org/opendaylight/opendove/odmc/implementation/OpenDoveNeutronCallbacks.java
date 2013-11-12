@@ -232,8 +232,10 @@ INeutronRouterAware, INeutronFloatingIPAware {
                 return 409;
             }
             IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-            if (gatewayIPDB.getGwIpv4Pool().size() > 0 ) {
-                return 409;
+            for (OpenDoveGwIpv4 ipv4 : gatewayIPDB.getGwIpv4Pool()) {
+                if (ipv4.getType().equalsIgnoreCase("external")) {
+                    return 409;
+                }
             }
         }
         return 200;
@@ -339,7 +341,39 @@ INeutronRouterAware, INeutronFloatingIPAware {
         return 200;
     }
     public void neutronPortDeleted(NeutronPort port) {
-        // nothing openDove related changes
+        IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
+        IfSBDoveSubnetCRUD subnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
+        IfSBDoveNetworkSubnetAssociationCRUD networkSubnetAssociationDB =
+            OpenDoveCRUDInterfaces.getIfDoveNetworkSubnetAssociationCRUD(this);
+        INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+        NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(port.getNetworkUUID());
+        INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);
+        NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(port.getFixedIPs().get(0).getSubnetUUID());
+        OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
+        if (!neutronNetwork.isRouterExternal()) {
+            if (neutronNetwork.isShared()) {
+                if (controlBlock.getDomainSeparation()) {
+                    // tombstone EGW IPv4 information
+                    IfOpenDoveNetworkCRUD networkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
+                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+                    IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+                    String networkName = "Neutron "+neutronSubnet.getNetworkUUID();
+                    OpenDoveNetwork network = networkDB.getNetworkByName(networkName);
+                    OpenDoveGwIpv4.tombstoneEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, network);
+                }
+            }
+            // tombstone networkSubnetAssociation
+            for (OpenDoveSubnet oDS: subnetDB.getSubnets()) {
+                if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(neutronSubnet.getID())) {
+                    for (OpenDoveNetworkSubnetAssociation oDNSA : networkSubnetAssociationDB.getAssociations()) {
+                        if (oDNSA.getOpenDoveNetworkSubnetUuid().equalsIgnoreCase(oDS.getUUID())) {
+                            oDNSA.setTombstoneFlag(true);
+                            networkSubnetAssociationDB.updateAssociation(oDNSA);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // INeutronRouterAware methods

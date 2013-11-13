@@ -1,0 +1,18 @@
+This folder contains the OS wrapper (OSW) common module.
+
+The OS wrapper includes:
+. thread creation and deletion
+. event send and receive
+. semaphore creation and deletion and take and release
+. message queue creation and deletion and send and receive
+. timer
+
+Here message queue supports both POSIX message queue and 
+Non-POSIX message queue. By default, it works in POSIX message
+queue mode. If kernel in which the OS wrapper is running not 
+support POSIX message queue, you have to change to Non-POSIX
+message queue. To change to Non-POSIX, you need to recompile 
+the queue.c with -DNON_POSIX_MQUEUE flag.
+
+In addition, timer granularity is 100ms, that is, expired time 
+MUST be multiple of 100ms.

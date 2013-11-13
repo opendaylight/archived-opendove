@@ -52,7 +52,7 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
     Integer domainID;
 
     @XmlElement(name="ext_ip")
-    String externalIP;
+    OpenDoveGwIpv4 externalIP;
 
     public OpenDoveEGWSNATPool() {
         uuid = java.util.UUID.randomUUID().toString();
@@ -61,7 +61,7 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
 
     public OpenDoveEGWSNATPool(String uuid2, String ip_low, String ip_high,
             String domain_uuid, Integer domain_id, Integer ext_mcast_vnid,
-            Integer vnid2, int i, int j) {
+            Integer vnid2, OpenDoveGwIpv4 egwExtIP, int i, int j) {
         uuid = java.util.UUID.randomUUID().toString();
         gatewayUUID = uuid2;
         minIP = ip_low;
@@ -70,6 +70,7 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
         domainID = domain_id;
         externalMulticastVNID = ext_mcast_vnid;
         vnid = vnid2;
+        externalIP = egwExtIP;
         minPort = i;
         maxPort = j;
         tombstoneFlag = false;
@@ -148,11 +149,11 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
         this.domainUUID = domainUUID;
     }
 
-    public String getExternalIP() {
+    public OpenDoveGwIpv4 getExternalIP() {
         return externalIP;
     }
 
-    public void setExternalIP(String externalIP) {
+    public void setExternalIP(OpenDoveGwIpv4 externalIP) {
         this.externalIP = externalIP;
     }
 
@@ -192,9 +193,11 @@ public class OpenDoveEGWSNATPool extends OpenDoveObject implements IfOpenDGWTrac
             }
             OpenDoveDomain d = oldODN.getScopingDomain();
             OpenDoveNetwork extMCastNet = d.getExtMCastNetwork();
+            Integer domainID = d.getDomainId();
+            OpenDoveGwIpv4  egwExternalIP = oDSA.getEGWExtIP();
             OpenDoveEGWSNATPool snatPool = new OpenDoveEGWSNATPool(oDSA.getUUID(), ip_low, ip_high,
-                                                                   oldODN.getDomain_uuid(), oldODN.getDomain_id(),
-                                                                   extMCastNet.getVnid(), oldODN.getVnid(),
+                                                                   oldODN.getDomain_uuid(), domainID,
+                                                                   extMCastNet.getVnid(), oldODN.getVnid(), egwExternalIP,
                                                                    8000, 9000);//TODO add control for low and high
             snatPoolDB.addEgwSNATPool(snatPool.getUUID(), snatPool);
         }

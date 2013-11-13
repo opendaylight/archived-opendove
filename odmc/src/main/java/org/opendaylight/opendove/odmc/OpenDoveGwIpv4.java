@@ -162,6 +162,8 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
                         "external", target.getUUID(), 0);
                 newGWIP.setNeutronSubnet(neutronSubnet);
                 gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);
+                // Set the External IP for EGW, will be used by SNAT Pool Configuration
+                target.setEGWExtIP(newGWIP);
             }
             //link egw to dove network
             network.addEGW(target);

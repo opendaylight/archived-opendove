@@ -131,6 +131,7 @@ public class OpenDoveNetwork extends OpenDoveObject implements IfOpenDCSTrackedO
     }
 
     public String getSBDgwUri() {
+        domain_id = scopingDomain.getDomainId();
         return "/controller/sb/v2/opendove/odmc/networks/" + uuid;
     }
 

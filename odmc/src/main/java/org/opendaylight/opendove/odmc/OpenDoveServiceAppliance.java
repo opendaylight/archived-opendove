@@ -83,6 +83,7 @@ public class OpenDoveServiceAppliance  {
     Boolean isDGW;
 
     OpenDoveGwIpv4 doveTunnel;
+    OpenDoveGwIpv4 egwExtIP;
 
     public OpenDoveServiceAppliance () {
     }
@@ -199,6 +200,14 @@ public class OpenDoveServiceAppliance  {
 
     public void setDoveTunnel(OpenDoveGwIpv4 tunnel) {
         doveTunnel = tunnel;
+    }
+
+    public OpenDoveGwIpv4 getEGWExtIP() {
+        return egwExtIP;
+    }
+
+    public void setEGWExtIP(OpenDoveGwIpv4 extIP) {
+        egwExtIP = extIP;
     }
 
     public void initDefaults() {

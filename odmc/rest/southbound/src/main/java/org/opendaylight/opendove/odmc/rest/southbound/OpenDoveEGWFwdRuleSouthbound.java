@@ -64,7 +64,7 @@ public class OpenDoveEGWFwdRuleSouthbound {
         if (!sbInterface.egwFwdRuleExists(ruleUUID)) {
             throw new ResourceNotFoundException("EGW forward rule doesn't exist");
         }
-        return Response.status(200).entity(sbInterface.getEgwFwdRule(ruleUUID)).build();
+        return Response.status(200).entity(new OpenDoveEGWFwdRuleRequest(sbInterface.getEgwFwdRule(ruleUUID))).build();
     }
 
     @GET
@@ -74,7 +74,7 @@ public class OpenDoveEGWFwdRuleSouthbound {
             @ResponseCode(code = 204, condition = "No content"),
             @ResponseCode(code = 401, condition = "Unauthorized"),
             @ResponseCode(code = 500, condition = "Internal Error") })
-    public Response listPolicies() {
+    public Response showRules() {
         IfSBDoveEGWFwdRuleCRUD sbInterface = OpenDoveCRUDInterfaces.getIfSBDoveEGWFwdRuleCRUD(this);
         if (sbInterface == null) {
             throw new ServiceUnavailableException("OpenDove SB Interface "

@@ -70,6 +70,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      *   "vnid_mapping_rule": {
      *     "id": "uuid",
      *     "net_id": 100,
+     *     "vlan" : 50,
      *     "gatewayUUID": "uuid2"
      *   }
      * }
@@ -189,6 +190,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
         if (input.isSingleton()) {
             OpenDoveVGWVNIDMapping singleton = input.getSingleton();
             singleton.setUUID(java.util.UUID.randomUUID().toString());
+            singleton.setTombstoneFlag(false);
             sbInterface.addVgwVNIDMapping(singleton.getUUID(), singleton);
         } else {
             /*
@@ -227,6 +229,7 @@ public class OpenDoveVGWVNIDMappingNorthbound {
      *   "vnid_mapping_rule": {
      *     "id": "uuid",
      *     "net_id": 110200,
+     *     "vlan" : 50,
      *     "gatewayUUID": "uuid2"
      *   }
      * }

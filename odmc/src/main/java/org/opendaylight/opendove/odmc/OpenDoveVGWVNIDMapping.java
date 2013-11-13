@@ -23,6 +23,9 @@ public class OpenDoveVGWVNIDMapping extends OpenDoveObject implements IfOpenDGWT
     @XmlElement(name="net_id")
     Integer vnid;
 
+    @XmlElement(name="vlan")
+    Integer vlanID;
+
     @XmlElement(name="gatewayUUID")
     String gatewayUUID;
 
@@ -45,6 +48,13 @@ public class OpenDoveVGWVNIDMapping extends OpenDoveObject implements IfOpenDGWT
         this.vnid = vnid;
     }
 
+    public Integer getVlan() {
+        return vlanID;
+    }
+
+    public void setVlan(Integer vlan_id) {
+        this.vlanID = vlan_id;
+    }
 
     public String getGatewayUUID() {
         return gatewayUUID;

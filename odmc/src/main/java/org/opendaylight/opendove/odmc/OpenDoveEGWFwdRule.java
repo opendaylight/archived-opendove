@@ -53,6 +53,9 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
     @XmlElement(name="pip_max")
     String maxProxyIP;
 
+    @XmlElement(name="protocol")
+    Integer protocol;
+
     String associatedNeutronFloatingIPUUID;
 
     public OpenDoveEGWFwdRule() {
@@ -72,6 +75,8 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
         maxProxyIP = maxProxyIP2;
         vnid = vnid2;
         associatedNeutronFloatingIPUUID = floatingIP.getID();
+        // Set protocol to "wildcard: 0" for Now, Ideally it should be set by Neutron Layer
+        protocol = 0;
     }
 
     @Override
@@ -91,6 +96,13 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
         this.vnid = vnid;
     }
 
+    public Integer getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(Integer protocol) {
+        this.protocol = protocol;
+    }
 
     public String getGatewayUUID() {
         return gatewayUUID;
@@ -163,7 +175,7 @@ public class OpenDoveEGWFwdRule extends OpenDoveObject implements IfOpenDGWTrack
     }
 
     public String getSBDgwUri() {
-        return "/controller/sb/v2/opendove/odmc/egw-fwd-rules/"+uuid;
+        return "/controller/sb/v2/opendove/odmc/ext-fwd-rules/"+uuid;
     }
 
     static public void mapFloatingIPtoEGWFwdRule(NeutronFloatingIP floatingIP, Object o) {

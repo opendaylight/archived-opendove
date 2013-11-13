@@ -64,7 +64,7 @@ public class OpenDoveVGWVNIDMappingSouthbound {
         if (!sbInterface.vgwVNIDMappingExists(mappingUUID)) {
             throw new ResourceNotFoundException("VNID Mapping doesn't exist");
         }
-        return Response.status(200).entity(sbInterface.getVgwVNIDMapping(mappingUUID)).build();
+        return Response.status(200).entity(new OpenDoveVGWVNIDMappingRequest(sbInterface.getVgwVNIDMapping(mappingUUID))).build();
     }
 
     @GET

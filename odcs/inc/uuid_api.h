@@ -27,7 +27,7 @@ extern char dps_node_uuid[37];
  * \brief File which stores the service appliance UUID.
  * 	  This UUID is to be used in all the requests.
  */
-#define SERVICE_APPLIANCE_UUID_FILE "/flash/svc.uuid"
+#define SERVICE_APPLIANCE_UUID_FILE ".flash/svc.uuid"
 
 /*
  ******************************************************************************

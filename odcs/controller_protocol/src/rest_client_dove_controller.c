@@ -1288,13 +1288,14 @@ static json_t *dps_form_appliance_registration_json()
 	char ipstr[INET6_ADDRSTRLEN];
 	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, ipstr, INET6_ADDRSTRLEN);
 
-	js_root = json_pack("{s:i,s:s,s:s,s:i,s:i,s:i,s:s}",
+	js_root = json_pack("{s:i,s:s,s:s,s:i,s:i,s:i,s:i,s:s}",
 	                    "ip_family", dcs_local_ip.family,
 	                    "ip",ipstr,
 	                    "uuid",dps_node_uuid,
 	                    "dcs_rest_service_port",dps_rest_port,
 	                    "dcs_raw_service_port",dcs_local_ip.port,
 	                    "canBeDCS",CAN_BE_DCS,
+	                    "isDCS",dcs_role_assigned,
 	                    "build_version", dsa_version_string
 	                   );
 

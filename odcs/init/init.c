@@ -41,7 +41,7 @@
 
 #define SVA_INTERFACE_NAME "APBR"
 
-#define DCS_ROLE_FILE "/flash/dcs.role"
+#define DCS_ROLE_FILE ".flash/dcs.role"
 #define DSA_VERSION_FILE "/dove/dsa_version"
 
 #define DSA_VERSION_MAX_LENGTH 128
@@ -525,16 +525,18 @@ static void dcs_write_role_to_file(int role)
 {
 	FILE *fp = NULL;
 	char role_string[16];
+	char path[100] = {'\0'};
 
-	if((fp = fopen(DCS_ROLE_FILE,"w")) == NULL) {
+	sprintf(path, "%s/%s", getenv("HOME"), DCS_ROLE_FILE);
+	if((fp = fopen(path,"w")) == NULL) {
 		log_alert(PythonClusterDataLogLevel,
 		          "[ERROR] in opening(write) ROLE file [%s]",
-		          DCS_ROLE_FILE);
+		          path);
 	}else{
 		sprintf(role_string, "%d", role);
 		fputs(role_string, fp);
 		log_notice(PythonClusterDataLogLevel,
-		           "Wrote Role %d to file %s",role, DCS_ROLE_FILE);
+		           "Wrote Role %d to file %s",role, path);
 		fclose(fp);
 	}
 	return;
@@ -663,16 +665,18 @@ static void dcs_read_role()
 	FILE *fp = NULL;
 	char ptr[16];
 	int role = 0;
+	char path[100] = {'\0'};
 
 	do
 	{
 		memset(ptr, 0, 16);
-		fp = fopen(DCS_ROLE_FILE, "r");
+		sprintf(path, "%s/%s", getenv("HOME"), DCS_ROLE_FILE);
+		fp = fopen(path, "r");
 		if(fp == NULL)
 		{
 			log_notice(PythonDataHandlerLogLevel,
 			           "Existing Role File not found [%s]",
-			           DCS_ROLE_FILE);
+			           path);
 			break;
 		}
 		// read the file and populate the global
@@ -680,14 +684,14 @@ static void dcs_read_role()
 		{
 			log_emergency(PythonDataHandlerLogLevel,
 			              "Cannot read ROLE File %s, probably corrupted",
-			              DCS_ROLE_FILE);
+			              path);
 			break;
 		}
 		if(strlen(ptr) > 4)
 		{
 			log_emergency(PythonDataHandlerLogLevel,
 			              "ROLE length greater than expected",
-			              DCS_ROLE_FILE);
+			              path);
 			break;
 		}
 		role = atoi(ptr);
@@ -897,8 +901,8 @@ int dcs_initialize(int udp_port, int rest_port, int fDebugCli, int fExitOnCtrlC,
 		if (status_tmp != DOVE_STATUS_OK)
 		{
 			log_emergency(PythonDataHandlerLogLevel,
-			              "Could NOT read service appliance UUID from %s",
-			              SERVICE_APPLIANCE_UUID_FILE);
+			              "Could NOT read service appliance UUID from %s/%s",
+			              getenv("HOME"),SERVICE_APPLIANCE_UUID_FILE);
 			// Create a FAKE UUID interface
 			dps_init_uuid();
 			write_uuid_to_file();

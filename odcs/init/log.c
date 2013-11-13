@@ -28,7 +28,7 @@
 
 uint32_t log_console = 1;
 
-#define DPS_LOG_PATH "/flash/dcs.log"
+#define DPS_LOG_PATH ".flash/dcs.log"
 
 #define DEFINE_DOVE_ERROR_AT(_err, _str, _val) _str,
 const char *returnDoveStatusStrs[] = {
@@ -58,6 +58,7 @@ void info(int level, const char *fmt, va_list ap)
 	char buf[MAX_ERRINFO_LEN + 1];
 	FILE *logFP = NULL;
 	struct stat fileSt;
+	char path[100] = {'\0'};
 
 	memset(buf, 0, MAX_ERRINFO_LEN);
 	vsnprintf(buf, MAX_ERRINFO_LEN, fmt, ap);
@@ -67,14 +68,15 @@ void info(int level, const char *fmt, va_list ap)
 		print_console(buf);
 	}
 
-	logFP = fopen(DPS_LOG_PATH,"a");
+	sprintf(path, "%s/%s", getenv("HOME"), DPS_LOG_PATH);
+	logFP = fopen(path,"a");
 	if(logFP)
 	{
 		fstat(fileno(logFP), &fileSt);
 		if(fileSt.st_size > 1*1024*1024)
 		{
 			fclose(logFP);
-			logFP = fopen(DPS_LOG_PATH,"w+");
+			logFP = fopen(path,"w+");
 		}
 	}
 	if(logFP)

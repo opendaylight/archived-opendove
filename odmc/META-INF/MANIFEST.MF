@@ -1,18 +1,21 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1377192549266
+Bnd-LastModified: 1389825979671
 Build-Jdk: 1.7.0
 Built-By: rmoats
-Bundle-Activator: org.opendaylight.opendove.odmc.internal.Activator
 Bundle-ManifestVersion: 2
 Bundle-Name: odmc
 Bundle-SymbolicName: org.opendaylight.opendove.odmc
-Bundle-Version: 0.4.0.SNAPSHOT
+Bundle-Version: 0.5.0.SNAPSHOT
 Created-By: Apache Maven Bundle Plugin
-Export-Package: org.opendaylight.opendove.odmc;uses:="javax.xml.bind.ann
- otation,org.apache.commons.net.util";version="0.4.0.SNAPSHOT"
+Export-Package: org.opendaylight.opendove.odmc;uses:="org.opendaylight.c
+ ontroller.sal.utils,javax.xml.bind.annotation,org.opendaylight.controll
+ er.networkconfig.neutron,org.apache.commons.net.util";version="0.5.0.SN
+ APSHOT"
 Import-Package: javax.xml.bind.annotation,org.apache.commons.net.util;ve
  rsion="[3.0,4)",org.apache.felix.dm;version="[3.0,4)",org.opendaylight.
- controller.clustering.services;version="[0.4,1)",org.opendaylight.contr
- oller.sal.core;version="[0.5,1)",org.osgi.service.component;version="[1
- .2,2)",org.slf4j;version="[1.7,2)"
+ controller.clustering.services;version="[0.5,1)",org.opendaylight.contr
+ oller.networkconfig.neutron;version="[0.4,1)",org.opendaylight.controll
+ er.sal.core;version="[0.7,1)",org.opendaylight.controller.sal.utils;ver
+ sion="[0.7,1)",org.osgi.service.component;version="[1.1,2)",org.slf4j;v
+ ersion="[1.7,2)"
 Tool: Bnd-1.50.0

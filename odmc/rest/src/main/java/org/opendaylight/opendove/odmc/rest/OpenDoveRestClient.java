@@ -269,7 +269,6 @@ public class OpenDoveRestClient {
              HTTPRequest request = new HTTPRequest();
              request.setMethod("GET");
              request.setUri(uri);
-             System.out.println("4. *********** REST_CLIENT show-dcs list URI" + uri);
              Map<String, List<String>> headers = new HashMap<String, List<String>>();
              // String authString = "admin:admin";
              // byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());

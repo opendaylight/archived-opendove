@@ -131,10 +131,12 @@ static json_t *dps_form_json_heartbeat()
 	log_debug(RESTHandlerLogLevel, "Enter");
 	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, str, INET6_ADDRSTRLEN);
 
-	js_root = json_pack("{s:i, s:i, s:s}",
+	js_root = json_pack("{s:i, s:i, s:s, s:i, s:i}",
 	                    "ip_family", (int)dcs_local_ip.family,
 	                    "dcs_config_version", (int)cluster_config_version,
-	                    "ip", str
+	                    "ip", str,
+	                    "canBeDCS",CAN_BE_DCS,
+	                    "isDCS",dcs_role_assigned
 	                    );
 
 	log_debug(RESTHandlerLogLevel, "Exit");

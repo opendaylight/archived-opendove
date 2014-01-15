@@ -278,10 +278,12 @@ dove_status dcs_read_svc_app_uuid()
 	FILE *fp = NULL;
 	char ptr[40];
 	int n;
+	char path[100] = {'\0'};
 
-	if((fp = fopen(SERVICE_APPLIANCE_UUID_FILE,"r")) == NULL) {
+	sprintf( path, "%s/%s", getenv("HOME"), SERVICE_APPLIANCE_UUID_FILE);
+	if((fp = fopen(path,"r")) == NULL) {
 		log_alert(PythonUUIDLogLevel,"[ERROR] in opening UUID file [%s]",
-		          SERVICE_APPLIANCE_UUID_FILE);
+		          path);
 		status = DOVE_STATUS_ERROR;
 		return status;
 	}
@@ -310,20 +312,22 @@ dove_status dcs_read_svc_app_uuid()
 }
 
 
-/* Write the generated UUID to the file /flash/svc.uuid */
+/* Write the generated UUID to the file ~/.flash/svc.uuid */
 dove_status write_uuid_to_file(void)
 {
 
 	dove_status status = DOVE_STATUS_OK;
 	FILE *fp = NULL;
+	char path[100] = {'\0'};
 
-	if((fp = fopen(SERVICE_APPLIANCE_UUID_FILE,"w")) == NULL) {
+	sprintf( path, "%s/%s", getenv("HOME"), SERVICE_APPLIANCE_UUID_FILE);
+	if((fp = fopen(path,"w")) == NULL) {
 		log_alert(PythonUUIDLogLevel, "[ERROR] in opening(write) UUID file [%s]",
-		          SERVICE_APPLIANCE_UUID_FILE);
+		          path);
 		status = DOVE_STATUS_ERROR;
 	}else{
 		log_alert(PythonUUIDLogLevel, "[Write UUID to file %s",
-		          SERVICE_APPLIANCE_UUID_FILE);
+		          path);
 		log_alert(PythonUUIDLogLevel, "UUID is %s", dps_node_uuid);
 		fputs(dps_node_uuid,fp);
 		fclose(fp);

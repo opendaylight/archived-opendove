@@ -190,18 +190,20 @@ int dove_rest_request_and_syncprocess (
 		args[2] = request->cb_arg;
 		request->cb = syncprocess_callback;
 		request->cb_arg = (void *)args;
-        memset(uname,0,100);
-        strcat(uname,AUTH_HEADER_USERNAME);
-        strcat(uname,":");
-        strcat(uname,AUTH_HEADER_PASSWORD);
-        memset(b64_enc_str,0,100);
-        dps_base64_encode(uname,b64_enc_str);
-        memset(auth_header_value,0,100);
-        strcat(auth_header_value,"Basic ");
-        strcat(auth_header_value,b64_enc_str);
-        evhttp_add_header(evhttp_request_get_output_headers(request),
-                "Authorization",auth_header_value );
-
+		if(0 == strcmp(address,controller_location_ip_string))
+		{
+			memset(uname,0,100);
+			strcat(uname,AUTH_HEADER_USERNAME);
+			strcat(uname,":");
+			strcat(uname,AUTH_HEADER_PASSWORD);
+			memset(b64_enc_str,0,100);
+			dps_base64_encode(uname,b64_enc_str);
+			memset(auth_header_value,0,100);
+			strcat(auth_header_value,"Basic ");
+			strcat(auth_header_value,b64_enc_str);
+			evhttp_add_header(evhttp_request_get_output_headers(request),
+					"Authorization",auth_header_value );
+		}
 		/* We give ownership of the request to the connection */
 		ret = evhttp_make_request(conn, request, type, uri);
 		if(ret)

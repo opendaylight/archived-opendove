@@ -24,18 +24,18 @@
 #define _CONTROLLER_REST_API_H_
 #define DPS_DOMAINS_URI "/api/dove/dps/domains"
 #define DPS_DOMAIN_URI "/controller/sb/v2/opendove/odmc/domains/bynumber/*"
-#define DPS_DVGS_URI "/api/dove/dps/domains/*/dvgs"
+#define DPS_DVGS_URI "/api/dove/dps/domains/bynumber/*/dvgs"
 //#define DPS_DVG_URI "/api/dove/dps/domains/*/dvgs/*"
 #define DPS_DVG_URI "/controller/sb/v2/opendove/odmc/domains/bynumber/*/networks/*"
-#define DPS_POLICIES_URI "/api/dove/dps/domains/*/policies"
-#define DPS_POLICY_URI "/api/dove/dps/domains/*/policies/*"
+#define DPS_POLICIES_URI "/api/dove/dps/domains/bynumber/*/policies"
+#define DPS_POLICY_URI "/api/dove/dps/domains/bynumber/*/policies/*"
 #define DPS_EXTERNAL_GATEWAYS_URI "/api/dove/dps/vns/*/ipv4-external-gateways"
 #define DPS_EXTERNAL_GATEWAY_URI "/api/dove/dps/vns/*/ipv4-external-gateways/*"
-#define DPS_STATISTICS_LOAD_BALANCING_URI "/api/dove/dps/domains/*/load-balancing"
-#define DPS_STATISTICS_GENERAL_STATISTICS_URI "/api/dove/dps/domains/*/general-statistics"
+#define DPS_STATISTICS_LOAD_BALANCING_URI "/api/dove/dps/domains/bynumber/*/load-balancing"
+#define DPS_STATISTICS_GENERAL_STATISTICS_URI "/api/dove/dps/domains/bynumber/*/general-statistics"
 
-#define DPS_DOMAIN_IPV4SUBNETS_URI "/api/dove/dps/domains/*/ipv4-subnets"
-#define DPS_DOMAIN_IPV4SUBNET_URI "/api/dove/dps/domains/*/ipv4-subnets/*"
+#define DPS_DOMAIN_IPV4SUBNETS_URI "/api/dove/dps/domains/bynumber/*/ipv4-subnets"
+#define DPS_DOMAIN_IPV4SUBNET_URI "/api/dove/dps/domains/bynumber/*/ipv4-subnets/*"
 #define DPS_DVG_IPV4SUBNETS_URI "/api/dove/dps/vns/*/ipv4-subnets"
 #define DPS_DVG_IPV4SUBNET_URI "/api/dove/dps/vns/*/ipv4-subnets/*"
 
@@ -64,16 +64,16 @@
 #define DPS_DEBUG_CLUSTER_DISPLAY      "/api/dove/dps/cluster_display"
 
 #define DPS_URI_LEN 128
-#define DPS_DOMAIN_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u", (unsigned int)(_id))
-#define DPS_DVGS_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/dvgs", (unsigned int)(_id))
-#define DPS_DVG_URI_GEN(_buf, _id, _dvg_id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/dvgs/%u", (unsigned int)(_id), (unsigned int)(_dvg_id))
-#define DPS_POLICIES_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/policies", (unsigned int)(_id))
-#define DPS_POLICY_URI_GEN(_buf, _id, _src_dvg_id, _dst_dvg_id, _traffic_type) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/policies/%u-%u-%u", (unsigned int)(_id), (unsigned int)(_src_dvg_id), (unsigned int)(_dst_dvg_id), (unsigned int)(_traffic_type))
+#define DPS_DOMAIN_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u", (unsigned int)(_id))
+#define DPS_DVGS_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/dvgs", (unsigned int)(_id))
+#define DPS_DVG_URI_GEN(_buf, _id, _dvg_id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/dvgs/%u", (unsigned int)(_id), (unsigned int)(_dvg_id))
+#define DPS_POLICIES_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/policies", (unsigned int)(_id))
+#define DPS_POLICY_URI_GEN(_buf, _id, _src_dvg_id, _dst_dvg_id, _traffic_type) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/policies/%u-%u-%u", (unsigned int)(_id), (unsigned int)(_src_dvg_id), (unsigned int)(_dst_dvg_id), (unsigned int)(_traffic_type))
 #define DPS_EXTERNAL_GATEWAY_KEY "ipv4-external-gateways"
 #define DPS_EXTERNAL_GATEWAYS_URI_GEN(_buf, _id) snprintf((_buf),DPS_URI_LEN, "/api/dove/dps/vns/%u/ipv4-external-gateways", (unsigned int)(_id))
 #define DPS_EXTERNAL_GATEWAY_URI_GEN(_buf,_id,_external_gateway_id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/vns/%u/ipv4-external-gateways/%d", (unsigned int)(_id), (_external_gateway_id))
-#define DPS_DOMAIN_IPV4SUBNETS_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/ipv4-subnets", (unsigned int)(_id))
-#define DPS_DOMAIN_IPV4SUBNET_URI_GEN(_buf, _id, _ip_str, _mask_str) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/%u/ipv4-subnets/%s-%s", (unsigned int)(_id), (_ip_str), (_mask_str))
+#define DPS_DOMAIN_IPV4SUBNETS_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/ipv4-subnets", (unsigned int)(_id))
+#define DPS_DOMAIN_IPV4SUBNET_URI_GEN(_buf, _id, _ip_str, _mask_str) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/domains/bynumber/%u/ipv4-subnets/%s-%s", (unsigned int)(_id), (_ip_str), (_mask_str))
 #define DPS_DVG_IPV4SUBNETS_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/vns/%u/ipv4-subnets", (unsigned int)(_id))
 #define DPS_DVG_IPV4SUBNET_URI_GEN(_buf, _id, _ip_str, _mask_str) snprintf((_buf), DPS_URI_LEN, "/api/dove/dps/vns/%u/ipv4-subnets/%s-%s", (unsigned int)(_id), (_ip_str), (_mask_str))
 #define DPS_REST_LISTEN_DEFAULT_IP "0.0.0.0"

@@ -23,11 +23,11 @@
 #ifndef _DPS_CLUSTER_REST_REQ_HANDLER_H
 #define _DPS_CLUSTER_REST_REQ_HANDLER_H
 
-#define DPS_CLUSTER_TRANSFER_DOMAIN_URI "/api/dove/dps/domains/*/transfer"
+#define DPS_CLUSTER_TRANSFER_DOMAIN_URI "/api/dove/dps/domains/bynumber/*/transfer"
 #define DPS_URI_LEN 128
 
 #define DPS_CLUSTER_TRANSFER_DOMAIN_URI_GEN(_buf, _id) snprintf((_buf), DPS_URI_LEN, \
-                                                     "/api/dove/dps/domains/%u/transfer", (unsigned int)(_id))
+                                                     "/api/dove/dps/domains/bynumber/%u/transfer", (unsigned int)(_id))
 
 void dps_req_handler_transfer_domain(struct evhttp_request *req, void *arg,
                                  int argc, char **argv);

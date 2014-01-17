@@ -6,3 +6,9 @@ dove-controller
 openvswitch
 openvswitch-2.0.0
 openvswitch.tar.gz
+curl-*
+libcurl*
+third-party/bin
+third-party/lib
+third-party/share
+third-party/include

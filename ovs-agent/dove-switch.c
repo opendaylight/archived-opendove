@@ -113,12 +113,7 @@ struct dove_switch {
 
     size_t n_eps;
     struct tunnel_ep eps[MAX_TUNNEL_EP];
-};
-
-struct packet_in_params {
-  struct dove_switch *sw;
-  struct ofpbuf *msg;
-  DC_Address src_vIP;
+    bool *dps_is_connected_p;
 };
 
 /* The log messages here could actually be useful in debugging, so keep the
@@ -140,7 +135,6 @@ static int known_tunnel_ep(struct dove_switch * sw, uint32_t vnid);
 static void add_tunnel_ep(struct dove_switch * sw, uint32_t vnid);
 static int loc_update(uint32_t pIP, uint32_t vnid, uint32_t vIP, uint8_t * vMAC, void * ctx);
 static int pol_resolve(uint32_t vnid, uint32_t vIP, void * ctx);
-int dpsa_response(void* rsp);
 static void send_dhcp_reply(struct dove_switch *sw,
 			    struct ofputil_packet_in *pi, 
 			    struct in_addr *vIP,
@@ -967,7 +961,7 @@ static int register_tunnel(uint32_t pIP, uint32_t vnid, uint32_t on)
     dps_tunnel_reg_dereg.tunnel_info.tunnel_list[0].ip4 = pIP; // host order
     dps_tunnel_reg_dereg.tunnel_info.tunnel_list[0].port = 12345;
     dps_tunnel_reg_dereg.tunnel_info.tunnel_list[0].vnid = vnid;
-    dps_tunnel_reg_dereg.tunnel_info.tunnel_list[0].tunnel_type = TUNNEL_TYPE_NVGRE;
+    dps_tunnel_reg_dereg.tunnel_info.tunnel_list[0].tunnel_type = TUNNEL_TYPE_VXLAN;
 
     memcpy((void *)&dps_client_data.tunnel_reg_dereg.tunnel_info, (void *)&dps_tunnel_reg_dereg.tunnel_info, sizeof(dps_client_data.tunnel_reg_dereg.tunnel_info));
 
@@ -1055,97 +1049,6 @@ int pol_resolve(uint32_t vnid, uint32_t vIP, void * ctx)
     return dps_protocol_client_send(&dps_client_data);
 }
 
-int dpsa_response(void* rsp)
-{
-    uint32_t    u4RetVal = 0;
-    uint32_t    rspType;
-    uint32_t    vnid;
-    uint32_t    rsp_status;
-    //uint32_t  context;
-    //uint32_t    rspSubType;
-    void*   p_context;
-
-    rspType = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).type;
-    //rspSubType = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).sub_type;
-    vnid = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).vnid;
-    p_context = (void*)((dps_client_data_t*) rsp)->context;
-    //context = (uint32_t) p_context;
-    rsp_status = ((dps_client_hdr_t)((dps_client_data_t*) rsp)->hdr).resp_status;
-
-    if (rspType > DPS_MAX_MSG_TYPE)
-    {
-        u4RetVal = 1;
-        goto dpsa_response_exit;
-    }
-
-    printf("Received Response from DPS Client, response type = 0x%x, response status = 0x%x \n", rspType, rsp_status);
-
-    switch (rspType)
-    {
-        case DPS_UNSOLICITED_ENDPOINT_LOC_REPLY:
-            break;
-
-        case DPS_POLICY_REPLY:
-        {
-            if (rsp_status == DPS_NO_ERR)
-            {
-                dps_policy_reply_t * policy_reply = &((dps_client_data_t*) rsp)->policy_reply;
-                dps_endpoint_loc_reply_t* p_loc_reply = &((dps_client_data_t*) rsp)->policy_reply.dst_endpoint_loc_reply;
-                int allow = policy_reply->dps_policy_info.dps_policy.vnid_policy.num_permit_rules > 0;
-
-                if (allow)
-                {
-                    struct packet_in_params * params = (struct packet_in_params *) p_context;
-
-                    DC_PolicyKey key = {
-                        .domainID = vnid,
-                        .source = params->src_vIP,
-                        .target.kind = IPv4,
-                        .target.addr.ipv4.s_addr = ntohl(p_loc_reply->vm_ip_addr.ip4)
-                    };
-                    DC_Policy policy = {.action = FORWARD};
-
-                    memcpy(policy.vMAC, p_loc_reply->mac, 6);
-                    policy.host.addr.ipv4.s_addr = ntohl(p_loc_reply->tunnel_info.tunnel_list[0].ip4);
-		    policy.ttl = policy_reply->dps_policy_info.ttl;
-                    dove_policy_cb(&key, &policy, 0, p_context);
-                }
-                else
-                {
-                    printf("communication prohibited by policy\n");
-                }
-            }
-            else
-                printf("Policy resolution failed\n");
-        }
-        break;
-
-        case DPS_ENDPOINT_UPDATE_REPLY:
-        case DPS_ADDR_RESOLVE:
-        case DPS_INTERNAL_GW_REPLY:
-        case DPS_BCAST_LIST_REPLY:
-        case DPS_UNSOLICITED_BCAST_LIST_REPLY:
-        case DPS_UNSOLICITED_VNID_POLICY_LIST:
-        case DPS_VNID_POLICY_LIST_REPLY:
-        case DPS_UNSOLICITED_EXTERNAL_GW_LIST:
-        case DPS_EXTERNAL_GW_LIST_REPLY:
-        case DPS_UNSOLICITED_VLAN_GW_LIST:
-        case DPS_VLAN_GW_LIST_REPLY:
-        case DPS_MCAST_RECEIVER_DS_LIST:
-        case DPS_REG_DEREGISTER_ACK:
-        case DPS_UNSOLICITED_VNID_DEL_REQ:
-        case DPS_ENDPOINT_LOC_REPLY:
-            break;
-
-        default:
-            u4RetVal = 1;
-        break;
-    }
-dpsa_response_exit:
-    return (u4RetVal ? DPS_ERROR : DPS_SUCCESS);
-}
-
-
 static unsigned short checksum(unsigned short * buffer, int bytes)
 {
     unsigned long sum = 0;
@@ -1220,9 +1123,6 @@ static void send_dhcp_reply(struct dove_switch *sw,
     udp = (struct udp_header *)((char *)eth + ETH_HEADER_LEN + IP_HEADER_LEN);
     udp->udp_csum = 0;
     //udp->udp_csum = checksum(ip, IP_HEADER_LEN + udp->udp_len);
-
-
-    printf("src port %d dst port %d\n", ntohs(udp->udp_src), ntohs(udp->udp_dst));
 
     udp->udp_src = htons(DHCP_SERVER_PORT);
     udp->udp_dst = htons(DHCP_CLIENT_PORT);

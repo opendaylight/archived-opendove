@@ -1,22 +1,21 @@
 /*
- *  Copyright (c) IBM, Inc.  2011 -
- *  All rights reserved
  *
- *  Header File:
+ * Copyright (c) 2010-2013 IBM Corporation
+ * All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ *  Source File:
  *      rest_api.h
- *
- *  Abstract:
  *      This header file defines the APIs that provided by the DPS REST Services
  *
  *  Author:
- *      DOVE Development Team
- *
- *  Environment:
- *      User World
- *
- *  Revision History:
+ *      Open DOVE development team
  *
  */
+
 
 #ifndef _DPS_REST_API_
 #define _DPS_REST_API_

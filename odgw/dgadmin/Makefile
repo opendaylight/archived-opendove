@@ -1,3 +1,15 @@
+#
+# Copyright (c) 2013 IBM Corporation
+# All rights reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this
+# distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+#
+# 
+
+
+
 #Variables
 BUILD_TYPE := debug
 #End of Variables
@@ -33,12 +45,13 @@ endif
 #PYINC = /usr/include/python2.7
 
 PARENT_DIR                  = ..
-MODULE_DPS                  = $(PARENT_DIR)/dps
+ODCS_DIR		    = $(PARENT_DIR)/../odcs
+MODULE_DPS                  = $(PARENT_DIR)/client_server_protocol
 MODULE_FD_PROCESS           = $(PARENT_DIR)/fd_process
 MODULE_COMMON               = $(PARENT_DIR)/common
 MODULE_OSW                  = $(PARENT_DIR)/osw
 MODULE_CLI                  = cli
-MODULE_TIMER                = $(PARENT_DIR)/protocol_timer
+MODULE_TIMER                = $(PARENT_DIR)/timer
 MODULE_CTRL_INTERFCE        = controller_interface
 
 INCLUDE_FOLDER              = inc
@@ -125,9 +138,11 @@ build-prep:
 	@echo "**  Preparing build tree"
 	$(MKDIR) -p $(BUILD_DIR)
 
+
 exec-modules: $(EXEC_SOURCES) $(EXECUTABLE)
 
 lib-modules: $(LIB_SOURCES) $(LIB_SHARED)
+	@echo $(LIB_SOURCES)
 
 move-modules:
 	$(MV) $(LIB_SHARED) $(BUILD_DIR)/
@@ -141,12 +156,8 @@ move-modules:
 move-executable: $(MV) $(EXECUTABLE) $(BUILD_DIR)
 
 clean:
-	rm -rf $(MODULE_TIMER)/src/*.o
 	rm -rf $(MODULE_CTRL_INTERFCE)/src/*.o
-	rm -rf $(MODULE_FD_PROCESS)/*.o
-	rm -rf $(MODULE_DPS)/src/*.o
 	rm -rf $(MODULE_CLI)/src/*.o
-	rm -rf $(MODULE_OSW)/*.o
 	rm -rf $(MODULE_CTRL_INTERFCE)/*.o
 	rm -rf *.o
 	rm -rf $(EXECUTABLE)

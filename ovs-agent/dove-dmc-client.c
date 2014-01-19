@@ -5,13 +5,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h> 
 #include <curl/curl.h>
-#include <event2/http.h>
 
 #define URL_DMC_USER "admin"
 #define URL_DMC_PASSWORD "admin"
 #define URL_DMC_SB_GET_SERVICE "http://%s:8080/controller/sb/v2/opendove/odmc/odcs/leader"
 #define URL_DMC_SB_SWITCH_REG "http://%s:8080/controller/sb/v2/opendove/odmc/switch"
 #define URL_DMC_SB_SWITCH_HB "http://%s:8080/controller/sb/v2/opendove/odmc/switch/%s"
+#define HTTP_OK 200
 
 enum request_type {
   GET = 0,

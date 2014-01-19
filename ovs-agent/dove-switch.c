@@ -1217,3 +1217,17 @@ static void send_dhcp_reply(struct dove_switch *sw,
  bail:
   return;
 }
+
+void dove_regiter_tunnel_eps(struct dove_switch *sw)
+{
+  int i;
+  struct tunnel_ep * ep;
+  for( i = 0; i < sw->n_eps; i++ ) {
+    ep = &sw->eps[i];
+    
+    if(ep->pIP == sw->host.addr.ipv4.s_addr) {
+      printf("reregister tunnel ep\n");
+      register_tunnel(ntohl(sw->host.addr.ipv4.s_addr), ep->vnid, 1);
+    }
+  }
+}

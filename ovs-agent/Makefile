@@ -50,9 +50,6 @@ CLIENT_PROT_INCFLAGS = -I$(ODCS_INCLUDE)       \
            -I$(TIMER_INCLUDE) 
 
 INCFLAGS =  $(OVS_INCLUDE)                \
-           -I$(INCLUDE_LIBEV)              \
-           -I$(INCLUDE_JANSSON)            \
-           -I$(INCLUDE_LIBEVENT2)          \
            -I$(CURL_INCLUDE)
 
 OVS_AGENT = dove-controller

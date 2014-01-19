@@ -288,6 +288,14 @@ main(int argc, char *argv[])
 	if(difftime(cur_time, last_hb_time) >= DMC_HB_INTERVAL) {
 	  send_hb_to_dmc();
 	  last_hb_time = cur_time;
+	
+	  /* hack - register tunnel endpoints on each HB interval */
+	  for (i = 0; i < n_switches; i++) {
+            struct switch_ *this = &switches[i];
+	    if (dswitch_is_alive(this->dswitch)) {
+	      dove_regiter_tunnel_eps(this->dswitch);
+	    }
+	  }
 	}
         
 	/* Do some switching work.  . */

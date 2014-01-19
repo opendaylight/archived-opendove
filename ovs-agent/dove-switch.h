@@ -130,5 +130,6 @@ void dove_update_cb(uint64_t vmID __attribute__((unused)),
 		    , int status __attribute__((unused)));
 void dove_policy_cb( const DC_PolicyKey * key, const DC_Policy * result, int status, void * opaque );
 void vip_cb(struct in_addr srcIp, struct in_addr gw, struct in_addr mask, void *opaque);
+void dove_regiter_tunnel_eps(struct dove_switch *sw);
 
 #endif /* learning-switch.h */

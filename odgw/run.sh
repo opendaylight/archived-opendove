@@ -1,6 +1,15 @@
 #!/bin/bash
+#
+# Copyright (c) 2013 IBM Corporation
+# All rights reserved.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License v1.0 which accompanies this
+# distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+#
 # Sample script to bringup up the gateway appliance 
 # bridge interface (APBR). Add all interfaces to the bridge.
+#
 
 VAR_PATH=`pwd`
 

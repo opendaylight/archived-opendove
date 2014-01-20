@@ -1,9 +1,14 @@
 '''
-Created on Apr 22, 2012
+ @copyright (c) 2010-2013 IBM Corporation
+ All rights reserved.
+ 
+ This program and the accompanying materials are made available under the
+ terms of the Eclipse Public License v1.0 which accompanies this
+ distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
 
-@summary: The DPS Server related CLI definitions for Data Object Handler
+ @author: Amitabha Biswas
 
-@author: abiswas
+ @summary: The DPS Server related CLI definitions for Data Object Handler
 '''
 
 import logging

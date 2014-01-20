@@ -1,23 +1,22 @@
 /*
- *  Copyright (c) IBM, Inc. 2012 -
- *  All rights reserved
  *
- *  Header File:
+ * Copyright (c) 2010-2013 IBM Corporation
+ * All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+ *
+ *  Source File:
  *      cli_interface.h
- *
- *  Abstract:
- *      The CLI related structure that are passed from the CLI to
+ *      The CLI related structures that are passed from the CLI to
  *      the DCS Server Infrastructure
  *
  *  Author:
- *      DOVE Development Team
- *
- *  Environment:
- *      User World
- *
- *  Revision History:
+ *      Open DOVE development team
  *
  */
+
 
 #ifndef _CLI_INTERFACE_
 #define _CLI_INTERFACE_

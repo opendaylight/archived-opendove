@@ -164,7 +164,7 @@ class DPSDomainReplicationTracker:
             try:
                 existing_request = self.Server_QueryID_Hash[replication_query_id_list[i]]
                 message = 'Server Replication Key %s Already exists - MAJOR Problem'%replication_query_id_list[i]
-                dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                 raise Exception('add_replication_request: Replication Query ID %s already exists'%(replication_query_id_list[i]))
             except Exception:
                 pass
@@ -314,7 +314,7 @@ class DPSReplicationTracker(object):
                     #Force retry. We don't want the node to wait for 
                     #replies from the forwarded nodes.
                     message ='DCS: In forwarding mode after mass transfer, force registration retry'
-                    dcslib.dps_cluster_write_log(DpsLogLevels.INFO, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                     ret_val = DpsClientHandler.dps_error_retry
                 else:
                     #Return local node
@@ -370,7 +370,7 @@ class DPSReplicationTracker(object):
             except Exception, ex:
                 message ='DCS: Force registration retry [%s]'%(ex)
                 #print '%s\r'%message
-                dcslib.dps_cluster_write_log(DpsLogLevels.INFO, message)
+                dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                 status = DpsClientHandler.dps_error_retry
                 dps_nodes = []
                 query_ids = []

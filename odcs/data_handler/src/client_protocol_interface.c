@@ -3495,6 +3495,65 @@ PyObject *domain_query_policy_from_controller(PyObject *self, PyObject *args)
 
 /*
  ******************************************************************************
+ * dps_data_write_log --                                                  *//**
+ *
+ * \brief This routine writes logs sent by the Python Cluster Handler to the
+ *        Logs
+ *
+ * \return PyObject
+ *
+ *****************************************************************************/
+PyObject *dps_data_write_log(PyObject *self, PyObject *args)
+{
+	int log_level;
+	char *log_string;
+	PyObject *ret_val;
+
+	do
+	{
+		if (!PyArg_ParseTuple(args, "is", &log_level, &log_string))
+		{
+			log_warn(PythonDataHandlerLogLevel,
+			         "dps_data_write_log: Bad Data!!!");
+			break;
+		}
+		switch(log_level)
+		{
+			case DPS_SERVER_LOGLEVEL_INFO:
+				log_info(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_NOTICE:
+				log_notice(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_WARNING:
+				log_warn(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_ERROR:
+				log_error(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_CRITICAL:
+				log_critical(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_ALERT:
+				log_critical(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			case DPS_SERVER_LOGLEVEL_EMERGENCY:
+				log_emergency(PythonDataHandlerLogLevel, "%s", log_string);
+				break;
+			default:
+				break;
+		}
+
+	}while(0);
+
+	ret_val = Py_BuildValue("i", 0);
+
+	return ret_val;
+}
+
+
+/*
+ ******************************************************************************
  * dcs_protocol_handler_stop --                                           *//**
  *
  * \brief This routine stops the DPS Client Server Protocol Handler

@@ -346,7 +346,9 @@ class DpsClientHandler(object):
                 try:
                     dps_client_IP_val = self.ip_get_val_from_packed[dps_client_IP_type](dps_client_IP_packed)
                 except Exception:
-                    ret_val = self.dps_error_invalid_src_ip
+                    message = 'Endpoint_Update, Cannot determine DCS Client IP value'
+                    dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
+                    ret_val = self.dps_error_invalid_tunnel
                     break
                 try:
                     DPSClientHost.Host_Touch(dps_client_IP_val, dps_client_port)
@@ -355,7 +357,9 @@ class DpsClientHandler(object):
                 try:
                     pIP_val = self.ip_get_val_from_packed[pIP_type](pIP_packed)
                 except Exception:
-                    ret_val = self.dps_error_invalid_src_ip
+                    message = 'Endpoint_Update, Cannot determine TEP IP'
+                    dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
+                    ret_val = self.dps_error_invalid_tunnel
                     break
                 try:
                     vIP_val = self.ip_get_val_from_packed[vIP_type](vIP_packed)
@@ -392,6 +396,8 @@ class DpsClientHandler(object):
                     break
                 #vIP MUST not be a gateway IP
                 if dvg_obj.ImplicitGatewayIPListv4.search(vIP_val):
+                    message = 'Endpoint_Update, vIP_val %s found in Implicit Gateway List'%(vIP_val)
+                    dpslib.dps_data_write_log(DpsLogLevels.INFO, message)
                     ret_val = self.dps_error_invalid_src_ip
                     break
                 #vIP MUST fall in one of SUBNET ranges for the DVG
@@ -400,6 +406,8 @@ class DpsClientHandler(object):
                         try:
                             ip_mode = dvg_obj.IP_Subnet_List.valid_ip(vIP_val)
                         except Exception:
+                            message = 'Endpoint_Update, vIP_val %s does not match subnet for VNID %s'%(vIP_val, dvg_id)
+                            dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                             ret_val = self.dps_error_invalid_src_ip
                             break
                 #TODO Handle IPv6 SUBNET ranges
@@ -423,8 +431,8 @@ class DpsClientHandler(object):
                             ret_val = self.dps_error_no_memory
                             break
                     else:
-                        message = 'Endpoint_Update, Cannot find DCS Client'
-                        dcslib.dps_cluster_write_log(DpsLogLevels.INFO, message)
+                        message = 'Endpoint_Update, Cannot find DCS Client for dcs client ip value %s'%dps_client_IP_val
+                        dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                         ret_val = self.dps_error_invalid_tunnel
                         break
                 #log.info('Endpoint_Update: Got dps_client %s', dps_client_obj.location.show())
@@ -452,13 +460,13 @@ class DpsClientHandler(object):
                             break
                     else:
                         message = 'Endpoint_Update, Cannot find Tunnel Endpoint'
-                        dcslib.dps_cluster_write_log(DpsLogLevels.INFO, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                         ret_val = self.dps_error_invalid_tunnel
                         break
                 #Check if tunnel has been registered with the right dps client
                 if tunnel_obj.dps_client != dps_client_obj:
                     message = 'Endpoint_Update, Existing Tunnel DCS Client Mismatch'
-                    dcslib.dps_cluster_write_log(DpsLogLevels.INFO, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                     ret_val = self.dps_error_invalid_tunnel
                     break
                 #log.info('Endpoint_Update: Got Tunnel Endpoint %s', tunnel_obj.primary_ip().show())
@@ -488,7 +496,7 @@ class DpsClientHandler(object):
                         message ='Endpoint_Update: Endpoint %s, Migrated from %s to %s without informing DPS\r'%(mac_show(endpoint_obj.vMac), 
                                                                                                                  endpoint_obj.tunnel_endpoint.primary_ip().show(),
                                                                                                                  tunnel_obj.primary_ip().show())
-                        dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                         endpoint_obj.vmotion(dvg_obj, vnid, client_type, tunnel_obj, transaction_type)
                     except Exception:
                         pass
@@ -574,7 +582,7 @@ class DpsClientHandler(object):
                     dps_client_obj.delete()
         except Exception, ex:
             message = 'Endpoint_Update, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (ret_val, ip_mode, version, vIP_Addresses)
 
@@ -670,7 +678,7 @@ class DpsClientHandler(object):
             #Failure
         except Exception, ex:
             message = 'Endpoint_Location_vIP, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, 0, 0, [], [], '', '', fGateway)
 
@@ -727,7 +735,7 @@ class DpsClientHandler(object):
             #Failure
         except Exception, ex:
             message = 'Endpoint_Location_vMac, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, 0, 0, [], [], '', '', fGateway)
 
@@ -806,7 +814,7 @@ class DpsClientHandler(object):
             #Failure
         except Exception, ex:
             message = 'Policy_Resolution_vMac, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, 0, 0, [], [], '', '', 0, 0, 0, 0, '')
 
@@ -931,7 +939,7 @@ class DpsClientHandler(object):
             #Failure
         except Exception, ex:
             message = 'Policy_Resolution_vIP, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, 0, 0, [], [], '', '', 0, 0, 0, '')
 
@@ -971,7 +979,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Implicit_Gateway_List, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, ListIPv4, ListIPv6)
 
@@ -1008,7 +1016,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Broadcast_List, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, ListIPv4, ListIPv6)
 
@@ -1047,7 +1055,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Gateway_List, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, ListIPv4, ListIPv6)
 
@@ -1083,7 +1091,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Is_VNID_Handled_Locally, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (status, ret_val, domain_id)
 
@@ -1129,7 +1137,7 @@ class DpsClientHandler(object):
                 return (self.dps_error_none, ip_packed, port)
         except Exception, ex:
             message = 'pIP_Get_DPS_Client, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (ret_val, '', 0)
 
@@ -1170,7 +1178,7 @@ class DpsClientHandler(object):
                 return (self.dps_error_none, endpoint.dvg.unique_id)
         except Exception, ex:
             message = 'vIP_Get_DVG, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return (ret_val, 0)
 
@@ -1215,7 +1223,7 @@ class DpsClientHandler(object):
                     pass
         except Exception, ex:
             message = 'Broadcast_Updates_Send, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def Policy_Updates_Send(self):
@@ -1245,11 +1253,11 @@ class DpsClientHandler(object):
                     #log.warning('DPSClient_New: Dvg %s Exit\r', dvg.unique_id)
                 except Exception, ex:
                     message = 'Policy_Updates_Send: Exception in sending to DPS Client %s'%ex
-                    dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                     pass
         except Exception, ex:
             message = 'Policy_Updates_Send, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def Policy_Updates_Send_To(self, vnid_id, query_id, dps_client_IP_type, dps_client_ip_packed):
@@ -1298,7 +1306,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Policy_Updates_Send_To, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return
 
@@ -1325,11 +1333,11 @@ class DpsClientHandler(object):
                     dvg.send_gateways_to(dps_client, gwy_type, gwy_v4, gwy_v6)
                 except Exception, ex:
                     message = 'Gateway_Updates_Send, Exception in sending to DPS Client %s'%ex
-                    dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                     pass
         except Exception, ex:
             message = 'Gateway_Updates_Send, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def Handle_Unsolicited_Message_Reply(self, message_type, 
@@ -1393,7 +1401,7 @@ class DpsClientHandler(object):
                 if dps_client.failure_count <= 0:
                     if dps_client.location.ip_value != self.cluster_db.Node_Local_Get_IPAddress():
                         message = 'ALERT!!! dps_client %s unreachable'%dps_client.location.show_ip()
-                        dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                         #dps_client.delete()
                     break
                 #Decrement the failure count
@@ -1413,7 +1421,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Handle_Unsolicited_Message_Reply, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return
 
@@ -1482,7 +1490,7 @@ class DpsClientHandler(object):
                 if dps_client.failure_count <= 0:
                     if dps_client.location.ip_value != self.cluster_db.Node_Local_Get_IPAddress():
                         message = 'ALERT!!! dps_client %s unreachable'%dps_client.location.show_ip()
-                        dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                         #dps_client.delete()
                     break
                 #Decrement the failure count
@@ -1517,7 +1525,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Handle_Resolution_Reply, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         self.lock.release()
         return
 
@@ -1596,7 +1604,7 @@ class DpsClientHandler(object):
                                                 dps_client_IP_val, dps_client_port)
                     except Exception, ex:
                         message = 'Tunnel_Register: Cannot create DPS Client %s'%ex
-                        dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                         ret_val = self.dps_error_no_memory
                         break
                 #Update the TunnelEndpoint
@@ -1607,7 +1615,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Tunnel_Register, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_retry
         self.lock.release()
         return ret_val
@@ -1652,7 +1660,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Tunnel_Unregister, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_retry
         self.lock.release()
         return ret_val
@@ -1795,7 +1803,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Multicast_Sender_Register, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_no_memory
         self.lock.release()
         return ret_val
@@ -1854,7 +1862,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Multicast_Sender_Unregister, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_no_memory
         self.lock.release()
         return ret_val
@@ -1923,7 +1931,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Multicast_Receiver_Register, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_no_memory
         self.lock.release()
         return ret_val
@@ -1992,7 +2000,7 @@ class DpsClientHandler(object):
                 break
         except Exception, ex:
             message = 'Multicast_Receiver_Unregister, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             ret_val = self.dps_error_no_memory
         self.lock.release()
         return ret_val
@@ -2070,7 +2078,7 @@ class DpsClientHandler(object):
                                                                       dps_client, global_scope)
                 except Exception:
                     message = 'Multicast_Updates_Send[0]: Problems sending to VNID %s'%sender_dvg.unique_id
-                    dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             #Nexy process new lists
             tuple_list = []
             for key in self.VNID_Multicast_Updates.keys():
@@ -2090,10 +2098,10 @@ class DpsClientHandler(object):
                     sender_dvg.domain.Multicast.sender_update_vnid(sender_dvg, mac, inet_type, ip_value, global_scope)
                 except Exception:
                     message = 'Multicast_Updates_Send[1]: Problems sending to VNID %s'%sender_dvg.unique_id
-                    dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         except Exception, ex:
             message = 'Multicast_Updates_Send, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def Address_Resolution_Resolve(self, vIP_packed):
@@ -2153,7 +2161,7 @@ class DpsClientHandler(object):
                     self.Address_Resolution_Requests[domain.unique_id] = domain
         except Exception, ex:
             message = 'Address_Resolution_Timeout, exception %s'%ex
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def Conflict_Detection_Timeout(self):

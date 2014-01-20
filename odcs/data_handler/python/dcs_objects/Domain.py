@@ -706,7 +706,7 @@ class Domain(dcs_object):
                                                       vipv6_list)
         if ret_val != 0: 
             message = 'send_all_vm_migration_update FAILED with value %d'%(ret_val)
-            dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         return
 
     def send_vm_migration_update(self, endpoint, vnid):

@@ -62,7 +62,7 @@ class DPSRetransmitHandler:
             try:
                 exists = self.Query_ID_Hash[query_id]
                 message = 'Query ID %s already exists in Timer Module'%query_id
-                dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             except Exception:
                 msg_tuple = (msg, self.max_retransmit, msg_size)
                 self.Query_ID_Hash[query_id] = msg_tuple

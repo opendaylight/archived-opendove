@@ -101,7 +101,7 @@ class IPSubnetList:
         self.count -= 1
         if self.count < 0:
             message = 'IPSubnetList.delete: Count %s < 0 - Counting Error'%self.count
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return DOVEStatus.DOVE_STATUS_OK
 
     def lookup(self, ip_value):
@@ -126,8 +126,9 @@ class IPSubnetList:
         Check if a given IP falls in one of the Subnets in the Subnet List
         @param ip_value: IP Address
         @type ip_value: Integer
-        @return: True or False
-        @rtype: Boolean
+        @return: (0 = Dedicated, 1 = Shared)
+        @rtype: Integer
+        @raise: Exception if the subnet is not found
         '''
         ret_val, subnet_ip, subnet_mask, subnet_mode, subnet_gateway = self.lookup(ip_value)
         if ret_val == DOVEStatus.DOVE_STATUS_OK:

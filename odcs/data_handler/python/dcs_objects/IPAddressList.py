@@ -48,13 +48,18 @@ class IPAddressList:
         @param ip_value: IPv4 or IPv6 IP Address in Network Byte Order
         @type ip_value: IPv4 integer, IPv6 String
         '''
-        if inet_type != self.inet_type:
-            raise Exception('Not Match IP Type')
-        try:
-            old_value = self.ip_hash[ip_value]
-        except Exception:
-            self.ip_hash[ip_value] = ip_value
-            self.ip_list.append(ip_value)
+        while True:
+            if ip_value == 0:
+                #Don't add 0
+                break
+            if inet_type != self.inet_type:
+                raise Exception('Not Match IP Type')
+            try:
+                old_value = self.ip_hash[ip_value]
+            except Exception:
+                self.ip_hash[ip_value] = ip_value
+                self.ip_list.append(ip_value)
+            break
         return 0
 
     def remove(self, inet_type, ip_value):

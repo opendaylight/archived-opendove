@@ -167,7 +167,7 @@ class DVG(dcs_object):
                     if tunnel != tunnel_endpoint:
                         IP = IPAddressLocation(socket.AF_INET, ip_value, 0)
                         message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DCS Server'%IP.show()
-                        dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                         ip_hash[ip_value] = tunnel_endpoint
                         new_tunnel = True
                 except Exception:
@@ -180,7 +180,7 @@ class DVG(dcs_object):
                     if tunnel != tunnel_endpoint:
                         IP = IPAddressLocation(socket.AF_INET6, ip_value, 0)
                         message = 'DVG.tunnel_endpoint_add. Tunnel IP %s migrated without informing DCS Server'%IP.show()
-                        dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                         ip_hash[ip_value] = tunnel_endpoint
                         new_tunnel = True
                 except Exception:
@@ -280,7 +280,7 @@ class DVG(dcs_object):
                 if tunnel != tunnel_endpoint:
                     IP = IPAddressLocation(socket.AF_INET, ip_value, 0)
                     message = 'tunnel_endpoint_add_IP. Tunnel IP %s migrated without informing DCS Server'%(IP.show_ip())
-                    dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                     ip_hash[ip_value] = tunnel_endpoint
                     new_tunnel = True
             except Exception:

@@ -703,8 +703,7 @@ class TunnelEndpoint:
                         message = 'Tunnel %s migrated from DPS Client %s to %s\r'%(tunnel.primary_ip().show_ip(),
                                                                                    tunnel.dps_client.location.show_ip(),
                                                                                    dps_client.location.show_ip())
-                        dcslib.dps_cluster_write_log(DpsLogLevels.NOTICE,
-                                                     message)
+                        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                         #Delete the Tunnel IP since it no longer belongs with this
                         #Tunnel object
                         tunnel.ip_clear(inet_type, pip_value)
@@ -791,7 +790,7 @@ class TunnelEndpoint:
                         #tunnel.show_details()
                     except:
                         message = 'Tunnel.Unregister: Problem deleting IP %s'%pip_value
-                        dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                        dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
                 except Exception:
                     pass
         if client_type == DpsClientType.external_gateway:

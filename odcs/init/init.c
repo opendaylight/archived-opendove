@@ -450,6 +450,7 @@ static PyMethodDef dps_lib_methods[] = {
 	{"retransmit_data", retransmit_data, METH_VARARGS, "dcslib doc"},
 	{"retransmit_timeout", retransmit_timeout, METH_VARARGS, "dcslib doc"},
 	{"dps_cluster_write_log", dps_cluster_write_log, METH_VARARGS, "dcslib doc"},
+	{"dps_data_write_log", dps_data_write_log, METH_VARARGS, "dcslib doc"},
 	{"dps_cluster_send_local_mapping_to", dps_cluster_send_local_mapping_to, METH_VARARGS, "dcslib doc"},
 	{"dps_cluster_send_heartbeat_to", dps_cluster_send_heartbeat_to, METH_VARARGS, "dcslib doc"},
 	{"dps_cluster_send_heartbeat_request_to", dps_cluster_send_heartbeat_request_to, METH_VARARGS, "dcslib doc"},

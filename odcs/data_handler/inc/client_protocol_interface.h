@@ -483,6 +483,18 @@ PyObject *send_message_and_free(PyObject *self, PyObject *args);
 
 /*
  ******************************************************************************
+ * dps_data_write_log --                                                  *//**
+ *
+ * \brief This routine writes logs sent by the Python Cluster Handler to the
+ *        Logs
+ *
+ * \return PyObject
+ *
+ *****************************************************************************/
+PyObject *dps_data_write_log(PyObject *self, PyObject *args);
+
+/*
+ ******************************************************************************
  * dcs_protocol_handler_stop --                                           *//**
  *
  * \brief This routine stops the DPS Client Server Protocol Handler

@@ -138,7 +138,7 @@ class AddressResolutionvIP:
                                                        )
                 except Exception, ex:
                     message = 'Address Resolution: Send location reply to Exception [%s]'%ex
-                    dcslib.dps_cluster_write_log(DpsLogLevels.WARNING,
+                    dcslib.dps_data_write_log(DpsLogLevels.WARNING,
                                                  message)
                 DpsCollection.global_lock.release()
         self.dps_clients.clear()
@@ -259,7 +259,7 @@ class AddressResolution:
             self.total -= resolution_obj.dps_client_delete(dps_client)
         if self.total < 0:
             message = 'AddressResolution.dps_client_delete: Problem with accounting'
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def vnid_delete(self, dvg):
@@ -272,7 +272,7 @@ class AddressResolution:
             self.total -= resolution_obj.vnid_delete(dvg)
         if self.total < 0:
             message = 'AddressResolution.vnid_delete: Problem with accounting'
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def process_endpoint_update(self, endpoint, vIP_val):
@@ -294,11 +294,11 @@ class AddressResolution:
                 self.total -= resolution_obj.resolved(endpoint)
             except Exception, ex:
                 message = 'AddressResolution.process_endpoint_update Problem Resolving Exception %s'%ex
-                dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+                dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
             break
         if self.total < 0:
             message = 'AddressResolution.process_endpoint_update: Problem with accounting'
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def process_timeout(self):
@@ -333,7 +333,7 @@ class AddressResolution:
                 pass
         if self.total != 0:
             message = 'AddressResolution.delete: Accounting Problem'
-            dcslib.dps_cluster_write_log(DpsLogLevels.WARNING, message)
+            dcslib.dps_data_write_log(DpsLogLevels.WARNING, message)
         return
 
     def show(self):

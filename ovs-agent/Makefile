@@ -7,13 +7,13 @@
 # distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
 #
 
- #Variables
+# Variables
 
 OVS_DIR = ../third-party/openvswitch
 OVS_LIB = $(OVS_DIR)/lib/libopenvswitch.a
 
-CURL_DIR = ../third-party
-CURL_LIB = $(CURL_DIR)/lib/libcurl.so
+CURL_DIR = ../third-party/libcurl/install
+CURL_LIB = $(CURL_DIR)/lib/libcurl.a
 
 BUILD_TYPE := debug
 #End of Variables
@@ -38,11 +38,11 @@ MODULE_ODCS_DATA_HANDLER   = $(MODULE_ODCS)/data_handler
 MODULE_ODCS_TIMER          = $(MODULE_ODCS)/timer
 
 OVS_INCLUDE		   = -I$(OVS_DIR) -I$(OVS_DIR)/include  -I$(OVS_DIR)/lib
+CURL_INCLUDE               = $(CURL_DIR)/include
 ODCS_INCLUDE		   = $(MODULE_ODCS)/inc
 DPS_PROTOCOL_INCLUDE       = $(MODULE_ODCS_DPS_PROTOCOL)/inc
 DATA_HANDLER_INCLUDE       = $(MODULE_ODCS_DATA_HANDLER)/inc
 TIMER_INCLUDE              = $(MODULE_ODCS_TIMER)/inc
-CURL_INCLUDE               = $(CURL_DIR)/include
 
 CLIENT_PROT_INCFLAGS = -I$(ODCS_INCLUDE)       \
            -I$(DPS_PROTOCOL_INCLUDE)       \
@@ -50,6 +50,9 @@ CLIENT_PROT_INCFLAGS = -I$(ODCS_INCLUDE)       \
            -I$(TIMER_INCLUDE) 
 
 INCFLAGS =  $(OVS_INCLUDE)                \
+           -I$(CURL_INCLUDE)
+
+AGENT_INCFLAGS =  $(OVS_INCLUDE)                \
            -I$(CURL_INCLUDE)
 
 OVS_AGENT = dove-controller
@@ -87,13 +90,13 @@ dove-controller:  $(CLIENT_PROT_OBJECTS) $(OVS_AGENT_OBJECTS) $(OVS_LIB)
 	$(CC) -o $@ $(OVS_AGENT_OBJECTS) $(OVS_DIR)/lib/libopenvswitch.a $(CURL_LIB) $(CLIENT_PROT_OBJECTS) $(TIMER_OBJECTS) $(OVS_AGENT_LDFLAGS) 
 
 dove-switch.o: dove-switch.c dove-switch.h 
-	$(CC) -c $(INCFLAGS) $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(AGENT_INCFLAGS) $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
 
 dove-controller.o: dove-controller.c
-	$(CC) -c $(INCFLAGS) $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(AGENT_INCFLAGS) $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
 
 .c.o:
-	$(CC) -c $(INCFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(AGENT_INCFLAGS) $(CFLAGS) $< -o $@
 
 lib-modules: $(LIB_SOURCES) $(LIB_SHARED)
 

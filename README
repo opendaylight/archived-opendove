@@ -33,13 +33,16 @@ more information)
 
 ./odcs -- Open DOVE Connectivity Service
 
-./ovs-agent -- agent for the Open DOVE vswitch (based on Open vSwitch + user-space extension)
+./ovs-agent -- agent for the Open DOVE vswitch, based on Open vSwitch
++ user-space extension.  The agent has dependencies on Connectivity
+Service (see BUILDING below).
 
 ./odgw -- Open DOVE Gateway (user space controller for the DOVE
 gateway kernal module)
 
 ./third-party -- directory for downloading and building third-party
-dependencies not included in the Open DOVE distribution (e.g., Open vSwitch)
+dependencies not included in the Open DOVE distribution (e.g., Open
+vSwitch).  
 
 
 BUILDING
@@ -47,3 +50,9 @@ BUILDING
 
 Please see the documentation in each respective directory on how to
 build each component.  They are each a little bit different.
+
+The ovs-agent depends on third-party components and also the odcs. The ovs-agent
+depends on some object files that are generated as part of the odcs
+build.   It should be built after the odcs, and after running the getdeps.sh
+script in the third-party directory.
+

@@ -74,7 +74,10 @@ function get_libcurl {
 	tar xfz $LIBCURL_DISTFILE -C $LIBCURL_DIR --strip-components 1
 	cd $LIBCURL_DIR
 	LIBCURL_INSTALL=$PWD/install
-	./configure --prefix=$LIBCURL_INSTALL;make;make install
+	# turn off a few unneeded libs to avoid problems on
+	# certain platforms
+	./configure --prefix=$LIBCURL_INSTALL --without-libidn --disable-ldap
+	make; make install
 	cd ..
     else
 	echo "$LIBCURL_DISTFILE not found"

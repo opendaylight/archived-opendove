@@ -234,10 +234,15 @@ class AddressResolution:
         @type dvg: Integer
         @param vIP_val: Virtual IP Address
         @type vIP_val: Integer and String
+        @return: True if Address Resolution needs to be sent out
+                 False otherwise
+        @rtype: Boolean
         '''
+        fSendAddressResolution = True
         try:
             try:
                 resolution_obj = self.endpoint_resolution[vIP_val]
+                fSendAddressResolution = False
             except Exception:
                 resolution_obj = AddressResolutionvIP(vIP_type, vIP_val)
                 self.endpoint_resolution[vIP_val] = resolution_obj
@@ -245,8 +250,8 @@ class AddressResolution:
             if added:
                 self.total += 1
         except Exception:
-            pass
-        return
+            fSendAddressResolution = False
+        return fSendAddressResolution
 
     def dps_client_delete(self, dps_client):
         '''

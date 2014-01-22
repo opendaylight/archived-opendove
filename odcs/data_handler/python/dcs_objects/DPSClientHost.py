@@ -184,7 +184,6 @@ class DPSClientHost:
             return
         self.valid = False
         domains = self.domains.values()
-        self.domains.clear()
         for domain in domains:
             try:
                 if self.location.inet_type == socket.AF_INET:
@@ -194,6 +193,7 @@ class DPSClientHost:
                 dps_client_domain.delete()
             except Exception:
                 continue
+        self.domains.clear()
         try:
             del DPSClientHost.Collection[self.location.ip_value]
         except Exception:

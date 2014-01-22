@@ -141,10 +141,11 @@ class DpsDebugHandler(object):
             tunnel_set = {}
             self.lock.acquire()
             try:
-                for tunnel in dvg.Tunnel_Endpoints_Hash_IPv4[DpsClientType.dove_switch].values():
-                    tunnel_set[tunnel] = True
-                for tunnel in dvg.Tunnel_Endpoints_Hash_IPv6[DpsClientType.dove_switch].values():
-                    tunnel_set[tunnel] = True
+                for client_type in DpsClientType.types.keys():
+                    for tunnel in dvg.Tunnel_Endpoints_Hash_IPv4[client_type].values():
+                        tunnel_set[tunnel] = True
+                    for tunnel in dvg.Tunnel_Endpoints_Hash_IPv6[client_type].values():
+                        tunnel_set[tunnel] = True
                 for tunnel in tunnel_set.keys():
                     HostIP = tunnel.dps_client.location
                     ip_list = []

@@ -806,11 +806,7 @@ static int dps_rest_sync_process(void)
 				/* step 3 - route the URI to dmc agent */
 				ret = dps_rest_sync_dmc_agent(target_uri_body_buf,
 				                              cmd_type, (const char*)target_uri);
-				if (ret)
-				{
-					more = false;
-				}
-				else if (cmd_type == EVHTTP_REQ_DELETE)
+				if (cmd_type == EVHTTP_REQ_DELETE)
 				{
 					// ABiswas: Delete not incrementing verison
 					//          since delete doesn't have a Body
@@ -818,6 +814,10 @@ static int dps_rest_sync_process(void)
 					dps_cluster_node_heartbeat(&dcs_local_ip,
 					                           dps_cluster_is_local_node_active(),
 					                           version);
+				}
+				else if (ret)
+				{
+					more = false;
 				}
 			}while(0);
 		} while(0);

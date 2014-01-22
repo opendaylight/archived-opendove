@@ -908,7 +908,8 @@ PyObject *send_multicast_tunnels(PyObject *self, PyObject *args)
 {
 	uint32_t vnid, query_id, ipv4;
 	uint16_t dps_client_port;
-	char *dps_client_ip, *ipv6, *mcast_mac, *mcast_ip;
+	char *dps_client_ip, *ipv6, *mcast_ip;
+	unsigned char *mcast_mac;
 	PyObject *ret_val, *pyReceiverDict, *key, *value, *pyIP;
 	Py_ssize_t ReceiverDict_pos = 0;
 	dps_client_data_t *client_data = (dps_client_data_t *)send_buff_py;
@@ -917,9 +918,9 @@ PyObject *send_multicast_tunnels(PyObject *self, PyObject *args)
 	dps_pkd_tunnel_list_t *mcast_receiver;
 	char *mcast_receiver_pointer;
 	size_t mcast_receiver_list_size;
-	int inet_type, dps_client_ip_size, ipv6_size, mcast_macsize, macst_ipsize;
+	int inet_type, global_scope, dps_client_ip_size, ipv6_size, mcast_macsize, macst_ipsize;
 	dps_return_status return_status = DPS_ERROR;
-	char str[INET_ADDRSTRLEN];
+	char str[INET6_ADDRSTRLEN];
 #if 0
 	unsolicited_msg_context_t *pcontext;
 #endif
@@ -929,12 +930,13 @@ PyObject *send_multicast_tunnels(PyObject *self, PyObject *args)
 
 	do
 	{
-		if (!PyArg_ParseTuple(args, "z#HIIz#Iz#O",
+		if (!PyArg_ParseTuple(args, "z#HIIz#IIz#O",
 		                      &dps_client_ip, &dps_client_ip_size,
 		                      &dps_client_port,
 		                      &vnid,
 		                      &query_id,
 		                      &mcast_mac, &mcast_macsize,
+		                      &global_scope,
 		                      &inet_type,
 		                      &mcast_ip, &macst_ipsize,
 		                      &pyReceiverDict))
@@ -958,8 +960,8 @@ PyObject *send_multicast_tunnels(PyObject *self, PyObject *args)
 			break;
 		}
 		log_info(PythonMulticastDataHandlerLogLevel,
-		         "Source VNID %d, Number of Destination VNIDs %d",
-		         vnid, PyDict_Size(pyReceiverDict));
+		         "Source VNID %d, Number of Destination VNIDs %d, Global Scope %d",
+		         vnid, PyDict_Size(pyReceiverDict), global_scope);
 		hdr->type = DPS_MCAST_RECEIVER_DS_LIST;
 		hdr->client_id = DPS_POLICY_SERVER_ID;
 		hdr->transaction_type = DPS_TRANSACTION_NORMAL;
@@ -969,9 +971,28 @@ PyObject *send_multicast_tunnels(PyObject *self, PyObject *args)
 		hdr->reply_addr.port = dps_client_port;
 
 		//Fill in the MAC + IP Header
-		mcast_data->mcast_addr.mcast_addr_type = inet_type;
 		memcpy(mcast_data->mcast_addr.mcast_mac, mcast_mac, 6);
+		if (global_scope)
+		{
+			mcast_data->mcast_addr.mcast_addr_type = MCAST_ADDR_V4_ICB_RANGE;
+		}
+		else if (inet_type == AF_INET)
+		{
+			mcast_data->mcast_addr.mcast_addr_type = MCAST_ADDR_V4;
+		}
+		else if (inet_type == AF_INET6)
+		{
+			mcast_data->mcast_addr.mcast_addr_type = MCAST_ADDR_V6;
+		}
+		else
+		{
+			mcast_data->mcast_addr.mcast_addr_type = MCAST_ADDR_MAC;
+		}
 		memcpy(mcast_data->mcast_addr.u.mcast_ip6, mcast_ip, macst_ipsize);
+		inet_ntop(inet_type, mcast_data->mcast_addr.u.mcast_ip6, str, INET6_ADDRSTRLEN);
+		log_info(PythonMulticastDataHandlerLogLevel,
+		         "MAC: " MAC_FMT", IP: %s",
+		         MAC_OCTETS(mcast_mac), str);
 		if (inet_type == AF_INET)
 		{
 			mcast_data->mcast_addr.u.mcast_ip4 = ntohl(mcast_data->mcast_addr.u.mcast_ip4);

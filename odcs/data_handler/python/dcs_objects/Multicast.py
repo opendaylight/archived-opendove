@@ -19,6 +19,9 @@ from dcs_objects.IPAddressLocation import IPAddressLocation
 from object_collection import mac_bytes
 from object_collection import DpsCollection
 from object_collection import mac_show
+from object_collection import DpsLogLevels
+
+import dcslib
 
 class Multicast_Global_Scope:
     '''
@@ -339,16 +342,20 @@ class Multicast_VNID_Group:
     def show(self):
         '''
         '''
-        print '----------------------------------------------\r'
+        message = '----------------------------------------------'
+        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         if self.global_scope:
-            print 'GLOBAL SCOPE, VNID %s\r'%self.dvg.unique_id
+            message = 'GLOBAL SCOPE, VNID %s'%self.dvg.unique_id
         else:
-            print 'MULTICAST MAC %s, VNID %s\r'%(mac_show(self.mac), self.dvg.unique_id)
+            message = 'MULTICAST MAC %s, VNID %s'%(mac_show(self.mac), self.dvg.unique_id)
+        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         if len(self.receiver_all) > 0:
-            print 'MULTICAST Receivers (NO IP Address)\r'
+            message = 'MULTICAST Receivers (NO IP Address)'
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             count = 1
             for tunnel in self.receiver_all.keys():
-                print '    [%d] Tunnel %s\r'%(count, tunnel.primary_ip().show())
+                message = '    [%d] Tunnel %s'%(count, tunnel.primary_ip().show())
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                 count += 1
         if len(self.receiver_iphash) > 0:
             for iphash_key in self.receiver_iphash.keys():
@@ -359,17 +366,21 @@ class Multicast_VNID_Group:
                         ip_address = IPAddressLocation(socket.AF_INET6, iphash_key, 0)
                 except Exception:
                     continue
-                print 'MULTICAST Receivers IP Address %s\r'%ip_address.show()
+                message = 'MULTICAST Receivers IP Address %s'%ip_address.show()
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                 iphash = self.receiver_iphash[iphash_key]
                 count = 1;
                 for tunnel in iphash.keys():
-                    print '    [%d] Tunnel %s\r'%(count, tunnel.primary_ip().show())
+                    message = '    [%d] Tunnel %s'%(count, tunnel.primary_ip().show())
+                    dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                     count += 1
         if len(self.sender_all) > 0:
-            print 'MULTICAST Senders (NO IP Address)\r'
+            message = 'MULTICAST Senders (NO IP Address)'
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             count = 1
             for tunnel in self.sender_all.keys():
-                print '    [%d] Tunnel %s\r'%(count, tunnel.primary_ip().show())
+                message = '    [%d] Tunnel %s'%(count, tunnel.primary_ip().show())
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                 count += 1
         if len(self.sender_iphash) > 0:
             for iphash_key in self.sender_iphash.keys():
@@ -380,13 +391,16 @@ class Multicast_VNID_Group:
                         ip_address = IPAddressLocation(socket.AF_INET6, iphash_key, 0)
                 except Exception:
                     continue
-                print 'MULTICAST Senders IP Address %s\r'%ip_address.show()
+                message = 'MULTICAST Senders IP Address %s'%ip_address.show()
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                 iphash = self.sender_iphash[iphash_key]
                 count = 1
                 for tunnel in iphash.keys():
-                    print '    [%d] Tunnel %s\r'%(count, tunnel.primary_ip().show())
+                    message = '    [%d] Tunnel %s'%(count, tunnel.primary_ip().show())
+                    dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                     count += 1
-        print '----------------------------------------------\r'
+        message = '----------------------------------------------'
+        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         return
 
     def size(self):
@@ -770,7 +784,6 @@ class Multicast:
         #log.warning('receiver_add: Enter mac %s\r', mac_show(mac))
         while True:
             if global_scope:
-                self.Global_Scope.delete()
                 self.Global_Scope.receiver_add(dvg, True, inet_type, ip_value, tunnel)
             elif all_multi:
                 self.All.receiver_add(dvg, False, inet_type, ip_value, tunnel)
@@ -834,7 +847,10 @@ class Multicast:
         #log.warning('receiver_delete: Enter mac %s\r', mac_show(mac))
         fdeleted = False
         while True:
-            if all_multi:
+            if global_scope:
+                self.Global_Scope.receiver_delete(dvg, inet_type, ip_value, tunnel)
+                fdeleted = True
+            elif all_multi:
                 self.All.receiver_delete(dvg, inet_type, ip_value, tunnel)
                 fdeleted = True
             else:
@@ -1141,6 +1157,7 @@ class Multicast:
     def delete(self):
         '''
         '''
+        self.Global_Scope.delete()
         self.All.delete()
         self.All = None
         for mac_group in self.MAC_Group.values():
@@ -1162,7 +1179,8 @@ class Multicast:
     def show(self):
         '''
         '''
-        print '------- MULTICAST DETAILS for Domain %s -------\r'%(self.domain_id)
+        message = '------- MULTICAST DETAILS for Domain %s -------'%(self.domain_id)
+        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         self.Global_Scope.show()
         self.All.show()
         for mac_group in self.MAC_Group.values():
@@ -1173,14 +1191,17 @@ class Multicast:
         domain = self.domain
         count = len(domain.Policy_Hash_DVG[0])
         if count > 0:
-            print '----------- MULTICAST Policies -------------------\r'
+            message = '----------- MULTICAST Policies -------------------'
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             for policy in domain.Policy_Hash_DVG[1].values():
                 if policy.src_dvg == policy.dst_dvg and policy.action_connectivity == policy.action_forward:
                     continue
-                print '%s\r'%policy.show()
+                message = '%s'%policy.show()
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             #print '-----------------------------------------------------------\r'
         else:
-            print 'Policy Count %s\r'%count
+            message = 'Policy Count %s'%count
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         return
 
     def show_vnid(self, vnid):
@@ -1189,7 +1210,8 @@ class Multicast:
         @param vnid: The VNID
         @type vnid: Integer
         '''
-        print '------- MULTICAST DETAILS for VNID %s -------\r'%(vnid)
+        message = '------- MULTICAST DETAILS for VNID %s -------'%(vnid)
+        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         self.All.show_vnid(vnid)
         for mac_group in self.MAC_Group.values():
             mac_group.show_vnid(vnid)
@@ -1199,14 +1221,17 @@ class Multicast:
         domain = self.domain
         count = len(domain.Policy_Hash_DVG[0])
         if count > 0:
-            print '----------- MULTICAST Policies -------------------\r'
+            message = '----------- MULTICAST Policies -------------------'
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             for policy in domain.Policy_Hash_DVG[1].values():
                 if policy.src_dvg.unique_id != vnid and policy.dst_dvg.unique_id != vnid:
                     continue
                 if policy.src_dvg == policy.dst_dvg and policy.action_connectivity == policy.action_forward:
                     continue
-                print '%s\r'%policy.show()
+                message = '%s'%policy.show()
+                dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
             #print '-----------------------------------------------------------\r'
         else:
-            print 'Policy Count %s\r'%count
+            message = 'Policy Count %s'%count
+            dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
         return

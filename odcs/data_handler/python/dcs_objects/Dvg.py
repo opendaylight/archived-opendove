@@ -478,7 +478,8 @@ class DVG(dcs_object):
                     for vIP in endpoint.vIP_set.values():
                         #Check if vip_value belonged in the subnet
                         ret_val, subnet_ip, subnet_mask, subnet_mode, subnet_gateway = self.ip_subnet_lookup(vIP.ip_value)
-                        print 'ret_val %s, subnet_ip %s, ip_value %s\r'%(ret_val, subnet_ip, ip_value)
+                        message = 'ret_val %s, subnet_ip %s, ip_value %s'%(ret_val, subnet_ip, ip_value)
+                        dcslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
                         if subnet_ip == ip_value:
                             continue
                         endpoint.vIP_del(vIP)
@@ -523,7 +524,9 @@ class DVG(dcs_object):
                 #Remove from domain
                 self.domain.ip_subnet_delete(ip_value, mask_value)
             #Inform all DOVE Switches
-            print 'Inform all DOVE Switches to re-register on VNID %s\r'%self.unique_id
+            message = 'Subnet Deletion: Inform all DOVE Switches to re-register on VNID %s'%self.unique_id
+            dpslib.dps_data_write_log(DpsLogLevels.NOTICE, message)
+            dpslib.dps_cluster_reregister_endpoints(self.domain.unique_id, self.unique_id)
             break
         return ret_val
 
@@ -746,11 +749,16 @@ class DVG(dcs_object):
             return
         query_id = DpsCollection.generate_query_id()
         #DpsCollection.global_lock.release()
+        if global_scope:
+            cglobal_scope = 1
+        else:
+            cglobal_scope = 0
         ret_val = dcslib.send_multicast_tunnels(dps_client.location.ip_value_packed, #DPS Client Location IP
                                                 dps_client.location.port, #DPS Client Port
                                                 self.unique_id, #VNID ID
                                                 query_id, #Query ID
                                                 mac,#MAC
+                                                cglobal_scope, #Global Scope
                                                 inet_type,#AF_INET or AF_INET6
                                                 ip_packed,#ByteArray
                                                 receiver_dict

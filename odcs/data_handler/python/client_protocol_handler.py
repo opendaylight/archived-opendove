@@ -397,7 +397,7 @@ class DpsClientHandler(object):
                 #vIP MUST not be a gateway IP
                 if dvg_obj.ImplicitGatewayIPListv4.search(vIP_val):
                     message = 'Endpoint_Update, vIP_val %s found in Implicit Gateway List'%(vIP_val)
-                    dpslib.dps_data_write_log(DpsLogLevels.INFO, message)
+                    dcslib.dps_data_write_log(DpsLogLevels.INFO, message)
                     ret_val = self.dps_error_invalid_src_ip
                     break
                 #vIP MUST fall in one of SUBNET ranges for the DVG

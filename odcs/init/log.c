@@ -55,10 +55,10 @@ const char *DOVEStatusToString(dove_status status)
 
 void info(int level, const char *fmt, va_list ap)
 {
-	char buf[MAX_ERRINFO_LEN + 1];
+	char buf[MAX_ERRINFO_LEN + 1], log_buff[MAX_ERRINFO_LEN + 64], curr_time[256];
 	FILE *logFP = NULL;
 	struct stat fileSt;
-	char path[100] = {'\0'};
+	time_t now;
 
 	memset(buf, 0, MAX_ERRINFO_LEN);
 	vsnprintf(buf, MAX_ERRINFO_LEN, fmt, ap);
@@ -68,20 +68,21 @@ void info(int level, const char *fmt, va_list ap)
 		print_console(buf);
 	}
 
-	sprintf(path, "%s/%s", getenv("HOME"), DPS_LOG_PATH);
-	logFP = fopen(path,"a");
+	now = time(NULL);
+	sprintf(log_buff, "%.15s: %s", ((ctime_r(&now, curr_time)) + 4), buf);
+	logFP = fopen(DPS_LOG_PATH,"a");
 	if(logFP)
 	{
 		fstat(fileno(logFP), &fileSt);
 		if(fileSt.st_size > 1*1024*1024)
 		{
 			fclose(logFP);
-			logFP = fopen(path,"w+");
+			logFP = fopen(DPS_LOG_PATH,"w+");
 		}
 	}
 	if(logFP)
 	{
-		fprintf(logFP,"%s\n",buf);
+		fprintf(logFP,"%s\n",log_buff);
 		fclose(logFP);
 	}
 

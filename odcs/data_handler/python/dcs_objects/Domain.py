@@ -549,9 +549,10 @@ class Domain(dcs_object):
             except Exception:
                 break
             #Store in Address Resolution Structure
-            self.AddressResolution.process_lookup_not_found(dps_client, source_dvg, vIP_type, vIP_value)
+            fSendAddressResolution = self.AddressResolution.process_lookup_not_found(dps_client, source_dvg, vIP_type, vIP_value)
             #Queue Work Item to Send Address Resolution Queries
-            DpsCollection.address_resolution_queue.put((self.send_resolution_work, (vIP_value, vIP_packed)))
+            if fSendAddressResolution:
+                DpsCollection.address_resolution_queue.put((self.send_resolution_work, (vIP_value, vIP_packed)))
             break
         return
 

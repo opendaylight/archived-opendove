@@ -19,7 +19,9 @@ CC=gcc
 SVN=svn
 PYTHON=python
 FIND=find
+INSTALL=install
 BUILD_DIR = $(CURRENT_DIR)/build
+INSTALL_DIR = /opt/opendove/odcs
 CURRENT_DIR := $(shell pwd)
 #Get the LINUX Vendor Distributor
 OS_DISTRIBUTOR=$(shell $(CURRENT_DIR)/os_distributor_script)
@@ -168,6 +170,21 @@ move-modules:
 	$(FIND) $(BUILD_DIR)/ -name "*.py"| xargs rm
 	$(CP) -f $(MODULE_INIT)/dcs_server.py $(BUILD_DIR)/
 	chmod +x $(BUILD_DIR)/dcs_server.py
+
+BUILD_SUBDIRS = common_cli dcs_objects dps_cli Utilities
+
+install:
+	$(INSTALL) -d $(DESTDIR)$(INSTALL_DIR) $(foreach dir, $(BUILD_SUBDIRS), $(DESTDIR)$(INSTALL_DIR)/$(dir))
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/common_cli/*.pyc) $(DESTDIR)$(INSTALL_DIR)/common_cli
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/dcs_objects/*.pyc) $(DESTDIR)$(INSTALL_DIR)/dcs_objects
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/dps_cli/*.pyc) $(DESTDIR)$(INSTALL_DIR)/dps_cli
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/Utilities/*.pyc) $(DESTDIR)$(INSTALL_DIR)/Utilities
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/*.pyc) $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(BUILD_DIR)/$(LIB_SHARED) $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(BUILD_DIR)/dcs_server.py $(DESTDIR)$(INSTALL_DIR)
+
+uninstall:
+	$(RM) -rf $(DESTDIR)$(INSTALL_DIR)
 
 clean:
 	rm -rf $(MODULE_FD_PROCESS)/*.o

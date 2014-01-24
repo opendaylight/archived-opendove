@@ -20,9 +20,11 @@ SVN=svn
 PYTHON=python
 FIND=find
 INSTALL=install
+
+CURRENT_DIR := $(shell pwd)
 BUILD_DIR = $(CURRENT_DIR)/build
 INSTALL_DIR = /opt/opendove/odcs
-CURRENT_DIR := $(shell pwd)
+
 #Get the LINUX Vendor Distributor
 OS_DISTRIBUTOR=$(shell $(CURRENT_DIR)/os_distributor_script)
 #Get the PYTHON Include files

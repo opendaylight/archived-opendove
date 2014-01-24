@@ -18,6 +18,7 @@ MV=mv
 RM=rm
 MKDIR=mkdir
 
+
 ## LIBS to be reused from ODCS
 OPENDOVE_DIR                = ..
 ODCS_DIR		    = $(OPENDOVE_DIR)/odcs
@@ -33,6 +34,12 @@ all:  build-prep
 clean: clean-libdirs
 	make -C dgadmin clean
 
+install:
+	make -C dgadmin install
+
+uninstall:
+	make -C dgadmin uninstall
+
 build-prep:
 ##
 ##      copy over needed library code from odcs ; cleanup objs
@@ -40,19 +47,20 @@ build-prep:
 	@echo "** Copying required library code **"
 	$(MKDIR) -p $(MODULE_FD_PROCESS)
 	$(CP) -r $(ODCS_DIR)/$(MODULE_FD_PROCESS)/* $(MODULE_FD_PROCESS)
-	find ./$(MODULE_FD_PROCESS) -name '*.o' | xargs $(RM)
+	find ./$(MODULE_FD_PROCESS) -name '*.o' | xargs $(RM) -f
 	$(MKDIR) -p $(MODULE_OSW)
 	$(CP) -r $(ODCS_DIR)/$(MODULE_OSW)/* $(MODULE_OSW)
-	find ./$(MODULE_OSW) -name '*.o' | xargs $(RM)
+	find ./$(MODULE_OSW) -name '*.o' | xargs $(RM) -f
 	$(MKDIR) -p $(MODULE_DPS)
 	$(CP) -r $(ODCS_DIR)/$(MODULE_DPS)/* $(MODULE_DPS)
-	find ./$(MODULE_DPS) -name '*.o' | xargs $(RM)
+	find ./$(MODULE_DPS) -name '*.o' | xargs $(RM) -f
 	$(MKDIR) -p $(MODULE_TIMER)
 	$(CP) -r $(ODCS_DIR)/$(MODULE_TIMER)/* $(MODULE_TIMER)
-	find ./$(MODULE_TIMER) -name '*.o' | xargs $(RM)
+	find ./$(MODULE_TIMER) -name '*.o' | xargs $(RM) -f
 
 clean-libdirs:
 	$(RM) -rf $(MODULE_FD_PROCESS)
 	$(RM) -rf $(MODULE_OSW)
 	$(RM) -rf $(MODULE_DPS)
 	$(RM) -rf $(MODULE_TIMER)
+

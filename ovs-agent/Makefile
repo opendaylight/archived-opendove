@@ -26,8 +26,11 @@ CC=gcc
 SVN=svn
 PYTHON=python
 FIND=find
-BUILD_DIR = $(CURRENT_DIR)/build
+INSTALL=install
+
 CURRENT_DIR := $(shell pwd)
+BUILD_DIR = $(CURRENT_DIR)/build
+INSTALL_DIR = /opt/opendove/ovs-agent
 #Get the LINUX Vendor Distributor
 OS_DISTRIBUTOR=$(shell $(CURRENT_DIR)/os_distributor_script)
 
@@ -78,7 +81,10 @@ TIMER_OBJECTS=$(TIMER_SOURCES:.c=.o)
 OVS_AGENT_LDFLAGS = -lssl -lcrypto  -lpthread -lrt -lm -ljansson
 
 
-all: $(OVS_AGENT)
+all: clean $(OVS_AGENT)
+
+$(TIMER_OBJECTS):
+	cd $(MODULE_ODCS); make $(TIMER_OBJECTS)
 
 $(CLIENT_PROT_OBJECTS):
 	rm -f $(MODULE_ODCS_DPS_PROTOCOL)/src/*.o
@@ -86,7 +92,7 @@ $(CLIENT_PROT_OBJECTS):
 #	
 #	$(CC) -c $(CLIENT_PROT_INCFLAGS) $(CFLAGS) $< -o $@
 
-dove-controller:  $(CLIENT_PROT_OBJECTS) $(OVS_AGENT_OBJECTS) $(OVS_LIB) 
+dove-controller:  $(TIMER_OBJECTS) $(CLIENT_PROT_OBJECTS) $(OVS_AGENT_OBJECTS) $(OVS_LIB) 
 	$(CC) -o $@ $(OVS_AGENT_OBJECTS) $(OVS_DIR)/lib/libopenvswitch.a $(CURL_LIB) $(CLIENT_PROT_OBJECTS) $(TIMER_OBJECTS) $(OVS_AGENT_LDFLAGS) 
 
 dove-switch.o: dove-switch.c dove-switch.h 
@@ -108,3 +114,11 @@ clean:
 	$(RM) -rf $(OVS_AGENT)
 	$(RM) -rf $(OVS_AGENT_OBJECTS)
 	$(RM) -rf $(CLIENT_PROT_OBJECTS)
+
+install:
+	$(INSTALL) -d $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(wildcard *.sh) $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(OVS_AGENT) $(DESTDIR)$(INSTALL_DIR)
+
+uninstall:
+	$(RM) -rf $(DESTDIR)$(INSTALL_DIR)

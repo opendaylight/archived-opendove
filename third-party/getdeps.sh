@@ -76,7 +76,8 @@ function get_libcurl {
 	LIBCURL_INSTALL=$PWD/install
 	# turn off a few unneeded libs to avoid problems on
 	# certain platforms
-	./configure --prefix=$LIBCURL_INSTALL --without-libidn --disable-ldap
+	echo "./configure --prefix=$LIBCURL_INSTALL --disable-ldap --without-libidn"
+	./configure --prefix=$LIBCURL_INSTALL --disable-ldap --without-libidn
 	make; make install
 	cd ..
     else

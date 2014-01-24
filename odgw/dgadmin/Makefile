@@ -21,8 +21,12 @@ CC=g++
 SVN=svn
 PYTHON=python
 FIND=find
-BUILD_DIR = $(CURRENT_DIR)/build
+INSTALL=install
+
 CURRENT_DIR := $(shell pwd)
+BUILD_DIR = $(CURRENT_DIR)/build
+INSTALL_DIR = /opt/opendove/odgw
+
 #Get the LINUX Vendor Distributor
 OS_DISTRIBUTOR := $(shell $(CURRENT_DIR)/os_distributor_script)
 #Get the PYTHON Include files
@@ -164,3 +168,12 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(LIB_SHARED)
 
+install:
+	$(INSTALL) -d $(DESTDIR)$(INSTALL_DIR) 
+	$(INSTALL) -m 0644 $(wildcard $(BUILD_DIR)/*.pyc) $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(BUILD_DIR)/$(LIB_SHARED) $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(BUILD_DIR)/dove_gateway.py $(DESTDIR)$(INSTALL_DIR)
+	$(INSTALL) -m 0755 $(BUILD_DIR)/../../run.sh $(DESTDIR)$(INSTALL_DIR)
+
+uninstall:
+	$(RM) -rf $(DESTDIR)$(INSTALL_DIR)

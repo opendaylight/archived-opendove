@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.opendaylight.opendove</groupId>
   <artifactId>odmc.rest</artifactId>
-  <version>0.5.1-SNAPSHOT</version>
+  <version>0.5.1</version>
   <packaging>bundle</packaging>
     <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>org.opendaylight.opendove</groupId>
             <artifactId>odmc</artifactId>
-            <version>0.5.1-SNAPSHOT</version>
+            <version>0.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.controller</groupId>

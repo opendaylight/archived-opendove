@@ -20,11 +20,6 @@
 
     <repositories>
         <repository>
-            <id>opendaylight-release</id>
-            <name>opendaylight-release</name>
-            <url>${nexusproxy}/repositories/opendaylight.release/</url>
-        </repository>
-        <repository>
             <id>opendaylight-snapshot</id>
             <name>opendaylight-snapshot</name>
             <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>

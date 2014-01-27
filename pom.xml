@@ -17,7 +17,12 @@
     <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>
     <url>https://wiki.opendaylight.org/view/Project_Proposals:Open_DOVE</url>
   </scm>
-
+  <parent>
+    <groupId>org.opendaylight.opendove</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.5.0-SNAPSHOT</version>
+    <relativePath>parent</relativePath>
+  </parent>
   <groupId>org.opendaylight.opendove</groupId>
   <artifactId>releasepom</artifactId>
   <version>0.1.0-SNAPSHOT</version>
@@ -28,5 +33,5 @@
     <module>odmc/rest</module>
     <module>odmc/rest/northbound</module>
     <module>odmc/rest/southbound</module>
-  </modules>        
+  </modules>
 </project>

@@ -15,17 +15,17 @@
     <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
     <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>
     <url>https://wiki.opendaylight.org/view/Project_Proposals:Open_DOVE</url>
-    <tag>master-tagforprepareonly-opendove-bulk-release-dryrun-9</tag>
+    <tag>HEAD</tag>
   </scm>
   <parent>
     <groupId>org.opendaylight.opendove</groupId>
     <artifactId>parent</artifactId>
-    <version>0.5.0</version>
+    <version>0.5.1-SNAPSHOT</version>
     <relativePath>parent</relativePath>
   </parent>
   <groupId>org.opendaylight.opendove</groupId>
   <artifactId>releasepom</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>parent</module>

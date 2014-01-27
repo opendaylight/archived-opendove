@@ -8,6 +8,9 @@
   <artifactId>parent</artifactId>
   <version>0.5.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <properties>
+    <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
+  </properties>
   <scm>
     <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
     <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>

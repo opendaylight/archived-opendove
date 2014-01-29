@@ -223,13 +223,18 @@ static int http_request_version_update(struct evhttp_request *req)
 	do
 	{
 		ret = dps_rest_sync_version_get_from_req(req, &version_create, &version_update);
+		log_info(RESTHandlerLogLevel,
+		         "Get sync version from request status %s",
+		         DOVEStatusToString(ret));
 		if (ret != DOVE_STATUS_OK)
 		{
 			break;
 		}
 
+		log_info(RESTHandlerLogLevel, "Got sync version: create %d, update %d",
+		         version_create, version_update);
 		res_code = evhttp_request_get_response_code(req);
-		log_debug(RESTHandlerLogLevel, "res_code: %d", res_code);
+		log_info(RESTHandlerLogLevel, "Response Code: %d", res_code);
 		if ((res_code != HTTP_OK) && (res_code != 201))
 		{
 			break;

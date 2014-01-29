@@ -507,6 +507,7 @@ static void dps_statistics_process(void)
 
 	do
 	{
+		saveptr = NULL;
 		/* No need to send the statistics */
 		if(dps_statistics_send == 0){
 			log_debug(PythonDataHandlerLogLevel, "Statistics has been set to NOT SENDING!");

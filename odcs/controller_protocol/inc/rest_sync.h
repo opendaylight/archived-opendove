@@ -28,7 +28,7 @@
 #define DPS_REST_SYNC_CONNECT_TIMEOUT		10 /* seconds */
 #define DPS_REST_SYNC_VERSION_URI		"/controller/sb/v2/opendove/odmc/odcs/changeversion"
 #define DPS_REST_SYNC_VERSION_CREATE_STRING	"create_version"
-#define DPS_REST_SYNC_VERSION_UPDATE_STRING	"update_version"
+#define DPS_REST_SYNC_VERSION_UPDATE_STRING	"change_version"
 #define DPS_REST_SYNC_OBJECT_DELETED		"is_tombstone"
 
 typedef struct dps_rest_sync_response_args_s

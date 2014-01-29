@@ -131,6 +131,10 @@ static json_t *dps_form_json_heartbeat()
 	log_debug(RESTHandlerLogLevel, "Enter");
 	inet_ntop(dcs_local_ip.family, dcs_local_ip.ip6, str, INET6_ADDRSTRLEN);
 
+	log_info(RESTHandlerLogLevel,
+	         "Heartbeat: Version %ld, Role Assigned %d",
+	         cluster_config_version, dcs_role_assigned);
+
 	js_root = json_pack("{s:i, s:i, s:s, s:i, s:i}",
 	                    "ip_family", (int)dcs_local_ip.family,
 	                    "dcs_config_version", (int)cluster_config_version,
@@ -161,9 +165,9 @@ static json_t *dps_form_json_heartbeat_to_dps_node(int factive,
 static void dps_heartbeat_send_to_dove_controller()
 {
 	json_t *js_res = NULL;
-    char dps_heartbeat_uri[MAX_URI_LEN];
-   
-    sprintf (dps_heartbeat_uri, DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI, dps_node_uuid);
+	char dps_heartbeat_uri[MAX_URI_LEN];
+
+	sprintf (dps_heartbeat_uri, DPS_DOVE_CONTROLLER_DPS_HEARTBEAT_URI, dps_node_uuid);
 
 	log_debug(RESTHandlerLogLevel, "Enter");
 	do

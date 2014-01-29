@@ -427,8 +427,8 @@ static char *dps_rest_sync_update_change_version_to_current(char *req, int versi
 			new_req = req;
 			break;
 		}
-		log_info(RESTHandlerLogLevel,"Change Version: Old Body %s", req);
-		log_info(RESTHandlerLogLevel,"Change Version: New Body %s", new_req);
+		log_debug(RESTHandlerLogLevel,"Change Version: Old Body %s", req);
+		log_debug(RESTHandlerLogLevel,"Change Version: New Body %s", new_req);
 	}while(0);
 
 	if (js_root)
@@ -623,8 +623,8 @@ static int dps_rest_sync_version_query(char **req_body_buf, int version)
 		/* send the GET request to DMC */
 		memset(uri, 0, sizeof(uri));
 		sprintf(uri, "%s/%d", DPS_REST_SYNC_VERSION_URI, version);
-		log_debug(RESTHandlerLogLevel, "Sending version %d GET[%s] REQ to DMC[%s:%d]",
-		          version, uri, ip_addr_str, controller_location.port_http);
+		log_info(RESTHandlerLogLevel, "Sending version %d GET[%s] REQ to DMC[%s:%d]",
+		         version, uri, ip_addr_str, controller_location.port_http);
 		ret = dove_rest_request_and_syncprocess(ip_addr_str,
 		                                        controller_location.port_http,
 		                                        EVHTTP_REQ_GET, uri,
@@ -736,8 +736,8 @@ static int dps_rest_sync_process(void)
 			do
 			{
 				log_info(RESTHandlerLogLevel,
-				         "[%d] Target URI '%s': Method '%s'",
-				         dps_rest_sync_iterations, target_uri, target_method);
+				         "Version %d, Iteration %d, Target URI '%s': Method '%s'",
+				         version, dps_rest_sync_iterations, target_uri, target_method);
 				if (strlen(target_uri) == 0)
 				{
 					// Blank URI means goto next
@@ -793,14 +793,14 @@ static int dps_rest_sync_process(void)
 				if (cmd_type == EVHTTP_REQ_DELETE)
 				{
 					log_notice(RESTHandlerLogLevel,
-					           "[%d] DELETE: %s",
-					           dps_rest_sync_iterations, target_uri);
+					           "version %d, iteration %d, DELETE: %s",
+					           version, dps_rest_sync_iterations, target_uri);
 				}
 				else
 				{
 					log_notice(RESTHandlerLogLevel,
-					           "[%d] PUT: %s",
-					           dps_rest_sync_iterations,
+					           "version %d, iteration %d, PUT: %s",
+					           version, dps_rest_sync_iterations,
 					           target_uri);
 				}
 				/* step 3 - route the URI to dmc agent */
@@ -873,6 +873,7 @@ static void dps_rest_sync_main(void *pDummy)
 			/* Start new sync circle. */
 			log_info(RESTHandlerLogLevel, "New sync circle start");
 			dps_rest_sync_process();
+			log_info(RESTHandlerLogLevel, "New sync circle finish");
 			continue;
 		}
 		if (rc == 0) {

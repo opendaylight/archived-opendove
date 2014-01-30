@@ -42,7 +42,7 @@ static void dump_pkt(uint8_t *buff, uint32_t len);
 #endif
 
 // Buffer that is passed to the protocol client
-static uint8_t dps_client_buff[DPS_MAX_BUFF_SZ];
+//static uint8_t dps_client_buff[DPS_MAX_BUFF_SZ];
 
 // Macros
 
@@ -83,14 +83,17 @@ static uint8_t zero_mac[6] = {0x0,0x0,0x0,0x0,0x0,0x0};
 
 uint8_t *dps_alloc_buff(uint32_t len)
 {
-	memset(dps_client_buff, 0, sizeof(dps_client_data_t));
-
-	return (dps_client_buff);
+	uint8_t *buff = NULL;
+	if ((buff = (uint8_t *)malloc(DPS_MAX_BUFF_SZ)) != NULL)
+	{
+		memset(buff, 0, sizeof(dps_client_data_t));
+	}
+	return (buff);
 }
 
 void dps_free_buff(uint8_t *buff)
 {
-//	free(buff);
+	free(buff);
 }
 
 /*
@@ -258,7 +261,7 @@ static dps_pkt_stats_t dps_pkt_stats_tbl[] = {
 	{"Unsolicited Vnid Del Req", 0, 0, 0, 0},                            // DPS_UNSOLICITED_VNID_DEL_REQ
 	{"Control Plane Heart Beat", 0, 0, 0, 0},                            // DPS_CTRL_PLANE_HB
 	{"New DCS Node Req",  0, 0, 0, 0},                                   // DPS_GET_DCS_NODE
-	{"Unsolicited Invalidate VM", 0, 0, 0, 0},                           // DPS_UNSOLICITED_INVALIDATE_VM
+	{"Unsolicited VM Location Info", 0, 0, 0, 0},                        // DPS_UNSOLICITED_VM_LOC_INFO
 };
 
 /*
@@ -317,7 +320,9 @@ static uint32_t dps_stop_retransmit_timer(dps_client_data_t *client_buff)
 			dps_log_debug(DpsProtocolLogLevel,"No qid");
 			break;
 		}
-#if !defined(DPS_SERVER)
+#if defined (DPS_SERVER)
+		if (retransmit_timer_stop(client_buff->hdr.query_id, &context) != 0)
+#else
 		if (raw_proto_timer_stop(client_buff->hdr.query_id, &context,
 		                         &owner) != RAW_PROTO_TIMER_RETURN_OK)
 #endif
@@ -435,7 +440,7 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 	switch (pkt_type)
 	{
 		case DPS_ENDPOINT_LOC_REQ:
-    	case DPS_ADDR_RESOLVE:
+		case DPS_ADDR_RESOLVE:
 		{
 			dps_endpoint_loc_req_t *msg = DPS_GET_CLIENT_ENDPT_LOC_REQ(req);
 			len += DPS_EUID_TLV_LEN;
@@ -459,7 +464,7 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 		}
 		
 		case DPS_ENDPOINT_LOC_REPLY:
-    	case DPS_UNSOLICITED_ENDPOINT_LOC_REPLY:
+		case DPS_UNSOLICITED_ENDPOINT_LOC_REPLY:
 		{
 			dps_endpoint_loc_reply_t *msg = DPS_GET_CLIENT_ENDPT_LOC_REPLY(req);
 			
@@ -550,7 +555,6 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 
 			len += dps_calc_tunnel_tlv_len(msg->tunnel_info.num_of_tunnels, msg->tunnel_info.tunnel_list);
 
-
 			if (msg->dps_client_addr.family == AF_INET)
 			{
 				len += DPS_SVCLOC4_TLV_LEN;
@@ -626,7 +630,7 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 		}
 
 		case DPS_UNSOLICITED_VNID_POLICY_LIST:
-    	case DPS_VNID_POLICY_LIST_REPLY:
+		case DPS_VNID_POLICY_LIST_REPLY:
 		{
 			dps_bulk_vnid_policy_t *client_data = &((dps_client_data_t *)req)->bulk_vnid_policy;
 			len += 4; // number of permit rules and num of deny rules
@@ -649,14 +653,14 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 			len += DPS_GET_IP_ADDR_TLV_LEN(client_data->tunnel_endpoint.family);
 			len += dps_calc_endpoint_info_tlv_len(&client_data->mcast_src_vm);
 
-		    // mcast_addr len tlv
-		    len += (DPS_TLV_HDR_LEN + DPS_VMAC_TLV_LEN);
-		    if (client_data->mcast_addr.mcast_addr_type == MCAST_ADDR_V6)
-			    len += DPS_IP6_TLV_LEN;
-		    else 
-			    len += DPS_IP4_TLV_LEN;
-		    
-		     // DPS Client TLV
+			// mcast_addr len tlv
+			len += (DPS_TLV_HDR_LEN + DPS_VMAC_TLV_LEN);
+			if (client_data->mcast_addr.mcast_addr_type == MCAST_ADDR_V6)
+				len += DPS_IP6_TLV_LEN;
+			else
+				len += DPS_IP4_TLV_LEN;
+
+			// DPS Client TLV
 			if (client_data->dps_client_addr.family == AF_INET)
 			{
 				len += DPS_SVCLOC4_TLV_LEN;
@@ -665,8 +669,8 @@ static uint32_t calc_pkt_len(uint8_t pkt_type, void *req)
 			{
 				len += DPS_SVCLOC6_TLV_LEN;
 			}
-		    break;
-	    }
+			break;
+		}
 	    case DPS_MCAST_RECEIVER_JOIN:
 	    case DPS_MCAST_RECEIVER_LEAVE:
 	    {
@@ -2903,6 +2907,17 @@ dps_get_epri_tlv(uint8_t *buff, dps_epri_t *epri)
  * \brief This routine is called by clients of the dps protocol handler to send
  *        packets on the network. This encodes the endpoint_req type packet.
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         EUID_TLV                              |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IP_ADDR_TLV (optional)                 |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        SERVICE_LOC_TLV (optional)             |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
  *
@@ -2974,6 +2989,13 @@ static uint32_t dps_send_endpoint_loc_req(void *client_req, void *cli_addr)
  *        endpoint_reply packet will just contain the DPS packet header with
  *        the error code if it is needed.
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         ENDPOINT_LOC_TLV                      |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
  *
@@ -3039,6 +3061,16 @@ static uint32_t dps_send_endpoint_loc_reply(void *client_req, void *cli_addr)
  *
  * \brief This routine is called by Dove Switches to reqister endpoint (VM port)
  *        information. The endpoint can be identified by an IP/MAC/EUID.
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         ENDPOINT_LOC_TLV                      |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        SERVICE_LOC_TLV (optional)             |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
@@ -3107,6 +3139,14 @@ static uint32_t dps_send_endpoint_update(void *client_req, void *cli_addr)
  *        endpoint_update message. This message is a ACK/NACK on the success
  *        of the enpoint_update.
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        ENDPOINT_UPDATE_REPLY_TLV              |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
  *
@@ -3163,6 +3203,18 @@ static uint32_t dps_send_endpoint_update_reply(void *client_req, void *cli_addr)
  * \brief This routine is called by Dove Switches to request a policy
  *        The message contains the src and destination endpoint information
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        ENDPOINT_INFO_TLV                      |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        ENDPOINT_INFO_TLV                      |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        SERVICE_LOC_TLV (optional)             |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
  *
@@ -3178,11 +3230,12 @@ static uint32_t dps_send_policy_req(void *client_req, void *cli_addr)
 	uint8_t *buff, *bufptr;
 	uint32_t status = DPS_SUCCESS;
 
-	dps_log_info(DpsProtocolLogLevel, "Enter");
 
 	dps_client_hdr_t *client_hdr = DPS_GET_CLIENT_HDR(client_req);
 
 	dps_policy_req_t *client_data = DPS_GET_CLIENT_POLICY_REQ(client_req);
+
+	dps_log_info(DpsProtocolLogLevel, "Enter");
 
 	dump_client_info((dps_client_data_t *)client_req);
 
@@ -3227,6 +3280,16 @@ static uint32_t dps_send_policy_req(void *client_req, void *cli_addr)
  *        endpoint information as well as policy information.
  *        In case of error the policy_reply packet will just contain the DPS 
  *        packet header with the error code if it is needed.
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        ENDPOINT_LOC_TLV                       |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        POLICY_TLV                             |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
@@ -3283,6 +3346,16 @@ static uint32_t dps_send_policy_reply(void *client_req, void *cli_addr)
  *
  * \brief This func is called for 2 different types of msgs, DPS_BCAST_LIST_REPLY
  *        and 	DPS_UNSOLICITED_BCAST_LIST_REPLY.
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IPV4_ADDR_LIST_TLV (optional)          |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IPV6_ADDR_LIST_TLV (optional)          |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
@@ -3403,6 +3476,16 @@ static uint32_t dps_send_gen_msg_req(void *client_req, void *cli_addr)
  *        This function is called to send 2 types of msgs, DPS_BCAST_LIST_REPLY
  *        and DPS_UNSOLICITED_BCAST_LIST_REPLY.
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IPV4_ADDR_LIST_TLV (optional)          |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IPV6_ADDR_LIST_TLV (optional)          |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
  *
@@ -3483,6 +3566,30 @@ static uint32_t dps_send_bcast_list_reply(void *client_req, void *cli_addr)
  * \brief This routine is called by DPS when it wants to send a list of policies
  *        to a DS. The policies are of the type permit/deny between vnids.
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |    Number of Permit Rules     |  Number of Deny Rules         |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        Src VNID                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        Dst VNID                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                           .                                   |
+ *  |                           .                                   |
+ *  |                      Upto Number of Permit Rules Pair         |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        Src VNID                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        Dst VNID                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                           .                                   |
+ *  |                           .                                   |
+ *  |                      Upto Number of Deny Rules Pair           |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
  *
@@ -3538,6 +3645,15 @@ static uint32_t dps_send_bulk_policy_xfer(void *client_req, void *cli_addr)
  *
  * \brief This func is used to push unsolicited external gw list to the dove 
  *        switches. 
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         TUNNEL_LIST_TLV                       |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
@@ -3600,6 +3716,16 @@ static uint32_t dps_send_gw_list(void *client_req, void *cli_addr)
  *        DPS Server. All users of DPS for example dove switches, vlan/external 
  *        gateways need to first register their tunnel endpoints before any other
  *        msgs can be sent. 
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         TUNNEL_LIST_TLV                       |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         SERVICE_LOC_TLV                       |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
@@ -3668,6 +3794,16 @@ static uint32_t dps_send_tunnel_reg_dereg(void *client_req, void *cli_addr)
  *        vm that has moved as well as information about the vm that is the source 
  *        of the data. 
  *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         ENDPOINT_INFO_TLV                     |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         ENDPOINT_LOC_TLV                      |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
  *
@@ -3719,6 +3855,19 @@ static uint32_t dps_send_vm_migration_event(void *client_req, void *cli_addr)
  *
  * \brief This routine is called when a DS wants to register or deregister a 
  *        multicast sender.
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         IP_ADDR_TLV                           |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         ENDPOINT_INFO_TLV                     |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |       MCAST_ADDR_MAC_TLV/MCAST_ADDR_V4_TLV/MCAST_ADDR_V6_TLV  |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         SERVICE_LOC_TLV(optional)             |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
@@ -3775,6 +3924,18 @@ static uint32_t dps_send_mcast_sender_reg_dereg(void *client_req, void *cli_addr
  *
  * \brief This routine is called when a DS wants to subscribe or un-subscribe 
  *        from multicast traffic. 
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         IP_ADDR_TLV                           |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         MCAST_GRP_REC_TLV                     |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         SERVICE_LOC_TLV (optional)            |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
@@ -3840,6 +4001,21 @@ static uint32_t dps_send_mcast_receiver_join_leave(void *client_req, void *cli_a
  *        address. The first part of the message has the multicast address
  *        followed by a record which has a vnid followed by list of DS.
  *        The message could have multiple such records. 
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |    MCAST_ADDR_MAC_TLV/MCAST_ADDR_V4_TLV/MCAST_ADDR_V6_TLV     |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                  VNID_TUNNEL_LIST_TLV                         |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                  VNID_TUNNEL_LIST_TLV                         |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                            .                                  |
+ *  |                            .                                  |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr  - The address of the dove switch
@@ -3939,7 +4115,7 @@ static uint32_t dps_client_create_general_ack(dps_client_data_t *client_buff)
 		// For the general ack the sub_type is the original msg type that it is trying to ack
 		client_data.hdr.sub_type = client_data.hdr.type; 
 		if ((client_data.hdr.type == DPS_TUNNEL_REGISTER) || 
-		    (client_data.hdr.type == DPS_TUNNEL_REGISTER) ||
+		    (client_data.hdr.type == DPS_TUNNEL_DEREGISTER) ||
 		    (client_data.hdr.type == DPS_MCAST_SENDER_REGISTRATION) ||
 		    (client_data.hdr.type == DPS_MCAST_SENDER_DEREGISTRATION) ||
 		    (client_data.hdr.type == DPS_MCAST_RECEIVER_JOIN) ||
@@ -4017,6 +4193,20 @@ static uint32_t dps_send_policy_invalidate(void *client_req, void *cli_addr)
  *        vIP address. The DS on receiving this msg should send an arp request
  *        to all the VMs registered with the DS. If a VM responds to the arp 
  *        request, the DS should register the VM with a endpoint_update msg.
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        EUID_TLV                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        IP_ADDR_TLV                            |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        SERVICE_LOC_TLV                        |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - The address of the dove switch.
  *
@@ -4101,8 +4291,18 @@ static uint32_t dps_send_addr_reply(void *client_req, void *cli_addr)
  ******************************************************************************
  * dps_send_invalidate_vm                                                 *//**
  *
- * \brief This msg is sent to all hosts in the domain to invalidate the VMs info
- *        if it is present.
+ * \brief This msg is sent to all DOVE switches in the domain to update the VMs
+ *        location if present in the forwarding table. This message is sent
+ *        in response to a migration_in event sent by the DOVE switch to which
+ *        the VM has moved.
+ *
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                         Header                                |
+ *  |                                                               |
+ *  |                                                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *  |                        EPRI_TLV                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
  * \param[in] client_req - A pointer to a message that the client wants to send
  * \param[in] cli_addr - Not used, it is a NULL value.
@@ -4112,7 +4312,7 @@ static uint32_t dps_send_addr_reply(void *client_req, void *cli_addr)
  *
  ******************************************************************************
  */
-static uint32_t dps_send_invalidate_vm(void *client_req, void *cli_addr)
+static uint32_t dps_send_vm_loc_info(void *client_req, void *cli_addr)
 {
 	uint32_t len = 0;
 	uint8_t *buff, *buff_start;
@@ -4488,6 +4688,7 @@ error:
 
 static uint32_t dps_process_policy_req(void *recv_buff, void *senders_addr)
 {
+	dps_endpoint_info_t *endpoint_info;
 	dps_policy_req_t *policy_req = NULL;
 	dps_client_data_t *client_buff;
 	uint32_t pkt_len;
@@ -4519,7 +4720,7 @@ static uint32_t dps_process_policy_req(void *recv_buff, void *senders_addr)
 	buff += DPS_PKT_HDR_LEN;
 
 	// Go to the end of buffer
-	dps_endpoint_info_t *endpoint_info = &policy_req->dst_endpoint;
+	endpoint_info = &policy_req->dst_endpoint;
 	while (buff < ((uint8_t *)recv_buff + DPS_PKT_HDR_LEN + pkt_len))
 	{
 		dps_get_tlv_hdr(buff, &tlv_hdr);
@@ -5777,7 +5978,7 @@ error:
  ******************************************************************************
  */
 
-static uint32_t dps_process_invalidate_vm(void *recv_buff, void *senders_addr)
+static uint32_t dps_process_vm_loc_info(void *recv_buff, void *senders_addr)
 {
 	dps_client_data_t *client_buff;
 	uint32_t pkt_len;
@@ -5931,7 +6132,7 @@ static dps_func_tbl_t dps_send_func_tbl[] = {
 	{"Unsolicited Vnid Del Req", dps_send_gen_msg_req},
 	{"Control Plane heart beat", dps_send_gen_msg_req},
 	{"New DCS Node Req", dps_noop_func},
-	{"Unsolicited Invalidate VM", dps_send_invalidate_vm},
+	{"Unsolicited VM Location Info", dps_send_vm_loc_info},
 };
 
 /**
@@ -5982,7 +6183,7 @@ static dps_func_tbl_t dps_recv_func_tbl[] = {
 	{"Unsolicited Vnid Del Req", dps_process_gen_msg_req},
 	{"Control Plane Heart Beat", dps_process_gen_msg_req},
 	{"New DCS Node Req", dps_noop_func},
-	{"Unsolicited Invalidate VM", dps_process_invalidate_vm},
+	{"Unsolicited VM Location Info", dps_process_vm_loc_info},
 };
 
 const char *dps_msg_name(uint8_t pkt_type)
@@ -6349,7 +6550,7 @@ uint32_t dps_process_rcvd_pkt(void *recv_buff, void *cli_addr)
 		if ((hdr->type < DPS_ENDPOINT_LOC_REQ) || (hdr->type >= DPS_MAX_MSG_TYPE))
 		{
 			dps_pkt_stats_tbl[0].recv_error++;
-			dps_log_error(DpsProtocolLogLevel, "Incorrect msg type %d received", hdr->type);
+			dps_log_debug(DpsProtocolLogLevel, "Incorrect msg type %d received", hdr->type);
 			break;
 		}
 		// TODO: Verify Packet Length - Confirm that the RECV FROM length is >= the length
@@ -6397,6 +6598,13 @@ dps_return_status dps_protocol_client_send(dps_client_data_t *msg)
 
 	do
 	{
+#if defined (DPS_SERVER)
+		if(!dps_cluster_is_local_node_active())
+		{
+			ret = DPS_SUCCESS;
+			break;
+		}
+#endif
 		if ((msg->hdr.type < DPS_ENDPOINT_LOC_REQ) || (msg->hdr.type >= DPS_MAX_MSG_TYPE))
 		{
 			dps_pkt_stats_tbl[0].transmit_error++;

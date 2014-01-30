@@ -167,6 +167,7 @@ uint32_t dps_protocol_xmit(uint8_t *buff, uint32_t buff_len, ip_addr_t *addr, vo
 	dst_addr.sin_family = AF_INET;
 	dst_addr.sin_port = htons(addr->port);
 	dst_addr.sin_addr.s_addr = htonl(addr->ip4);
+	int32_t rc = 0;
 
 	dps_log_debug(DpsProtocolLogLevel,"Send to: [%s:%d], context %p",
 	              inet_ntoa(dst_addr.sin_addr), ntohs(dst_addr.sin_port), context);
@@ -179,6 +180,15 @@ uint32_t dps_protocol_xmit(uint8_t *buff, uint32_t buff_len, ip_addr_t *addr, vo
 			dps_get_pkt_hdr((dps_pkt_hdr_t *)buff, &hdr);
 			dps_log_debug(DpsProtocolLogLevel,"Starting Rexmit: Context %p, Pkt Type %d, QID %d",
 			              context, hdr.type, hdr.query_id);
+			rc = retransmit_timer_start((char *)buff, buff_len, hdr.query_id,
+			                            server_sock, (struct sockaddr *)&dst_addr,
+			                            context, &dps_retransmit_callback, RPT_OWNER_DPS);
+			if (rc)
+			{
+				dps_log_info(DpsProtocolLogLevel, "retransmit_timer_start returned FAIL ...");
+				status = DPS_ERROR_NO_RESOURCES;
+				break;
+			}
 		}
 
 		ret_val = sendto(server_sock, (void *)buff, buff_len, 0,

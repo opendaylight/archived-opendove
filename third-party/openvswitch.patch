@@ -1,0 +1,915 @@
+diff -rc stock-openvswitch/lib/json.c openvswitch/lib/json.c
+*** stock-openvswitch/lib/json.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/lib/json.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 299,326 ****
+  }
+  
+  struct shash *
+! json_object(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_OBJECT);
+      return CONST_CAST(struct shash *, json->u.object);
+  }
+  
+  bool
+! json_boolean(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_TRUE || json->type == JSON_FALSE);
+      return json->type == JSON_TRUE;
+  }
+  
+  double
+! json_real(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_REAL || json->type == JSON_INTEGER);
+      return json->type == JSON_REAL ? json->u.real : json->u.integer;
+  }
+  
+  int64_t
+! json_integer(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_INTEGER);
+      return json->u.integer;
+--- 299,326 ----
+  }
+  
+  struct shash *
+! ovs_json_object(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_OBJECT);
+      return CONST_CAST(struct shash *, json->u.object);
+  }
+  
+  bool
+! ovs_json_boolean(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_TRUE || json->type == JSON_FALSE);
+      return json->type == JSON_TRUE;
+  }
+  
+  double
+! ovs_json_real(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_REAL || json->type == JSON_INTEGER);
+      return json->type == JSON_REAL ? json->u.real : json->u.integer;
+  }
+  
+  int64_t
+! ovs_json_integer(const struct json *json)
+  {
+      ovs_assert(json->type == JSON_INTEGER);
+      return json->u.integer;
+diff -rc stock-openvswitch/lib/json.h openvswitch/lib/json.h
+*** stock-openvswitch/lib/json.h	2013-10-04 15:38:42.000000000 -0500
+--- openvswitch/lib/json.h	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 93,102 ****
+  
+  const char *json_string(const struct json *);
+  struct json_array *json_array(const struct json *);
+! struct shash *json_object(const struct json *);
+! bool json_boolean(const struct json *);
+! double json_real(const struct json *);
+! int64_t json_integer(const struct json *);
+  
+  struct json *json_clone(const struct json *);
+  void json_destroy(struct json *);
+--- 93,102 ----
+  
+  const char *json_string(const struct json *);
+  struct json_array *json_array(const struct json *);
+! struct shash *ovs_json_object(const struct json *);
+! bool ovs_json_boolean(const struct json *);
+! double ovs_json_real(const struct json *);
+! int64_t ovs_json_integer(const struct json *);
+  
+  struct json *json_clone(const struct json *);
+  void json_destroy(struct json *);
+diff -rc stock-openvswitch/lib/jsonrpc.c openvswitch/lib/jsonrpc.c
+*** stock-openvswitch/lib/jsonrpc.c	2013-10-15 17:50:35.000000000 -0500
+--- openvswitch/lib/jsonrpc.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 667,673 ****
+          error = xstrdup("message is not a JSON object");
+          goto exit;
+      }
+!     object = json_object(json);
+  
+      method = shash_find_and_delete(object, "method");
+      if (method && method->type != JSON_STRING) {
+--- 667,673 ----
+          error = xstrdup("message is not a JSON object");
+          goto exit;
+      }
+!     object = ovs_json_object(json);
+  
+      method = shash_find_and_delete(object, "method");
+      if (method && method->type != JSON_STRING) {
+diff -rc stock-openvswitch/lib/ovsdb-idl.c openvswitch/lib/ovsdb-idl.c
+*** stock-openvswitch/lib/ovsdb-idl.c	2013-10-15 17:50:35.000000000 -0500
+--- openvswitch/lib/ovsdb-idl.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 601,607 ****
+          return ovsdb_syntax_error(table_updates, NULL,
+                                    "<table-updates> is not an object");
+      }
+!     SHASH_FOR_EACH (tables_node, json_object(table_updates)) {
+          const struct json *table_update = tables_node->data;
+          const struct shash_node *table_node;
+          struct ovsdb_idl_table *table;
+--- 601,607 ----
+          return ovsdb_syntax_error(table_updates, NULL,
+                                    "<table-updates> is not an object");
+      }
+!     SHASH_FOR_EACH (tables_node, ovs_json_object(table_updates)) {
+          const struct json *table_update = tables_node->data;
+          const struct shash_node *table_node;
+          struct ovsdb_idl_table *table;
+***************
+*** 619,625 ****
+                                        "<table-update> for table \"%s\" is "
+                                        "not an object", table->class->name);
+          }
+!         SHASH_FOR_EACH (table_node, json_object(table_update)) {
+              const struct json *row_update = table_node->data;
+              const struct json *old_json, *new_json;
+              struct uuid uuid;
+--- 619,625 ----
+                                        "<table-update> for table \"%s\" is "
+                                        "not an object", table->class->name);
+          }
+!         SHASH_FOR_EACH (table_node, ovs_json_object(table_update)) {
+              const struct json *row_update = table_node->data;
+              const struct json *old_json, *new_json;
+              struct uuid uuid;
+***************
+*** 641,648 ****
+                                            table_node->name);
+              }
+  
+!             old_json = shash_find_data(json_object(row_update), "old");
+!             new_json = shash_find_data(json_object(row_update), "new");
+              if (old_json && old_json->type != JSON_OBJECT) {
+                  return ovsdb_syntax_error(old_json, NULL,
+                                            "\"old\" <row> is not object");
+--- 641,648 ----
+                                            table_node->name);
+              }
+  
+!             old_json = shash_find_data(ovs_json_object(row_update), "old");
+!             new_json = shash_find_data(ovs_json_object(row_update), "new");
+              if (old_json && old_json->type != JSON_OBJECT) {
+                  return ovsdb_syntax_error(old_json, NULL,
+                                            "\"old\" <row> is not object");
+***************
+*** 650,656 ****
+                  return ovsdb_syntax_error(new_json, NULL,
+                                            "\"new\" <row> is not object");
+              } else if ((old_json != NULL) + (new_json != NULL)
+!                        != shash_count(json_object(row_update))) {
+                  return ovsdb_syntax_error(row_update, NULL,
+                                            "<row-update> contains unexpected "
+                                            "member");
+--- 650,656 ----
+                  return ovsdb_syntax_error(new_json, NULL,
+                                            "\"new\" <row> is not object");
+              } else if ((old_json != NULL) + (new_json != NULL)
+!                        != shash_count(ovs_json_object(row_update))) {
+                  return ovsdb_syntax_error(row_update, NULL,
+                                            "<row-update> contains unexpected "
+                                            "member");
+***************
+*** 745,751 ****
+      struct shash_node *node;
+      bool changed = false;
+  
+!     SHASH_FOR_EACH (node, json_object(row_json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_idl_column *column;
+          struct ovsdb_datum datum;
+--- 745,751 ----
+      struct shash_node *node;
+      bool changed = false;
+  
+!     SHASH_FOR_EACH (node, ovs_json_object(row_json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_idl_column *column;
+          struct ovsdb_datum datum;
+***************
+*** 1417,1423 ****
+      } else if (json->type == JSON_OBJECT) {
+          struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, json_object(json)) {
+              node->data = substitute_uuids(node->data, txn);
+          }
+      }
+--- 1417,1423 ----
+      } else if (json->type == JSON_OBJECT) {
+          struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, ovs_json_object(json)) {
+              node->data = substitute_uuids(node->data, txn);
+          }
+      }
+***************
+*** 1645,1651 ****
+                  }
+              }
+  
+!             if (!row->old || !shash_is_empty(json_object(row_json))) {
+                  json_array_add(operations, op);
+              } else {
+                  json_destroy(op);
+--- 1645,1651 ----
+                  }
+              }
+  
+!             if (!row->old || !shash_is_empty(ovs_json_object(row_json))) {
+                  json_array_add(operations, op);
+              } else {
+                  json_destroy(op);
+***************
+*** 2117,2123 ****
+  
+      /* We know that this is a JSON object because the loop in
+       * ovsdb_idl_txn_process_reply() checked. */
+!     mutate = json_object(results->elems[txn->inc_index]);
+      count = shash_find_data(mutate, "count");
+      if (!check_json_type(count, JSON_INTEGER, "\"mutate\" reply \"count\"")) {
+          return false;
+--- 2117,2123 ----
+  
+      /* We know that this is a JSON object because the loop in
+       * ovsdb_idl_txn_process_reply() checked. */
+!     mutate = ovs_json_object(results->elems[txn->inc_index]);
+      count = shash_find_data(mutate, "count");
+      if (!check_json_type(count, JSON_INTEGER, "\"mutate\" reply \"count\"")) {
+          return false;
+***************
+*** 2129,2135 ****
+          return false;
+      }
+  
+!     select = json_object(results->elems[txn->inc_index + 1]);
+      rows = shash_find_data(select, "rows");
+      if (!check_json_type(rows, JSON_ARRAY, "\"select\" reply \"rows\"")) {
+          return false;
+--- 2129,2135 ----
+          return false;
+      }
+  
+!     select = ovs_json_object(results->elems[txn->inc_index + 1]);
+      rows = shash_find_data(select, "rows");
+      if (!check_json_type(rows, JSON_ARRAY, "\"select\" reply \"rows\"")) {
+          return false;
+***************
+*** 2144,2150 ****
+      if (!check_json_type(row, JSON_OBJECT, "\"select\" reply row")) {
+          return false;
+      }
+!     column = shash_find_data(json_object(row), txn->inc_column);
+      if (!check_json_type(column, JSON_INTEGER,
+                           "\"select\" reply inc column")) {
+          return false;
+--- 2144,2150 ----
+      if (!check_json_type(row, JSON_OBJECT, "\"select\" reply row")) {
+          return false;
+      }
+!     column = shash_find_data(ovs_json_object(row), txn->inc_column);
+      if (!check_json_type(column, JSON_INTEGER,
+                           "\"select\" reply inc column")) {
+          return false;
+***************
+*** 2172,2178 ****
+  
+      /* We know that this is a JSON object because the loop in
+       * ovsdb_idl_txn_process_reply() checked. */
+!     reply = json_object(results->elems[insert->op_index]);
+      json_uuid = shash_find_data(reply, "uuid");
+      if (!check_json_type(json_uuid, JSON_ARRAY, "\"insert\" reply \"uuid\"")) {
+          return false;
+--- 2172,2178 ----
+  
+      /* We know that this is a JSON object because the loop in
+       * ovsdb_idl_txn_process_reply() checked. */
+!     reply = ovs_json_object(results->elems[insert->op_index]);
+      json_uuid = shash_find_data(reply, "uuid");
+      if (!check_json_type(json_uuid, JSON_ARRAY, "\"insert\" reply \"uuid\"")) {
+          return false;
+***************
+*** 2227,2233 ****
+              } else if (op->type == JSON_OBJECT) {
+                  struct json *error;
+  
+!                 error = shash_find_data(json_object(op), "error");
+                  if (error) {
+                      if (error->type == JSON_STRING) {
+                          if (!strcmp(error->u.string, "timed out")) {
+--- 2227,2233 ----
+              } else if (op->type == JSON_OBJECT) {
+                  struct json *error;
+  
+!                 error = shash_find_data(ovs_json_object(op), "error");
+                  if (error) {
+                      if (error->type == JSON_STRING) {
+                          if (!strcmp(error->u.string, "timed out")) {
+***************
+*** 2398,2404 ****
+      if (result->type == JSON_OBJECT) {
+          const struct json *locked;
+  
+!         locked = shash_find_data(json_object(result), "locked");
+          got_lock = locked && locked->type == JSON_TRUE;
+      } else {
+          got_lock = false;
+--- 2398,2404 ----
+      if (result->type == JSON_OBJECT) {
+          const struct json *locked;
+  
+!         locked = shash_find_data(ovs_json_object(result), "locked");
+          got_lock = locked && locked->type == JSON_TRUE;
+      } else {
+          got_lock = false;
+diff -rc stock-openvswitch/lib/ovsdb-parser.c openvswitch/lib/ovsdb-parser.c
+*** stock-openvswitch/lib/ovsdb-parser.c	2013-04-09 03:38:09.000000000 -0500
+--- openvswitch/lib/ovsdb-parser.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 71,77 ****
+          return NULL;
+      }
+  
+!     value = shash_find_data(json_object(parser->json), name);
+      if (!value) {
+          if (!(types & OP_OPTIONAL)) {
+              ovsdb_parser_raise_error(parser,
+--- 71,77 ----
+          return NULL;
+      }
+  
+!     value = shash_find_data(ovs_json_object(parser->json), name);
+      if (!value) {
+          if (!(types & OP_OPTIONAL)) {
+              ovsdb_parser_raise_error(parser,
+***************
+*** 130,136 ****
+  ovsdb_parser_finish(struct ovsdb_parser *parser)
+  {
+      if (!parser->error) {
+!         const struct shash *object = json_object(parser->json);
+          size_t n_unused;
+  
+          n_unused = shash_count(object) - sset_count(&parser->used);
+--- 130,136 ----
+  ovsdb_parser_finish(struct ovsdb_parser *parser)
+  {
+      if (!parser->error) {
+!         const struct shash *object = ovs_json_object(parser->json);
+          size_t n_unused;
+  
+          n_unused = shash_count(object) - sset_count(&parser->used);
+diff -rc stock-openvswitch/lib/ovsdb-types.c openvswitch/lib/ovsdb-types.c
+*** stock-openvswitch/lib/ovsdb-types.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/lib/ovsdb-types.c	2014-01-24 08:41:29.000000000 -0600
+***************
+*** 396,403 ****
+  
+          min = ovsdb_parser_member(&parser, "minReal", OP_NUMBER | OP_OPTIONAL);
+          max = ovsdb_parser_member(&parser, "maxReal", OP_NUMBER | OP_OPTIONAL);
+!         base->u.real.min = min ? json_real(min) : -DBL_MAX;
+!         base->u.real.max = max ? json_real(max) : DBL_MAX;
+          if (base->u.real.min > base->u.real.max) {
+              error = ovsdb_syntax_error(json, NULL, "minReal exceeds maxReal");
+          }
+--- 396,403 ----
+  
+          min = ovsdb_parser_member(&parser, "minReal", OP_NUMBER | OP_OPTIONAL);
+          max = ovsdb_parser_member(&parser, "maxReal", OP_NUMBER | OP_OPTIONAL);
+!         base->u.real.min = min ? ovs_json_real(min) : -DBL_MAX;
+!         base->u.real.max = max ? ovs_json_real(max) : DBL_MAX;
+          if (base->u.real.min > base->u.real.max) {
+              error = ovsdb_syntax_error(json, NULL, "minReal exceeds maxReal");
+          }
+diff -rc stock-openvswitch/lib/smap.c openvswitch/lib/smap.c
+*** stock-openvswitch/lib/smap.c	2013-10-04 15:38:42.000000000 -0500
+--- openvswitch/lib/smap.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 270,276 ****
+  {
+      const struct shash_node *node;
+  
+!     SHASH_FOR_EACH (node, json_object(json)) {
+          const struct json *value = node->data;
+          smap_add(smap, node->name, json_string(value));
+      }
+--- 270,276 ----
+  {
+      const struct shash_node *node;
+  
+!     SHASH_FOR_EACH (node, ovs_json_object(json)) {
+          const struct json *value = node->data;
+          smap_add(smap, node->name, json_string(value));
+      }
+diff -rc stock-openvswitch/ovsdb/column.c openvswitch/ovsdb/column.c
+*** stock-openvswitch/ovsdb/column.c	2013-04-09 03:38:09.000000000 -0500
+--- openvswitch/ovsdb/column.c	2014-01-24 08:48:41.000000000 -0600
+***************
+*** 89,97 ****
+          return error;
+      }
+  
+!     persistent = ephemeral ? !json_boolean(ephemeral) : true;
+      *columnp = ovsdb_column_create(name,
+!                                    mutable ? json_boolean(mutable) : true,
+                                     persistent, &type);
+  
+      ovsdb_type_destroy(&type);
+--- 89,97 ----
+          return error;
+      }
+  
+!     persistent = ephemeral ? !ovs_json_boolean(ephemeral) : true;
+      *columnp = ovsdb_column_create(name,
+!                                    mutable ? ovs_json_boolean(mutable) : true,
+                                     persistent, &type);
+  
+      ovsdb_type_destroy(&type);
+diff -rc stock-openvswitch/ovsdb/execution.c openvswitch/ovsdb/execution.c
+*** stock-openvswitch/ovsdb/execution.c	2013-10-04 15:38:42.000000000 -0500
+--- openvswitch/ovsdb/execution.c	2014-01-24 08:48:41.000000000 -0600
+***************
+*** 212,218 ****
+      const struct json *durable;
+  
+      durable = ovsdb_parser_member(parser, "durable", OP_BOOLEAN);
+!     if (durable && json_boolean(durable)) {
+          x->durable = true;
+      }
+      return NULL;
+--- 212,218 ----
+      const struct json *durable;
+  
+      durable = ovsdb_parser_member(parser, "durable", OP_BOOLEAN);
+!     if (durable && ovs_json_boolean(durable)) {
+          x->durable = true;
+      }
+      return NULL;
+***************
+*** 633,639 ****
+      }
+      if (!error) {
+          if (timeout) {
+!             timeout_msec = MIN(LLONG_MAX, json_real(timeout));
+              if (timeout_msec < 0) {
+                  error = ovsdb_syntax_error(timeout, NULL,
+                                             "timeout must be nonnegative");
+--- 633,639 ----
+      }
+      if (!error) {
+          if (timeout) {
+!             timeout_msec = MIN(LLONG_MAX, ovs_json_real(timeout));
+              if (timeout_msec < 0) {
+                  error = ovsdb_syntax_error(timeout, NULL,
+                                             "timeout must be nonnegative");
+diff -rc stock-openvswitch/ovsdb/file.c openvswitch/ovsdb/file.c
+*** stock-openvswitch/ovsdb/file.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/ovsdb/file.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 270,276 ****
+          return ovsdb_syntax_error(json, NULL, "row must be JSON object");
+      }
+  
+!     SHASH_FOR_EACH (node, json_object(json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_column *column;
+          struct ovsdb_datum datum;
+--- 270,276 ----
+          return ovsdb_syntax_error(json, NULL, "row must be JSON object");
+      }
+  
+!     SHASH_FOR_EACH (node, ovs_json_object(json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_column *column;
+          struct ovsdb_datum datum;
+diff -rc stock-openvswitch/ovsdb/jsonrpc-server.c openvswitch/ovsdb/jsonrpc-server.c
+*** stock-openvswitch/ovsdb/jsonrpc-server.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/ovsdb/jsonrpc-server.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 1105,1111 ****
+      const struct json *json;
+  
+      json = ovsdb_parser_member(parser, name, OP_BOOLEAN | OP_OPTIONAL);
+!     return json ? json_boolean(json) : default_value;
+  }
+  
+  struct ovsdb_jsonrpc_monitor *
+--- 1105,1111 ----
+      const struct json *json;
+  
+      json = ovsdb_parser_member(parser, name, OP_BOOLEAN | OP_OPTIONAL);
+!     return json ? ovs_json_boolean(json) : default_value;
+  }
+  
+  struct ovsdb_jsonrpc_monitor *
+***************
+*** 1271,1277 ****
+      m->monitor_id = json_clone(monitor_id);
+      shash_init(&m->tables);
+  
+!     SHASH_FOR_EACH (node, json_object(monitor_requests)) {
+          const struct ovsdb_table *table;
+          struct ovsdb_jsonrpc_monitor_table *mt;
+          size_t allocated_columns;
+--- 1271,1277 ----
+      m->monitor_id = json_clone(monitor_id);
+      shash_init(&m->tables);
+  
+!     SHASH_FOR_EACH (node, ovs_json_object(monitor_requests)) {
+          const struct ovsdb_table *table;
+          struct ovsdb_jsonrpc_monitor_table *mt;
+          size_t allocated_columns;
+diff -rc stock-openvswitch/ovsdb/ovsdb.c openvswitch/ovsdb/ovsdb.c
+*** stock-openvswitch/ovsdb/ovsdb.c	2013-04-09 03:38:09.000000000 -0500
+--- openvswitch/ovsdb/ovsdb.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 195,201 ****
+  
+      schema = ovsdb_schema_create(json_string(name), version,
+                                   cksum ? json_string(cksum) : "");
+!     SHASH_FOR_EACH (node, json_object(tables)) {
+          struct ovsdb_table_schema *table;
+  
+          if (node->name[0] == '_') {
+--- 195,201 ----
+  
+      schema = ovsdb_schema_create(json_string(name), version,
+                                   cksum ? json_string(cksum) : "");
+!     SHASH_FOR_EACH (node, ovs_json_object(tables)) {
+          struct ovsdb_table_schema *table;
+  
+          if (node->name[0] == '_') {
+diff -rc stock-openvswitch/ovsdb/ovsdb-client.c openvswitch/ovsdb/ovsdb-client.c
+*** stock-openvswitch/ovsdb/ovsdb-client.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/ovsdb/ovsdb-client.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 523,529 ****
+      table_add_cell(t)->text = xstrdup(type);
+      for (i = 0; i < columns->n_columns; i++) {
+          const struct ovsdb_column *column = columns->columns[i];
+!         struct json *value = shash_find_data(json_object(row), column->name);
+          struct cell *cell = table_add_cell(t);
+          if (value) {
+              cell->json = json_clone(value);
+--- 523,529 ----
+      table_add_cell(t)->text = xstrdup(type);
+      for (i = 0; i < columns->n_columns; i++) {
+          const struct ovsdb_column *column = columns->columns[i];
+!         struct json *value = shash_find_data(ovs_json_object(row), column->name);
+          struct cell *cell = table_add_cell(t);
+          if (value) {
+              cell->json = json_clone(value);
+***************
+*** 549,555 ****
+          ovs_error(0, "<table-updates> is not object");
+          return;
+      }
+!     table_update = shash_find_data(json_object(table_updates), table->name);
+      if (!table_update) {
+          return;
+      }
+--- 549,555 ----
+          ovs_error(0, "<table-updates> is not object");
+          return;
+      }
+!     table_update = shash_find_data(ovs_json_object(table_updates), table->name);
+      if (!table_update) {
+          return;
+      }
+***************
+*** 563,569 ****
+      for (i = 0; i < columns->n_columns; i++) {
+          table_add_column(&t, "%s", columns->columns[i]->name);
+      }
+!     SHASH_FOR_EACH (node, json_object(table_update)) {
+          struct json *row_update = node->data;
+          struct json *old, *new;
+  
+--- 563,569 ----
+      for (i = 0; i < columns->n_columns; i++) {
+          table_add_column(&t, "%s", columns->columns[i]->name);
+      }
+!     SHASH_FOR_EACH (node, ovs_json_object(table_update)) {
+          struct json *row_update = node->data;
+          struct json *old, *new;
+  
+***************
+*** 571,578 ****
+              ovs_error(0, "<row-update> is not object");
+              continue;
+          }
+!         old = shash_find_data(json_object(row_update), "old");
+!         new = shash_find_data(json_object(row_update), "new");
+          if (initial) {
+              monitor_print_row(new, "initial", node->name, columns, &t);
+          } else if (!old) {
+--- 571,578 ----
+              ovs_error(0, "<row-update> is not object");
+              continue;
+          }
+!         old = shash_find_data(ovs_json_object(row_update), "old");
+!         new = shash_find_data(ovs_json_object(row_update), "new");
+          if (initial) {
+              monitor_print_row(new, "initial", node->name, columns, &t);
+          } else if (!old) {
+***************
+*** 850,856 ****
+              ovs_fatal(0,  "row %zu in table %s response is not a JSON object: "
+                        "%s", y, ts->name, json_to_string(rows->elems[y], 0));
+          }
+!         row = json_object(rows->elems[y]);
+  
+          data[y] = xmalloc(n_columns * sizeof **data);
+          for (x = 0; x < n_columns; x++) {
+--- 850,856 ----
+              ovs_fatal(0,  "row %zu in table %s response is not a JSON object: "
+                        "%s", y, ts->name, json_to_string(rows->elems[y], 0));
+          }
+!         row = ovs_json_object(rows->elems[y]);
+  
+          data[y] = xmalloc(n_columns * sizeof **data);
+          for (x = 0; x < n_columns; x++) {
+***************
+*** 954,960 ****
+          struct json *rows;
+  
+          if (op_result->type != JSON_OBJECT
+!             || !(rows = shash_find_data(json_object(op_result), "rows"))
+              || rows->type != JSON_ARRAY) {
+              ovs_fatal(0, "%s table reply is not an object with a \"rows\" "
+                        "member array: %s",
+--- 954,960 ----
+          struct json *rows;
+  
+          if (op_result->type != JSON_OBJECT
+!             || !(rows = shash_find_data(ovs_json_object(op_result), "rows"))
+              || rows->type != JSON_ARRAY) {
+              ovs_fatal(0, "%s table reply is not an object with a \"rows\" "
+                        "member array: %s",
+diff -rc stock-openvswitch/ovsdb/ovsdb-server.c openvswitch/ovsdb/ovsdb-server.c
+*** stock-openvswitch/ovsdb/ovsdb-server.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/ovsdb/ovsdb-server.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 1360,1367 ****
+      }
+      ovs_assert(json->type == JSON_OBJECT);
+  
+!     sset_from_json(remotes, shash_find_data(json_object(json), "remotes"));
+      sset_from_json(db_filenames,
+!                    shash_find_data(json_object(json), "db_filenames"));
+      json_destroy(json);
+  }
+--- 1360,1367 ----
+      }
+      ovs_assert(json->type == JSON_OBJECT);
+  
+!     sset_from_json(remotes, shash_find_data(ovs_json_object(json), "remotes"));
+      sset_from_json(db_filenames,
+!                    shash_find_data(ovs_json_object(json), "db_filenames"));
+      json_destroy(json);
+  }
+diff -rc stock-openvswitch/ovsdb/ovsdb-tool.c openvswitch/ovsdb/ovsdb-tool.c
+*** stock-openvswitch/ovsdb/ovsdb-tool.c	2013-10-15 17:50:35.000000000 -0500
+--- openvswitch/ovsdb/ovsdb-tool.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 392,398 ****
+          }
+  
+          table_schema = shash_find_data(&schema->tables, table);
+!         SHASH_FOR_EACH (n2, json_object(rows)) {
+              const char *row_uuid = n2->name;
+              struct json *columns = n2->data;
+              struct shash_node *n3;
+--- 392,398 ----
+          }
+  
+          table_schema = shash_find_data(&schema->tables, table);
+!         SHASH_FOR_EACH (n2, ovs_json_object(rows)) {
+              const char *row_uuid = n2->name;
+              struct json *columns = n2->data;
+              struct shash_node *n3;
+***************
+*** 403,409 ****
+              if (columns->type == JSON_OBJECT) {
+                  struct json *new_name_json;
+  
+!                 new_name_json = shash_find_data(json_object(columns), "name");
+                  if (new_name_json) {
+                      new_name = json_to_string(new_name_json, JSSF_SORT);
+                      free_new_name = true;
+--- 403,409 ----
+              if (columns->type == JSON_OBJECT) {
+                  struct json *new_name_json;
+  
+!                 new_name_json = shash_find_data(ovs_json_object(columns), "name");
+                  if (new_name_json) {
+                      new_name = json_to_string(new_name_json, JSSF_SORT);
+                      free_new_name = true;
+***************
+*** 424,430 ****
+  
+              if (columns->type == JSON_OBJECT) {
+                  if (show_log_verbosity > 1) {
+!                     SHASH_FOR_EACH (n3, json_object(columns)) {
+                          const char *column = n3->name;
+                          const struct ovsdb_column *column_schema;
+                          struct json *value = n3->data;
+--- 424,430 ----
+  
+              if (columns->type == JSON_OBJECT) {
+                  if (show_log_verbosity > 1) {
+!                     SHASH_FOR_EACH (n3, ovs_json_object(columns)) {
+                          const char *column = n3->name;
+                          const struct ovsdb_column *column_schema;
+                          struct json *value = n3->data;
+***************
+*** 516,524 ****
+          } else if (json->type == JSON_OBJECT) {
+              struct json *date, *comment;
+  
+!             date = shash_find_data(json_object(json), "_date");
+              if (date && date->type == JSON_INTEGER) {
+!                 long long int t = json_integer(date);
+                  char *s;
+  
+                  if (t < INT32_MAX) {
+--- 516,524 ----
+          } else if (json->type == JSON_OBJECT) {
+              struct json *date, *comment;
+  
+!             date = shash_find_data(ovs_json_object(json), "_date");
+              if (date && date->type == JSON_INTEGER) {
+!                 long long int t = ovs_json_integer(date);
+                  char *s;
+  
+                  if (t < INT32_MAX) {
+***************
+*** 531,544 ****
+                  free(s);
+              }
+  
+!             comment = shash_find_data(json_object(json), "_comment");
+              if (comment && comment->type == JSON_STRING) {
+                  printf(" \"%s\"", json_string(comment));
+              }
+  
+              if (i > 0 && show_log_verbosity > 0) {
+                  putchar('\n');
+!                 print_db_changes(json_object(json), &names, schema);
+              }
+          }
+          json_destroy(json);
+--- 531,544 ----
+                  free(s);
+              }
+  
+!             comment = shash_find_data(ovs_json_object(json), "_comment");
+              if (comment && comment->type == JSON_STRING) {
+                  printf(" \"%s\"", json_string(comment));
+              }
+  
+              if (i > 0 && show_log_verbosity > 0) {
+                  putchar('\n');
+!                 print_db_changes(ovs_json_object(json), &names, schema);
+              }
+          }
+          json_destroy(json);
+diff -rc stock-openvswitch/ovsdb/row.c openvswitch/ovsdb/row.c
+*** stock-openvswitch/ovsdb/row.c	2013-10-04 15:38:42.000000000 -0500
+--- openvswitch/ovsdb/row.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 205,211 ****
+          return ovsdb_syntax_error(json, NULL, "row must be JSON object");
+      }
+  
+!     SHASH_FOR_EACH (node, json_object(json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_column *column;
+          struct ovsdb_datum datum;
+--- 205,211 ----
+          return ovsdb_syntax_error(json, NULL, "row must be JSON object");
+      }
+  
+!     SHASH_FOR_EACH (node, ovs_json_object(json)) {
+          const char *column_name = node->name;
+          const struct ovsdb_column *column;
+          struct ovsdb_datum datum;
+diff -rc stock-openvswitch/ovsdb/table.c openvswitch/ovsdb/table.c
+*** stock-openvswitch/ovsdb/table.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/ovsdb/table.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 148,154 ****
+      }
+  
+      if (max_rows) {
+!         if (json_integer(max_rows) <= 0) {
+              return ovsdb_syntax_error(json, NULL,
+                                        "maxRows must be at least 1");
+          }
+--- 148,154 ----
+      }
+  
+      if (max_rows) {
+!         if (ovs_json_integer(max_rows) <= 0) {
+              return ovsdb_syntax_error(json, NULL,
+                                        "maxRows must be at least 1");
+          }
+***************
+*** 157,172 ****
+          n_max_rows = UINT_MAX;
+      }
+  
+!     if (shash_is_empty(json_object(columns))) {
+          return ovsdb_syntax_error(json, NULL,
+                                    "table must have at least one column");
+      }
+  
+      ts = ovsdb_table_schema_create(name,
+!                                    mutable ? json_boolean(mutable) : true,
+                                     MIN(n_max_rows, UINT_MAX),
+!                                    is_root ? json_boolean(is_root) : false);
+!     SHASH_FOR_EACH (node, json_object(columns)) {
+          struct ovsdb_column *column;
+  
+          if (node->name[0] == '_') {
+--- 157,172 ----
+          n_max_rows = UINT_MAX;
+      }
+  
+!     if (shash_is_empty(ovs_json_object(columns))) {
+          return ovsdb_syntax_error(json, NULL,
+                                    "table must have at least one column");
+      }
+  
+      ts = ovsdb_table_schema_create(name,
+!                                    mutable ? ovs_json_boolean(mutable) : true,
+                                     MIN(n_max_rows, UINT_MAX),
+!                                    is_root ? ovs_json_boolean(is_root) : false);
+!     SHASH_FOR_EACH (node, ovs_json_object(columns)) {
+          struct ovsdb_column *column;
+  
+          if (node->name[0] == '_') {
+diff -rc stock-openvswitch/tests/test-ovsdb.c openvswitch/tests/test-ovsdb.c
+*** stock-openvswitch/tests/test-ovsdb.c	2013-10-15 17:12:35.000000000 -0500
+--- openvswitch/tests/test-ovsdb.c	2014-01-24 08:49:56.000000000 -0600
+***************
+*** 1328,1334 ****
+              && json_array(params)->elems[0]->type == JSON_STRING
+              && !strcmp(json_string(json_array(params)->elems[0]), "advance")
+              && json_array(params)->elems[1]->type == JSON_INTEGER) {
+!             now += json_integer(json_array(params)->elems[1]);
+              json_destroy(params);
+          } else {
+              struct test_trigger *t = xmalloc(sizeof *t);
+--- 1328,1334 ----
+              && json_array(params)->elems[0]->type == JSON_STRING
+              && !strcmp(json_string(json_array(params)->elems[0]), "advance")
+              && json_array(params)->elems[1]->type == JSON_INTEGER) {
+!             now += ovs_json_integer(json_array(params)->elems[1]);
+              json_destroy(params);
+          } else {
+              struct test_trigger *t = xmalloc(sizeof *t);
+***************
+*** 1694,1700 ****
+      } else if (json->type == JSON_OBJECT) {
+          const struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, json_object(json)) {
+              parse_uuids(node->data, symtab, n);
+          }
+      }
+--- 1694,1700 ----
+      } else if (json->type == JSON_OBJECT) {
+          const struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, ovs_json_object(json)) {
+              parse_uuids(node->data, symtab, n);
+          }
+      }
+***************
+*** 1720,1726 ****
+      } else if (json->type == JSON_OBJECT) {
+          const struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, json_object(json)) {
+              substitute_uuids(node->data, symtab);
+          }
+      }
+--- 1720,1726 ----
+      } else if (json->type == JSON_OBJECT) {
+          const struct shash_node *node;
+  
+!         SHASH_FOR_EACH (node, ovs_json_object(json)) {
+              substitute_uuids(node->data, symtab);
+          }
+      }

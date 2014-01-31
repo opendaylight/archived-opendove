@@ -18,11 +18,12 @@ function get_ovs {
     OVS_URL_LATEST="http://openvswitch.org/cgi-bin/gitweb.cgi?p=openvswitch;a=snapshot;sf=tgz;h=HEAD"
 
     OVS_DISTFILE=./openvswitch.tar.gz
+    OVS_PATCHFILE=./openvswitch.patch
     OVS_DIR=./openvswitch
 
 ## clean up any existing files
     echo "Cleaning up existing files"
-    for ovsfile in openvswitch*
+    for ovsfile in $OVS_DISTFILE $OVS_DIR openvswitch-*.tar.gz
     do
 	rm -rf $ovsfile
     done
@@ -33,10 +34,18 @@ function get_ovs {
     then
 	mkdir $OVS_DIR
 	tar xfz $OVS_DISTFILE -C $OVS_DIR --strip-components 1
-# NOTE: boot.sh requires the autoreconf program
+        # patch the ovs distro to avoid name collisions with other libs
+	if [ ! -e $OVS_PATCHFILE ]
+	then
+	  echo "patchfile $OVS_PATCHFILE not found"
+	  exit 1
+	fi
+	patch -p0 < $OVS_PATCHFILE
 	cd $OVS_DIR
+
+        # NOTE: boot.sh requires the autoreconf program
 	./boot.sh
-	./configure;make
+	./configure; make
 	cd ..
     else
 	echo "$OVS_DISTFILE not found"
@@ -76,7 +85,6 @@ function get_libcurl {
 	LIBCURL_INSTALL=$PWD/install
 	# turn off a few unneeded libs to avoid problems on
 	# certain platforms
-	echo "./configure --prefix=$LIBCURL_INSTALL --disable-ldap --without-libidn"
 	./configure --prefix=$LIBCURL_INSTALL --disable-ldap --without-libidn
 	make; make install
 	cd ..

@@ -102,6 +102,7 @@ else
 	CFLAGS := -fPIC -fno-strict-aliasing -g -lstdc++ -std=c++0x -O3 -DNON_POSIX_MQUEUE -DDOVE_SERVICE_APPLIANCE -fwrapv -Wall -Werror
 endif
 
+#CFLAGS += -Wno-error=literal-suffix -Wno-error=sizeof-pointer-memaccess
 #OBJECTS=$(EXEC_SOURCES:.c=.o)
 #EXECUTABLE=dgadmin
 

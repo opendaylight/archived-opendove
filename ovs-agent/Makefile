@@ -78,7 +78,7 @@ OVS_AGENT_OBJECTS = $(OVS_AGENT_SOURCES:.c=.o)
 CLIENT_PROT_OBJECTS=$(CLIENT_PROT_SOURCES:.c=.o)
 TIMER_OBJECTS=$(TIMER_SOURCES:.c=.o)
 
-OVS_AGENT_LDFLAGS = -lssl -lcrypto  -lpthread -lrt -lm -ljansson
+OVS_AGENT_LDFLAGS = -lssl -lcrypto  -lpthread -lrt -lm -ljansson -lz
 
 
 all: clean $(OVS_AGENT)

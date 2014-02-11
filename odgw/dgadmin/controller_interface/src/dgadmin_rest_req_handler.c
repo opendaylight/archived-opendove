@@ -4242,7 +4242,7 @@ void dgw_req_handler_stats(struct evhttp_request *req, void *arg,
                 {
                     int len = 0;
 
-                    memset(buffer,0,sizeof(buffer));
+                    memset(buffer,0,sizeof(*buffer));
                     len = build_stats_json_response(&stats, buffer);
                     evbuffer_add(retbuf, buffer, len+1);   
                     res_code = 200;

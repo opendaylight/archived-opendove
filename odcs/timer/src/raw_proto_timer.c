@@ -147,47 +147,47 @@ unsigned int rawTimerLogFlag  = 1;    //  0: To turn off Log, 1: To turn on Log
 #define RAW_PROTO_TIMER_LOG_TEXT "RAW PROTOCOL TIMER: "
 #define raw_timer_log_info(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_INFO && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_die(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_ERROR && (rawTimerLogFlag != 0))\
-        _raw_timer_log_die(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_die(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_emergency(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_EMERGENCY && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_alert(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_ALERT && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_critical(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_CRITICAL && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_error(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_ERROR && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_warn(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_WARNING && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_notice(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_NOTICE && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 #define raw_timer_log_debug(module_log_level, fmt, args...) \
     if (module_log_level >= RAW_PROTO_TIMER_LOGLEVEL_DEBUG && (rawTimerLogFlag != 0))\
-        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, \
+        _raw_timer_log_info(RAW_PROTO_TIMER_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, \
         __FUNCTION__,__LINE__,##args)
 
 

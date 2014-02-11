@@ -288,7 +288,7 @@ static dove_status add_ifmac(cli_service_t *cli_service)
 	dove_status status = DOVE_STATUS_OK;
 
 	log_info(CliLogLevel,
-	         "Service:%s, MAC "MAC_FMT,
+	         "Service:%s, MAC " MAC_FMT,
 	         cli_service->ifmac_add.bridge_name,
 	         MAC_OCTETS(cli_service->ifmac_add.mac));
 
@@ -532,7 +532,7 @@ static dove_status add_location(cli_service_t *cli_service)
 	         IP_end_src_location);
 	log_info(CliLogLevel,
 	         "Overlay Protocol %d, Overlay Source Port %d, "
-	         "Overlay Destination Port %d, Overlay Destination MAC MAC "MAC_FMT,
+	         "Overlay Destination Port %d, Overlay Destination MAC MAC " MAC_FMT,
 	         cli_service->location_add.ovl_proto,
 	         cli_service->location_add.ovl_src_port,
 	         cli_service->location_add.ovl_dst_port,
@@ -562,7 +562,7 @@ static dove_status register_location(cli_service_t *cli_service)
 
     log_info(CliLogLevel,
 	         "Location register IP %s "
-             "physical ip %s DVG %u MAC "MAC_FMT,
+             "physical ip %s DVG %u MAC " MAC_FMT,
              IP_vm_location, IP_phy_location,
              cli_service->location_register.dvg,
 	         MAC_OCTETS(cli_service->location_register.ovl_dst_mac));

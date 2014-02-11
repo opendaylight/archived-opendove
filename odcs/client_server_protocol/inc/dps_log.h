@@ -115,14 +115,14 @@ void _dps_log_debug(const char *fmt, ...);
 
 #define dps_log_info(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_LOGLEVEL_INFO)\
-		_dps_log_info(DPS_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_dps_log_info(DPS_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Verbose Message
  */
 #if defined (NDEBUG) || defined (VMX86_DEBUG)
 #define dps_log_debug(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_LOGLEVEL_VERBOSE)\
-		_dps_log_debug(DPS_LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_dps_log_debug(DPS_LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 #else
 /**
  * \brief Developer Log Only: Log Verbose Message

@@ -76,50 +76,50 @@ extern uint32_t log_console;
  */
 #define log_emergency(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_EMERGENCY) \
-		_log_emergency(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_emergency(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Alert Message
  */
 #define log_alert(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_ALERT) \
-		_log_alert(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_alert(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Critical Message
  */
 #define log_critical(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_CRITICAL) \
-		_log_critical(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_critical(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Error Message
  */
 #define log_error(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_ERROR)\
-		_log_error(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_error(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Warning Message
  */
 #define log_warn(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_WARNING)\
-		_log_warn(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_warn(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Notice Message
  */
 #define log_notice(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_NOTICE)\
-		_log_notice(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_notice(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 #if defined(NDEBUG)
 /**
  * \brief Developer Log Only: Log Info Message
  */
 #define log_info(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_INFO)\
-		_log_info(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_info(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 /**
  * \brief Developer Log Only: Log Verbose Message
  */
 #define log_debug(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_VERBOSE)\
-		_log_debug(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_debug(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 
 #define show_print(fmt, args...) \
     _show_print(fmt,##args);

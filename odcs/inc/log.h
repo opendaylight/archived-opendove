@@ -109,14 +109,14 @@ extern uint32_t log_console;
  */
 #define log_info(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_INFO)\
-		_log_info(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_info(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 #if defined(NDEBUG)
 /**
  * \brief Developer Log Only: Log Verbose Message
  */
 #define log_debug(module_log_level, fmt, args...) \
 	if (module_log_level >= DPS_SERVER_LOGLEVEL_VERBOSE)\
-		_log_debug(LOG_TEXT"%s:%s:%d: "fmt, __FILE__, __FUNCTION__,__LINE__,##args)
+		_log_debug(LOG_TEXT"%s:%s:%d: " fmt, __FILE__, __FUNCTION__,__LINE__,##args)
 
 #else
 /**

@@ -24,9 +24,9 @@
 
 #define URL_DMC_USER "admin"
 #define URL_DMC_PASSWORD "admin"
-#define URL_DMC_SB_GET_SERVICE "http://%s:8080/controller/sb/v2/opendove/odmc/odcs/leader"
-#define URL_DMC_SB_SWITCH_REG "http://%s:8080/controller/sb/v2/opendove/odmc/switch"
-#define URL_DMC_SB_SWITCH_HB "http://%s:8080/controller/sb/v2/opendove/odmc/switch/%s"
+#define URL_DMC_SB_GET_SERVICE "http://%s/controller/sb/v2/opendove/odmc/odcs/leader"
+#define URL_DMC_SB_SWITCH_REG "http://%s/controller/sb/v2/opendove/odmc/switch"
+#define URL_DMC_SB_SWITCH_HB "http://%s/controller/sb/v2/opendove/odmc/switch/%s"
 #define HTTP_OK 200
 
 enum request_type {

@@ -9,12 +9,12 @@
 package org.opendaylight.opendove.odmc.implementation;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.opendaylight.controller.networkconfig.neutron.INeutronFloatingIPAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronNetworkCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronPortAware;
+import org.opendaylight.controller.networkconfig.neutron.INeutronPortCRUD;
 import org.opendaylight.controller.networkconfig.neutron.INeutronRouterAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetAware;
 import org.opendaylight.controller.networkconfig.neutron.INeutronSubnetCRUD;
@@ -25,6 +25,7 @@ import org.opendaylight.controller.networkconfig.neutron.NeutronPort;
 import org.opendaylight.controller.networkconfig.neutron.NeutronRouter;
 import org.opendaylight.controller.networkconfig.neutron.NeutronRouter_Interface;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
+import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet_IPAllocationPool;
 import org.opendaylight.opendove.odmc.IfNBSystemRU;
 import org.opendaylight.opendove.odmc.IfOpenDoveServiceApplianceCRUD;
 import org.opendaylight.opendove.odmc.IfOpenDoveDomainCRUD;
@@ -149,7 +150,17 @@ INeutronRouterAware, INeutronFloatingIPAware {
     // callbacks for INeutronSubnetAware
 
     public int canCreateSubnet(NeutronSubnet subnet) {
-        return canAllocateEGW(subnet.getNetworkUUID(), true);
+        INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+        NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(subnet.getNetworkUUID());
+        if (!neutronNetwork.isRouterExternal()) {
+            // not external, so check conditions on shared network
+            return canAllocateEGW(subnet.getNetworkUUID(), true);
+        }
+        // external first need to check if this network has no subnets
+        if (neutronNetwork.getSubnets().size() > 0) {
+            return 403;
+        }
+        return 200;
     }
 
     public void neutronSubnetCreated(NeutronSubnet neutronSubnet) {
@@ -172,10 +183,19 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             subnetDB, networkSubnetAssociationDB,
                             neutronNetwork, sharedDomain, network);
                     subnetDB.addSubnet(subnet.getUUID(), subnet);
-                    //assign egws
-                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                    IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-                    OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, network);
+                    //assign egws and 0 size SNAT pool
+                    Integer replicationFactor = controlBlock.getEgwReplicationFactor();
+                    IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
+                    while (replicationFactor > 0) {
+                        String gwAddress = selectAddress(neutronNetwork, neutronSubnet, null);
+                        OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
+                        if (target != null) {
+                            OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(),
+                                    neutronSubnet.getGatewayIP(), gwAddress);
+                            OpenDoveEGWSNATPool.configureEGWSNATPool("0.0.0.0", "0.0.0.0", snatPoolDB, network, target);
+                        }
+                        replicationFactor--;
+                    }
                 }
             } else {
                 String domainName = "Neutron "+neutronSubnet.getTenantID();
@@ -317,9 +337,18 @@ INeutronRouterAware, INeutronFloatingIPAware {
                             domain, doveNetwork);
                     subnetDB.addSubnet(subnet.getUUID(), subnet);
                     //assign egw to network
-                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                    IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-                    OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, doveNetwork);
+                    Integer replicationFactor = controlBlock.getEgwReplicationFactor();
+                    IfSBDoveEGWSNATPoolCRUD snatPoolDB = OpenDoveCRUDInterfaces.getIfDoveEGWSNATPoolCRUD(this);
+                    while (replicationFactor > 0) {
+                        String gwAddress = selectAddress(neutronNetwork, neutronSubnet, null);
+                        OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
+                        if (target != null) {
+                            OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(),
+                                    neutronSubnet.getGatewayIP(), gwAddress);
+                            OpenDoveEGWSNATPool.configureEGWSNATPool("0.0.0.0", "0.0.0.0", snatPoolDB, doveNetwork, target);
+                        }
+                        replicationFactor--;
+                    }
                 }
             }
         }
@@ -384,12 +413,51 @@ INeutronRouterAware, INeutronFloatingIPAware {
         if (router.getAdminStateUp() != null && !router.isAdminStateUp()) {
             return 400;
         }
+        // requirement that external gateway info exist and have one and only one subnet
+        if (router.getExternalGatewayInfo() != null) {
+            INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+            String neutronNetworkUUID = router.getExternalGatewayInfo().getNetworkID();
+            NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronNetworkUUID);
+            if (neutronNetwork == null) {
+                return 400;
+            }
+            if (!neutronNetwork.isRouterExternal()) {
+                return 400;
+            }
+            if (neutronNetwork.getSubnets().size() != 1) {
+                return 400;
+            }
+            // do we have an oDGW to configure?
+            IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+            for (OpenDoveServiceAppliance oDSA : serviceApplianceDB.getAppliances()) {
+                if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null){
+                    return 200;
+                }
+            }
+            return 400;
+        }
         return 200;
     }
 
     public void neutronRouterCreated(NeutronRouter router) {
-        // nothing done here by openDove
-        ;
+        // if there is an external gateway, then select and assign EGWs for this external space
+        if (router.getExternalGatewayInfo() != null) {
+            INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+            NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(router.getExternalGatewayInfo().getNetworkID());
+            INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);
+            NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(neutronNetwork.getSubnets().get(0));
+            IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
+            OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
+             Integer replicationFactor = controlBlock.getEgwReplicationFactor();
+             while (replicationFactor > 0) {
+                 String gwAddress = selectAddress(neutronNetwork, neutronSubnet, router);
+                 OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
+                 if (target != null) {
+                     OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress);
+                 }
+                 replicationFactor--;
+             }
+         }
     }
 
     public int canUpdateRouter(NeutronRouter delta, NeutronRouter original) {
@@ -419,22 +487,26 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public int canAttachInterface(NeutronRouter router,
             NeutronRouter_Interface routerInterface) {
-        //See if a EGW will need to be configured
-        //If so, and there aren't GWs available, return BADREQUEST with a message
-        INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);
-        NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(routerInterface.getSubnetUUID());
-        INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
-        NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
-        if (neutronNetwork.isRouterExternal()) {
-            IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-            List<OpenDoveServiceAppliance> oDSAs = serviceApplianceDB.getAppliances();
-            Iterator<OpenDoveServiceAppliance> iterator = oDSAs.iterator();
-            while (iterator.hasNext()) {
-                if (iterator.next().get_isDGW()) {
-                    return 200;
+        //EGW is given an external address when the router is created
+        //so here, all we need to do is check to see if there are enough addresses in the external
+        //space to allow us to add another interface.  If not, return BADREQUEST with a message
+        if (router.getExternalGatewayInfo() != null) {
+            INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+            NeutronNetwork externalNetwork = neutronNetworkIf.getNetwork(router.getExternalGatewayInfo().getNetworkID());
+            INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);
+            NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(externalNetwork.getSubnets().get(0));
+            IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
+            OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
+            Integer snatPoolSize = controlBlock.getSnatPoolSize();
+            boolean havePool = false;
+            for (NeutronSubnet_IPAllocationPool pool: neutronSubnet.getAllocationPools()) {
+                if (poolSize(pool) >= snatPoolSize) {
+                    havePool = true;
                 }
             }
-            return 400;
+            if (!havePool) {
+                return 400;
+            }
         }
         return 200;
     }
@@ -446,7 +518,6 @@ INeutronRouterAware, INeutronFloatingIPAware {
         INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(neutronSubnet.getNetworkUUID());
         String networkName = "Neutron " + neutronNetwork.getID();
-        IfSBDoveSubnetCRUD doveSubnetDB = OpenDoveCRUDInterfaces.getIfDoveSubnetCRUD(this);
         IfOpenDoveNetworkCRUD doveNetworkDB = OpenDoveCRUDInterfaces.getIfDoveNetworkCRU(this);
         OpenDoveNetwork newODN = doveNetworkDB.getNetworkByName(networkName);
         IfSBDovePolicyCRUD dovePolicyDB = OpenDoveCRUDInterfaces.getIfDovePolicyCRUD(this);
@@ -454,54 +525,93 @@ INeutronRouterAware, INeutronFloatingIPAware {
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
         OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
 
-        Iterator<NeutronRouter_Interface> interfaceIterator = router.getInterfaces().values().iterator();
-        while (interfaceIterator.hasNext()) {
-            NeutronRouter_Interface oldInterface = interfaceIterator.next();
+        for (NeutronRouter_Interface oldInterface: router.getInterfaces().values()) {
             NeutronSubnet oldNeutronSubnet = neutronSubnetIf.getSubnet(oldInterface.getSubnetUUID());
             NeutronNetwork oldNeutronNetwork = neutronNetworkIf.getNetwork(oldNeutronSubnet.getNetworkUUID());
             String oldNetworkUUID = "Neutron " + oldNeutronNetwork.getID();
             OpenDoveNetwork oldODN = doveNetworkDB.getNetworkByName(oldNetworkUUID);
 
             if (!oldInterface.equals(routerInterface)) {
-               logger.debug("Adding connection between "+oldInterface+" and "+routerInterface);
-                if (neutronNetwork.isRouterExternal() || oldNeutronNetwork.isRouterExternal()) {
-                    if (neutronNetwork.isRouterExternal()) {
-                        Iterator<OpenDoveSubnet> i = doveSubnetDB.getSubnets().iterator();
-                        while (i.hasNext()) {
-                            OpenDoveSubnet oDS = i.next();
-                            if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(oldNeutronSubnet.getID()) &&
-                                    oDS.getDomainUUID() == oldODN.getDomain_uuid()) {
-                                IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                                IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-                                OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, neutronSubnet, controlBlock, oldODN);
-                                OpenDoveEGWSNATPool.configureEGWSNATPool(neutronSubnet, snatPoolDB,
-                                        controlBlock, oldODN);
-                            }
-                        }
+               logger.debug("Adding policies between "+oldInterface+" and "+routerInterface);
+               if (newODN.getDomain_uuid().equalsIgnoreCase(oldODN.getDomain_uuid())) {
+                   OpenDovePolicy.createAllowPolicies(dovePolicyDB, newODN, oldODN);
+               }
+            }
+        }
+        // Fix Bug 516 to use external gateway info information
+        if (router.getExternalGatewayInfo() != null) {
+            // change this to get the neutronNetwork from external gateway info
+            // then pull the subnet from that object (see how ext address gets assigned
+            NeutronNetwork externalNetwork = neutronNetworkIf.getNetwork(router.getExternalGatewayInfo().getNetworkID());
+            NeutronSubnet externalNeutronSubnet = neutronSubnetIf.getSubnet(externalNetwork.getSubnets().get(0));
+            Integer replicationFactor = controlBlock.getEgwReplicationFactor();
+            Integer snatPoolSize = controlBlock.getSnatPoolSize();
+            while (replicationFactor > 0) {
+                OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectAssignedDGW(this, externalNeutronSubnet.getCidr());
+                if (target != null) {
+                    NeutronSubnet_IPAllocationPool pool = selectPool(externalNeutronSubnet, snatPoolSize);
+                    if (pool != null) {
+                        OpenDoveEGWSNATPool.configureEGWSNATPool(pool.getPoolStart(), pool.getPoolEnd(), snatPoolDB, newODN, target);
                     } else {
-                        Iterator<OpenDoveSubnet> i = doveSubnetDB.getSubnets().iterator();
-                        while (i.hasNext()) {
-                            OpenDoveSubnet oDS = i.next();
-                            if (oDS.getAssociatedOSSubnetUUID().equalsIgnoreCase(neutronSubnet.getID()) &&
-                                    oDS.getDomainUUID() == newODN.getDomain_uuid()) {
-                                IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                                IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-                                OpenDoveGwIpv4.assignEGWs(serviceApplianceDB, gatewayIPDB, oldNeutronSubnet, controlBlock, newODN);
-                                OpenDoveEGWSNATPool.configureEGWSNATPool(oldNeutronSubnet, snatPoolDB,
-                                        controlBlock, newODN);
-                            }
-                        }
+                        //TODO: log error
+                        ;
                     }
                 } else {
-                    if (newODN.getDomain_uuid().equalsIgnoreCase(oldODN.getDomain_uuid())) {
-                        OpenDovePolicy.createAllowPolicies(dovePolicyDB, newODN, oldODN);
-                    }
+                    //TODO: log error
+                    ;
                 }
+                replicationFactor--;
             }
         }
     }
 
-     public int canDetachInterface(NeutronRouter router,
+    private NeutronSubnet_IPAllocationPool selectPool(NeutronSubnet subnet, Integer size) {
+        String ip_low = null, ip_high = null;
+        if (size > 0) {
+            for (NeutronSubnet_IPAllocationPool pool: subnet.getAllocationPools()) {
+                if (poolSize(pool) >= size) {
+                    int i1;
+                    for (i1=1; i1<=size; i1++) {
+                        String ipAddr = pool.getPoolStart();
+                        if (i1 == 1) {
+                            ip_low = ipAddr;
+                        }
+                        if (i1 == size) {
+                            ip_high = ipAddr;
+                        }
+                        subnet.allocateIP(ipAddr);
+                        //TODO: close loop by allocating Neutron port
+                    }
+                    break;
+                }
+            }
+        }
+        if (ip_low != null && ip_high != null) {
+            return new NeutronSubnet_IPAllocationPool(ip_low, ip_high);
+        } else {
+            return null;
+        }
+    }
+
+    static private Integer poolSize(NeutronSubnet_IPAllocationPool pool) {
+        long bottom = convertIPv4StringToLong(pool.getPoolStart());
+        long top = convertIPv4StringToLong(pool.getPoolEnd());
+        int ans = (int) (top-bottom)+1;
+        return new Integer(ans);
+    }
+
+    //FIXME: make this method in NeutronSubnet_IPAllocationPool public and replace
+    static private long convertIPv4StringToLong(String inputString) {
+        long ans = 0;
+        String[] parts = inputString.split("\\.");
+        for (String part: parts) {
+            ans <<= 8;
+            ans |= Integer.parseInt(part);
+        }
+        return ans;
+    }
+
+    public int canDetachInterface(NeutronRouter router,
             NeutronRouter_Interface routerInterface) {
         // openDove doesn't limit this
         return 200;
@@ -594,28 +704,60 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     private int canAllocateEGW(String uuid, boolean negate) {
-        /* if object is shared and domains are not separated,
+        /* if object is shared or external
          * then we need to configure an external gateway at this point.  If we don't have one
          * don't create the port
          */
         IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
         INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
         NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(uuid);
-        if (!neutronNetwork.isRouterExternal()) {
-            if (neutronNetwork.isShared()) {
-                OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
-                if ((!negate && controlBlock.getDomainSeparation()) ||
-                        (negate && !controlBlock.getDomainSeparation())) {
-                    IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
-                    for (OpenDoveServiceAppliance oDSA : serviceApplianceDB.getAppliances()) {
-                        if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null){
-                            return 200;
-                        }
+        if (neutronNetwork.isShared()) {
+            OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
+            if ((!negate && controlBlock.getDomainSeparation()) ||
+                    (negate && !controlBlock.getDomainSeparation())) {
+                IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(this);
+                for (OpenDoveServiceAppliance oDSA : serviceApplianceDB.getAppliances()) {
+                    if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null){
+                        return 200;
                     }
-                    return 400;
                 }
+                return 400;
             }
         }
         return 200;
+    }
+
+    private String selectAddress(NeutronNetwork neutronNetwork, NeutronSubnet neutronSubnet, NeutronRouter neutronRouter) {
+        String address = null;
+        if (neutronNetwork.isRouterExternal()) {
+            // need to get external address for router and determine if it is used
+            INeutronPortCRUD neutronPortIf = NeutronCRUDInterfaces.getINeutronPortCRUD(this);
+            String portAddress = null;
+            for (NeutronPort port: neutronPortIf.getAllPorts()) {
+                if (neutronRouter.getID().equals(port.getDeviceID())) {
+                    portAddress = port.getFixedIPs().get(0).getIpAddress();
+                }
+            }
+            boolean used = false;
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            for (OpenDoveGwIpv4 ipv4 : gatewayIPDB.getGwIpv4Pool()) {
+                if (ipv4.getType().equalsIgnoreCase("external") && ipv4.getIP().equals(portAddress)) {
+                    used = true;
+                }
+            }
+            if (used || portAddress == null) {
+                // If so, allocate a new one
+                NeutronSubnet_IPAllocationPool ans = selectPool(neutronSubnet, 1);
+                address = ans.getPoolStart();
+            } else {
+                //If not, use it
+                address = portAddress;
+            }
+        } else {
+            //shared network, just grab next address
+            NeutronSubnet_IPAllocationPool ans = selectPool(neutronSubnet, 1);
+            address = ans.getPoolStart();
+        }
+        return address;
     }
 }

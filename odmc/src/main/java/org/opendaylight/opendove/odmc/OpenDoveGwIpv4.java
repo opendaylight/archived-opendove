@@ -9,7 +9,6 @@
 
 package org.opendaylight.opendove.odmc;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -134,17 +133,12 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         return "/controller/sb/v2/opendove/odmc/odgw/ipv4/" + uuid;
     }
 
-    public static void assignEGWs(IfOpenDoveServiceApplianceCRUD serviceApplianceDB, IfSBDoveGwIpv4CRUD gatewayIPDB,
-            NeutronSubnet neutronSubnet, OpenDoveNeutronControlBlock controlBlock, OpenDoveNetwork network) {
-        Integer replicationFactor = controlBlock.getEgwReplicationFactor();
-        List<OpenDoveServiceAppliance> oDSAs = getAssignableDGWs(serviceApplianceDB);
-        SubnetUtils util = new SubnetUtils(neutronSubnet.getCidr());
+    public static OpenDoveGwIpv4 assignEGWs(Object o, OpenDoveServiceAppliance target,
+           String subnetCIDR, String subnetGatewayIP, String gwAddress) {
+        IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(o);
+        SubnetUtils util = new SubnetUtils(subnetCIDR);
         SubnetInfo info = util.getInfo();
-        while (replicationFactor > 0 && oDSAs.size() > 0) {
-            Integer count = oDSAs.size();
-            int index = Math.abs(OpenDoveUtils.getNextInt()) % count;
-            OpenDoveServiceAppliance target = oDSAs.get(index);
-            //if target doesn't have address in this subnet, assign one
+        OpenDoveGwIpv4 newGWIP = null;
             List<OpenDoveGwIpv4> gwIPs= gatewayIPDB.getGwIpv4Pool();
             Iterator<OpenDoveGwIpv4> ipIterator = gwIPs.iterator();
             boolean found = false;
@@ -156,32 +150,15 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
                 }
             }
             if (!found) {
-                String gwAddress = neutronSubnet.getLowAddr();
-                neutronSubnet.allocateIP(gwAddress);
-                OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwAddress, OpenDoveSubnet.getIPMask(neutronSubnet.getCidr()), neutronSubnet.getGatewayIP(),
+                newGWIP = new OpenDoveGwIpv4(gwAddress, OpenDoveSubnet.getIPMask(subnetCIDR), subnetGatewayIP,
                         "external", target.getUUID(), 0);
-                newGWIP.setNeutronSubnet(neutronSubnet);
+                //TODO: this needs to be outside
+                //newGWIP.setNeutronSubnet(neutronSubnet);
                 gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);
                 // Set the External IP for EGW, will be used by SNAT Pool Configuration
                 target.setEGWExtIP(newGWIP);
             }
-            //link egw to dove network
-            network.addEGW(target);
-            //prepare for next assignment
-            replicationFactor--;
-            oDSAs.remove(index);
-        }
-    }
-
-    private static List<OpenDoveServiceAppliance> getAssignableDGWs(
-            IfOpenDoveServiceApplianceCRUD serviceApplianceDB) {
-        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
-        for (OpenDoveServiceAppliance oDSA: serviceApplianceDB.getAppliances()) {
-            if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null) {
-                answer.add(oDSA);
-            }
-        }
-        return answer;
+        return newGWIP;
     }
 
     public static void tombstoneEGWs(

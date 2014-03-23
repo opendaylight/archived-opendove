@@ -10,16 +10,11 @@ package org.opendaylight.opendove.odmc;
 
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.commons.net.util.SubnetUtils;
-import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
 
 /*
         "uuid"  == PRIMARY KEY in the Cache
@@ -254,52 +249,5 @@ public class OpenDoveServiceAppliance  {
             }
         }
         return false;
-    }
-
-    private static List<OpenDoveServiceAppliance> getAssignableDGWs(
-            IfOpenDoveServiceApplianceCRUD serviceApplianceDB) {
-        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
-        for (OpenDoveServiceAppliance oDSA: serviceApplianceDB.getAppliances()) {
-            if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null
-                    && oDSA.getEGWExtIP() == null) {
-                answer.add(oDSA);
-            }
-        }
-        return answer;
-    }
-
-    public static OpenDoveServiceAppliance selectDGW(Object o) {
-        IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(o);
-        List<OpenDoveServiceAppliance> oDSAs = getAssignableDGWs(serviceApplianceDB);
-        if (oDSAs.size() > 0) {
-            Integer count = oDSAs.size();
-            int index = Math.abs(OpenDoveUtils.getNextInt()) % count;
-            OpenDoveServiceAppliance target = oDSAs.get(index);
-            return target;
-        }
-        return null;
-    }
-
-    public static OpenDoveServiceAppliance selectAssignedDGW(Object o, String cidr) {
-        List<OpenDoveServiceAppliance> answer = new ArrayList<OpenDoveServiceAppliance>();
-        IfOpenDoveServiceApplianceCRUD serviceApplianceDB = OpenDoveCRUDInterfaces.getIfDoveServiceApplianceCRUD(o);
-        for (OpenDoveServiceAppliance oDSA: serviceApplianceDB.getAppliances()) {
-            if (oDSA.get_isDGW() && oDSA.getDoveTunnel() != null
-                    && oDSA.getEGWExtIP() != null) {
-                String ip = oDSA.getEGWExtIP().getIP();
-                SubnetUtils util = new SubnetUtils(cidr);
-                SubnetInfo info = util.getInfo();
-                if (info.isInRange(ip)) {
-                    answer.add(oDSA);
-                }
-            }
-        }
-        if (answer.size() > 0) {
-            Integer count = answer.size();
-            int index = Math.abs(OpenDoveUtils.getNextInt()) % count;
-            OpenDoveServiceAppliance target = answer.get(index);
-            return target;
-        }
-        return null;
     }
 }

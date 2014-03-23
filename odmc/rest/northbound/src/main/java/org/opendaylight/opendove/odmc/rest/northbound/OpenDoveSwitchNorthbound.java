@@ -8,6 +8,7 @@
 
 package org.opendaylight.opendove.odmc.rest.northbound;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -23,6 +24,7 @@ import org.opendaylight.controller.northbound.commons.exception.ResourceNotFound
 import org.opendaylight.controller.northbound.commons.exception.ServiceUnavailableException;
 import org.opendaylight.opendove.odmc.IfOpenDoveSwitchCRUD;
 import org.opendaylight.opendove.odmc.OpenDoveCRUDInterfaces;
+import org.opendaylight.opendove.odmc.OpenDoveSwitch;
 import org.opendaylight.opendove.odmc.rest.OpenDoveSwitchRequest;
 
 /**
@@ -93,6 +95,50 @@ public class OpenDoveSwitchNorthbound {
             throw new ResourceNotFoundException("Switch doesn't exist");
         }
         return Response.status(200).entity(new OpenDoveSwitchRequest(sbInterface.getSwitch(switchUUID))).build();
+    }
+
+    /**
+     * Removes a particular switch
+     *
+     * @param switchUUID
+     *            Identifier of the switch
+     * @return none
+     *
+     *         <pre>
+     *
+     * Example:
+     *
+     * Request URL:
+     * http://localhost:8080/controller/nb/v2/opendove/odmc/switches/uuid
+     *
+     * Response body in JSON:
+     * none
+     * </pre>
+     */
+    @Path("{switchUUID}")
+    @DELETE
+    @Produces({ MediaType.APPLICATION_JSON })
+    @TypeHint(OpenDoveSwitchRequest.class)
+    @StatusCodes({
+            @ResponseCode(code = 200, condition = "Operation successful"),
+            @ResponseCode(code = 204, condition = "No content"),
+            @ResponseCode(code = 401, condition = "Unauthorized"),
+            @ResponseCode(code = 404, condition = "Not Found"),
+            @ResponseCode(code = 500, condition = "Internal Error") })
+    public Response deleteSwtich(
+            @PathParam("switchUUID") String switchUUID
+            ) {
+        IfOpenDoveSwitchCRUD sbInterface = OpenDoveCRUDInterfaces.getIfOpenDoveSwitchCRU(this);
+        if (sbInterface == null) {
+            throw new ServiceUnavailableException("OpenDove SB Interface "
+                    + RestMessages.SERVICEUNAVAILABLE.toString());
+        }
+        if (!sbInterface.switchExists(switchUUID)) {
+            throw new ResourceNotFoundException("Switch doesn't exist");
+        }
+        OpenDoveSwitch target = sbInterface.getSwitch(switchUUID);
+        target.setTombstoneFlag(true);
+        return Response.status(202).build();
     }
 
     /**

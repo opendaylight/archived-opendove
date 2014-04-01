@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
+        <sitedeploy>${nexusproxy}/sites/site/${project.groupId}</sitedeploy>
     </properties>
     <scm>
         <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
@@ -58,8 +59,8 @@
             <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
         </snapshotRepository>
         <site>
-            <id>opendove-site</id>
-            <url>dav:${nexusproxy}/sites/site/${project.groupId}/</url>
+            <id>opendove-release</id>
+            <url>dav:${sitedeploy}/</url>
         </site>
     </distributionManagement>
 </project>

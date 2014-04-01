@@ -38,6 +38,7 @@
       <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
     </snapshotRepository>
     <site>
+      <id>opendove-site</id>
       <url>dav:${nexusproxy}/content/sites/site/${project.groupId}/</url>
     </site>
   </distributionManagement>

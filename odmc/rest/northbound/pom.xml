@@ -11,8 +11,13 @@
     <artifactId>odmc.rest.northbound</artifactId>
     <version>0.5.1-1-SNAPSHOT</version>
     <packaging>bundle</packaging>
+    <parent>
+       <groupId>org.opendaylight.opendove</groupId>
+       <artifactId>parent</artifactId>
+       <version>0.5.1-1-SNAPSHOT</version>
+       <relativePath>../../../parent</relativePath>
+    </parent>
     <properties>
-        <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
         <enunciate.version>1.26.2</enunciate.version>
     </properties>
 

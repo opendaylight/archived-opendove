@@ -13,8 +13,13 @@
     <artifactId>odmc</artifactId>
     <version>0.5.1-1-SNAPSHOT</version>
     <packaging>bundle</packaging>
+    <parent>
+       <groupId>org.opendaylight.opendove</groupId>
+       <artifactId>parent</artifactId>
+       <version>0.5.1-1-SNAPSHOT</version>
+       <relativePath>../parent</relativePath>
+    </parent>
     <properties>
-        <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
         <checkstyle.version>2.10</checkstyle.version>
     </properties>
 

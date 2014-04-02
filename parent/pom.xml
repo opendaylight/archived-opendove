@@ -18,7 +18,18 @@
         <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>
         <tag>master-tagforprepareonly-opendove-bulk-release-3</tag>
     </scm>
-
+    <repositories>
+        <repository>
+            <id>opendaylight-release</id>
+            <name>opendaylight-release</name>
+            <url>${nexusproxy}/repositories/opendaylight.release/</url>
+        </repository>
+        <repository>
+            <id>opendaylight-snapshot</id>
+            <name>opendaylight-snapshot</name>
+            <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>

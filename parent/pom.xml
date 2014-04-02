@@ -12,6 +12,7 @@
     <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
         <sitedeploy>${nexusproxy}/sites/site/${project.groupId}</sitedeploy>
+        <enunciate.version>1.26.2</enunciate.version>
     </properties>
     <scm>
         <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
@@ -56,8 +57,36 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.enunciate</groupId>
+                <artifactId>maven-enunciate-plugin</artifactId>
+                <version>${enunciate.version}</version>
+                <configuration>
+                    <configFile>enunciate.xml</configFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>docs</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.enunciate</groupId>
+                <artifactId>maven-enunciate-plugin</artifactId>
+                <version>${enunciate.version}</version>
+                <configuration>
+                    <docsSubdir>apidocs</docsSubdir>
+                    <indexPageName>apidocs.html</indexPageName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     <distributionManagement>
         <!-- OpenDayLight Released artifact -->
         <repository>

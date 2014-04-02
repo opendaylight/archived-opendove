@@ -28,6 +28,8 @@
                 <version>${enunciate.version}</version>
           <configuration>
             <configFile>enunciate.xml</configFile>
+            <docsSubdir>apidocs</docsSubdir>
+            <indexPageName>apidocs.html</indexPageName>
           </configuration>
           <executions>
             <execution>

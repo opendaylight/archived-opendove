@@ -57,36 +57,21 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.enunciate</groupId>
-                <artifactId>maven-enunciate-plugin</artifactId>
-                <version>${enunciate.version}</version>
-                <configuration>
-                    <configFile>enunciate.xml</configFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>docs</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.enunciate</groupId>
-                <artifactId>maven-enunciate-plugin</artifactId>
-                <version>${enunciate.version}</version>
-                <configuration>
-                    <docsSubdir>apidocs</docsSubdir>
-                    <indexPageName>apidocs.html</indexPageName>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
+<reporting>
+<plugins>
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+<artifactId>maven-javadoc-plugin</artifactId>
+<configuration>
+<links>
+<link>${sitedeploy}/api</link>
+</links>
+</configuration>
+</plugin>
+</plugins>
+</reporting>
     <distributionManagement>
         <!-- OpenDayLight Released artifact -->
         <repository>

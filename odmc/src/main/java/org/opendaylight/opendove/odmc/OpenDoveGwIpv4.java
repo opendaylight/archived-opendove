@@ -46,7 +46,6 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     Integer vlan;
 
     NeutronSubnet neutronSubnet;
-
     public OpenDoveGwIpv4() { }
 
     public OpenDoveGwIpv4(String ip, String mask, String nexthop, String type, String gwUUID, Integer vlan) {
@@ -142,13 +141,16 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
             List<OpenDoveGwIpv4> gwIPs= gatewayIPDB.getGwIpv4Pool();
             Iterator<OpenDoveGwIpv4> ipIterator = gwIPs.iterator();
             boolean found = false;
+
             while (ipIterator.hasNext()) {
                 OpenDoveGwIpv4 gwIP = ipIterator.next();
+
                 if (gwIP.getGWUUID().equalsIgnoreCase(target.getUUID()) &&
-                    info.isInRange(gwIP.getIP())) {
+                    info.isInRange(gwIP.getIP()) && gwIP.getType().equalsIgnoreCase("external")) {
                     found = true;
                 }
             }
+
             if (!found) {
                 newGWIP = new OpenDoveGwIpv4(gwAddress, OpenDoveSubnet.getIPMask(subnetCIDR), subnetGatewayIP,
                         "external", target.getUUID(), 0);
@@ -158,7 +160,8 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
                 // Set the External IP for EGW, will be used by SNAT Pool Configuration
                 target.setEGWExtIP(newGWIP);
             }
-        return newGWIP;
+
+            return newGWIP;
     }
 
     public static void tombstoneEGWs(

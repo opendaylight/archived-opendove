@@ -464,15 +464,28 @@ INeutronRouterAware, INeutronFloatingIPAware {
         /*
          * attribute changes blocked by openDove
          */
-        if (delta.getAdminStateUp() != null || delta.getExternalGatewayInfo() != null) {
-            return 403;
-        }
+
         return 200;
     }
 
     public void neutronRouterUpdated(NeutronRouter router) {
-        // nothing done here by openDove
-        ;
+        if (router.getExternalGatewayInfo() != null) {
+            INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
+            NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(router.getExternalGatewayInfo().getNetworkID());
+            INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);
+            NeutronSubnet neutronSubnet = neutronSubnetIf.getSubnet(neutronNetwork.getSubnets().get(0));
+            IfNBSystemRU systemDB = OpenDoveCRUDInterfaces.getIfSystemRU(this);
+            OpenDoveNeutronControlBlock controlBlock = systemDB.getSystemBlock(); //get system block
+            Integer replicationFactor = controlBlock.getEgwReplicationFactor();
+            while (replicationFactor > 0) {
+                String gwAddress = selectAddress(neutronNetwork, neutronSubnet, router);
+                OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
+                if (target != null) {
+                    OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress);
+                }
+                replicationFactor--;
+            }
+        }
     }
 
     public int canDeleteRouter(NeutronRouter router) {

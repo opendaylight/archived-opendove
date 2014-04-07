@@ -75,8 +75,8 @@
                 <artifactId>maven-enunciate-plugin</artifactId>
                 <version>${enunciate.version}</version>
                 <configuration>
-                    <docsSubdir>apidocs</docsSubdir>
-                    <indexPageName>apidocs.html</indexPageName>
+                    <docsSubdir>rest</docsSubdir>
+                    <indexPageName>rest.html</indexPageName>
                 </configuration>
             </plugin>
         </plugins>

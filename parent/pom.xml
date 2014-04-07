@@ -10,13 +10,26 @@
   <packaging>pom</packaging>
   <properties>
     <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
+    <sitedeploy>${nexusproxy}/sites/site/${project.groupId}</sitedeploy>
+    <enunciate.version>1.26.2</enunciate.version>
   </properties>
   <scm>
     <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
     <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
-
+  <repositories>
+      <repository>
+          <id>opendaylight-release</id>
+          <name>opendaylight-release</name>
+          <url>${nexusproxy}/repositories/opendaylight.release/</url>
+      </repository>
+      <repository>
+          <id>opendaylight-snapshot</id>
+          <name>opendaylight-snapshot</name>
+          <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
+      </repository>
+  </repositories>
   <build>
     <plugins>
       <plugin>
@@ -24,8 +37,40 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>2.3.2</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.1</version>
+        <dependencies>
+            <!-- add support for WebDAV -->
+            <dependency>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav-jackrabbit</artifactId>
+                <version>2.2</version>
+            </dependency>
+            <!-- force slf4j 1.6.x or it fails due to missing class StaticLoggerBinder -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <links>
+            <link>${sitedeploy}/api</link>
+          </links>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
   <distributionManagement>
     <!-- OpenDayLight Released artifact -->
     <repository>
@@ -37,5 +82,9 @@
       <id>opendaylight-snapshot</id>
       <url>${nexusproxy}/repositories/opendaylight.snapshot/</url>
     </snapshotRepository>
+    <site>
+      <id>opendove-master</id>
+      <url>dav:${sitedeploy}/</url>
+    </site>
   </distributionManagement>
 </project>

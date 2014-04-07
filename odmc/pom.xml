@@ -8,12 +8,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opendaylight.opendove</groupId>
-
     <artifactId>odmc</artifactId>
-    <version>0.5.2-SNAPSHOT</version>
     <packaging>bundle</packaging>
-    <properties>
+  <parent>
+    <groupId>org.opendaylight.opendove</groupId>
+    <artifactId>project-opendove-parent</artifactId>
+    <version>0.5.2-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+      <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
         <checkstyle.version>2.10</checkstyle.version>
     </properties>

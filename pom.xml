@@ -19,12 +19,12 @@
   </scm>
   <parent>
     <groupId>org.opendaylight.opendove</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>project-opendove-parent</artifactId>
     <version>0.5.2-SNAPSHOT</version>
     <relativePath>parent</relativePath>
   </parent>
   <groupId>org.opendaylight.opendove</groupId>
-  <artifactId>releasepom</artifactId>
+  <artifactId>project-opendove</artifactId>
   <version>0.1.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>

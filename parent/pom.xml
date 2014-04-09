@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <properties>
         <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
-        <sitedeploy>${nexusproxy}/sites/site/stable-hydrogen/${project.groupId}/${project.artifactId}</sitedeploy>
+        <sitedeploy>${nexusproxy}/sites/site/${project.groupId}/hydrogen/${project.artifactId}</sitedeploy>
         <enunciate.version>1.26.2</enunciate.version>
     </properties>
     <scm>

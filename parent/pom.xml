@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
   <properties>
     <nexusproxy>http://nexus.opendaylight.org/content</nexusproxy>
-    <sitedeploy>${nexusproxy}/sites/site/${project.groupId}/master/${project.artifactId}</sitedeploy>
+    <sitedeploy>${nexusproxy}/sites/site/${project.groupId}/master</sitedeploy>
     <enunciate.version>1.26.2</enunciate.version>
   </properties>
   <scm>

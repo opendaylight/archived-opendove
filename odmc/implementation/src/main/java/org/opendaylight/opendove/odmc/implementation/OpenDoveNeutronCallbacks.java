@@ -470,6 +470,14 @@ INeutronRouterAware, INeutronFloatingIPAware {
 
     public void neutronRouterUpdated(NeutronRouter router) {
         if (router.getExternalGatewayInfo() != null) {
+            // remove old address: this is a blantent hack, but we don't have a way to tell of the router's
+            // external gw info has changed at this point.
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            for (OpenDoveGwIpv4 test: gatewayIPDB.getGwIpv4Pool()) {
+                if (test.getNeutronRouter() != null && router.getID().equalsIgnoreCase(test.getNeutronRouter().getID())) {
+                    test.setTombstoneFlag(true);
+                }
+            }
             INeutronNetworkCRUD neutronNetworkIf = NeutronCRUDInterfaces.getINeutronNetworkCRUD(this);
             NeutronNetwork neutronNetwork = neutronNetworkIf.getNetwork(router.getExternalGatewayInfo().getNetworkID());
             INeutronSubnetCRUD neutronSubnetIf = NeutronCRUDInterfaces.getINeutronSubnetCRUD(this);

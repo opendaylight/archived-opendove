@@ -488,7 +488,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
         } else {
             IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
             for (OpenDoveGwIpv4 test: gatewayIPDB.getGwIpv4Pool()) {
-                if (router.getID().equalsIgnoreCase(test.getNeutronRouter().getID())) {
+                if (test.getNeutronRouter() != null && router.getID().equalsIgnoreCase(test.getNeutronRouter().getID())) {
                     test.setTombstoneFlag(true);
                 }
             }
@@ -501,8 +501,14 @@ INeutronRouterAware, INeutronFloatingIPAware {
     }
 
     public void neutronRouterDeleted(NeutronRouter router) {
-        //openDove doesn't do anything special on router deletes
-        ;
+        if (router.getExternalGatewayInfo() != null) {
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            for (OpenDoveGwIpv4 test: gatewayIPDB.getGwIpv4Pool()) {
+                if (test.getNeutronRouter() != null && router.getID().equalsIgnoreCase(test.getNeutronRouter().getID())) {
+                    test.setTombstoneFlag(true);
+                }
+            }
+        }
     }
 
     public int canAttachInterface(NeutronRouter router,

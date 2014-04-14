@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.net.util.SubnetUtils;
 import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
+import org.opendaylight.controller.networkconfig.neutron.NeutronRouter;
 import org.opendaylight.controller.networkconfig.neutron.NeutronSubnet;
 
 @XmlRootElement
@@ -46,9 +47,12 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
     Integer vlan;
 
     NeutronSubnet neutronSubnet;
+
+    NeutronRouter neutronRouter;
     public OpenDoveGwIpv4() { }
 
-    public OpenDoveGwIpv4(String ip, String mask, String nexthop, String type, String gwUUID, Integer vlan) {
+    public OpenDoveGwIpv4(String ip, String mask, String nexthop, String type, String gwUUID, Integer vlan,
+            NeutronRouter router) {
         uuid = java.util.UUID.randomUUID().toString();
         this.ip = ip;
         this.mask = mask;
@@ -56,6 +60,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         this.type = type;
         this.gwUUID = gwUUID;
         this.vlan = vlan;
+        this.neutronRouter = router;
         tombstoneFlag = false;
     }
 
@@ -128,12 +133,20 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
         return neutronSubnet;
     }
 
+    public void setNeutronRouter(NeutronRouter router) {
+        neutronRouter = router;
+    }
+
+    public NeutronRouter getNeutronRouter() {
+        return neutronRouter;
+    }
+
     public String getSBDgwUri() {
         return "/controller/sb/v2/opendove/odmc/odgw/ipv4/" + uuid;
     }
 
     public static OpenDoveGwIpv4 assignEGWs(Object o, OpenDoveServiceAppliance target,
-           String subnetCIDR, String subnetGatewayIP, String gwAddress) {
+           String subnetCIDR, String subnetGatewayIP, String gwAddress, NeutronRouter router) {
         IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(o);
         SubnetUtils util = new SubnetUtils(subnetCIDR);
         SubnetInfo info = util.getInfo();
@@ -153,7 +166,7 @@ public class OpenDoveGwIpv4 extends OpenDoveObject implements IfOpenDGWTrackedOb
 
             if (!found) {
                 newGWIP = new OpenDoveGwIpv4(gwAddress, OpenDoveSubnet.getIPMask(subnetCIDR), subnetGatewayIP,
-                        "external", target.getUUID(), 0);
+                        "external", target.getUUID(), 0, router);
                 //TODO: this needs to be outside
                 //newGWIP.setNeutronSubnet(neutronSubnet);
                 gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);

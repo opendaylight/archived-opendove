@@ -191,7 +191,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                         OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
                         if (target != null) {
                             OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(),
-                                    neutronSubnet.getGatewayIP(), gwAddress);
+                                    neutronSubnet.getGatewayIP(), gwAddress, null);
                             OpenDoveEGWSNATPool.configureEGWSNATPool("0.0.0.0", "0.0.0.0", snatPoolDB, network, target);
                         }
                         replicationFactor--;
@@ -344,7 +344,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                         OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
                         if (target != null) {
                             OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(),
-                                    neutronSubnet.getGatewayIP(), gwAddress);
+                                    neutronSubnet.getGatewayIP(), gwAddress, null);
                             OpenDoveEGWSNATPool.configureEGWSNATPool("0.0.0.0", "0.0.0.0", snatPoolDB, doveNetwork, target);
                         }
                         replicationFactor--;
@@ -453,7 +453,7 @@ INeutronRouterAware, INeutronFloatingIPAware {
                 String gwAddress = selectAddress(neutronNetwork, neutronSubnet, router);
                 OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
                 if (target != null) {
-                    OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress);
+                    OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress, router);
                 }
                 replicationFactor--;
             }
@@ -481,9 +481,16 @@ INeutronRouterAware, INeutronFloatingIPAware {
                 String gwAddress = selectAddress(neutronNetwork, neutronSubnet, router);
                 OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectDGW(this);
                 if (target != null) {
-                    OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress);
+                    OpenDoveGwIpv4.assignEGWs(this, target, neutronSubnet.getCidr(), neutronSubnet.getGatewayIP(), gwAddress, router);
                 }
                 replicationFactor--;
+            }
+        } else {
+            IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
+            for (OpenDoveGwIpv4 test: gatewayIPDB.getGwIpv4Pool()) {
+                if (router.getID().equalsIgnoreCase(test.getNeutronRouter().getID())) {
+                    test.setTombstoneFlag(true);
+                }
             }
         }
     }

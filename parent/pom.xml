@@ -14,6 +14,7 @@
         <sitedeploy>${nexusproxy}/sites/site/${project.groupId}/hydrogen</sitedeploy>
         <enunciate.version>1.26.2</enunciate.version>
     </properties>
+    <url>${sitedeploy}/</url>
     <scm>
         <connection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</connection>
         <developerConnection>scm:git:ssh://git.opendaylight.org:29418/opendove.git</developerConnection>

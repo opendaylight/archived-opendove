@@ -230,7 +230,7 @@ public class OpenDoveDgwServiceApplianceNorthbound {
             throw new BadRequestException("appliance must be an active oDGW");
         } else {
             IfSBDoveGwIpv4CRUD gatewayIPDB = OpenDoveCRUDInterfaces.getIfSBDoveGwIpv4CRUD(this);
-            OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwIpv4.getIP(), gwIpv4.getMask(), gwIpv4.getNexthop(), gwIpv4.getType(), odgwUUID, 0);
+            OpenDoveGwIpv4 newGWIP = new OpenDoveGwIpv4(gwIpv4.getIP(), gwIpv4.getMask(), gwIpv4.getNexthop(), gwIpv4.getType(), odgwUUID, 0, null);
             gatewayIPDB.addGwIpv4(newGWIP.getUUID(), newGWIP);
             dgwAppliance.setDoveTunnel(newGWIP);
             ipv4UUID = newGWIP.getUUID();

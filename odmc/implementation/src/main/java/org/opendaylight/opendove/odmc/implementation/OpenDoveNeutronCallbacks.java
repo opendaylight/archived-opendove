@@ -580,12 +580,15 @@ INeutronRouterAware, INeutronFloatingIPAware {
             NeutronSubnet externalNeutronSubnet = neutronSubnetIf.getSubnet(externalNetwork.getSubnets().get(0));
             Integer replicationFactor = controlBlock.getEgwReplicationFactor();
             Integer snatPoolSize = controlBlock.getSnatPoolSize();
+
             while (replicationFactor > 0) {
                 OpenDoveServiceAppliance target = OpenDoveServiceAppliance.selectAssignedDGW(this, externalNeutronSubnet.getCidr());
                 if (target != null) {
-                    NeutronSubnet_IPAllocationPool pool = selectPool(externalNeutronSubnet, snatPoolSize);
+                    NeutronSubnet_IPAllocationPool pool = selectPoolFromEnd(externalNeutronSubnet, snatPoolSize);
                     if (pool != null) {
+
                         OpenDoveEGWSNATPool.configureEGWSNATPool(pool.getPoolStart(), pool.getPoolEnd(), snatPoolDB, newODN, target);
+
                     } else {
                         //TODO: log error
                         ;
@@ -765,6 +768,93 @@ INeutronRouterAware, INeutronFloatingIPAware {
                         }
                         subnet.allocateIP(ipAddr);
                         //TODO: close loop by allocating Neutron port
+                    }
+                    break;
+                }
+            }
+        }
+        if (ip_low != null && ip_high != null) {
+            return new NeutronSubnet_IPAllocationPool(ip_low, ip_high);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * This static method converts the supplied IPv4 address to a long
+     * integer for comparison
+     *
+     * @param inputString
+     *            IPv4 address in dotted decimal format
+     * @returns high-endian representation of the IPv4 address as a long.
+     *          This method will return 0 if the input is null.
+     */
+
+    static long convert(String inputString) {
+        long ans = 0;
+        if (inputString != null) {
+            String[] parts = inputString.split("\\.");
+            for (String part: parts) {
+                ans <<= 8;
+                ans |= Integer.parseInt(part);
+            }
+        }
+        return ans;
+    }
+
+    /**
+     * This static method converts the supplied high-ending long back
+     * into a dotted decimal representation of an IPv4 address
+     *
+     * @param l
+     *            high-endian representation of the IPv4 address as a long
+     * @returns IPv4 address in dotted decimal format
+     */
+
+    static String longtoIP(long l) {
+        int i;
+        String[] parts = new String[4];
+        for (i=0; i<4; i++) {
+            parts[3-i] = String.valueOf(l & 255);
+            l >>= 8;
+        }
+        return join(parts,".");
+    }
+
+    /*
+     * helper routine used by longtoIP
+     */
+    public static String join(String r[],String d)
+    {
+        if (r.length == 0) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        int i;
+        for(i=0;i<r.length-1;i++) {
+            sb.append(r[i]+d);
+        }
+        return sb.toString()+r[i];
+    }
+
+    private NeutronSubnet_IPAllocationPool selectPoolFromEnd(NeutronSubnet subnet, Integer size) {
+        String ip_low = null, ip_high = null;
+        if (size > 0) {
+            for (NeutronSubnet_IPAllocationPool pool: subnet.getAllocationPools()) {
+                if (poolSize(pool) >= size) {
+                    long end = convert(pool.getPoolEnd());
+                    long start = end - size;
+                    long ip;
+                    logger.debug("end " + end + " start " + start + " sss");
+                    for (ip = end; ip > start; ip--) {
+                        String ipAddr = longtoIP(ip);
+                        if (ip == end) {
+                            ip_high = ipAddr;
+                        }
+                        if (ip == (start + 1)) {
+                            ip_low = ipAddr;
+                        }
+                        subnet.allocateIP(ipAddr);
                     }
                     break;
                 }

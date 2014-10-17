@@ -65,7 +65,7 @@ typedef struct
     unsigned int version;
     unsigned int ttl;
     uint8_t vMAC[6];
-
+    uint32_t vnid;
 } DC_Policy;
 
 enum lswitch_mode {

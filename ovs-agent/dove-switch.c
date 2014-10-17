@@ -624,6 +624,67 @@ process_packet_in(struct dove_switch *sw, struct ofpbuf *msg)
         add_tunnel_ep(sw, groupID);
     }
 
+    if(pi.fmd.in_port == sw->dove_port) {
+      // Resubmit locally to MAC table
+      struct ofpact_resubmit *resubmit;
+      uint64_t ofpacts_stub[64 / 8];
+      struct ofpbuf ofpacts;
+      struct ofputil_packet_out po;
+      struct ofputil_flow_mod fm;
+      struct ofpbuf *buffer;
+
+      printf("Fwd to local switch\n");
+      
+      ofpbuf_use_stack(&ofpacts, ofpacts_stub, sizeof ofpacts_stub);
+
+      resubmit = ofpact_put_RESUBMIT(&ofpacts);
+      resubmit->ofpact.compat = OFPUTIL_NXAST_RESUBMIT_TABLE;
+      resubmit->in_port = pi.fmd.in_port;
+      resubmit->table_id = 1;
+      
+      ofpact_pad(&ofpacts);
+
+      /* Prepare packet_out in case we need one. */
+      po.buffer_id = pi.buffer_id;
+      if (po.buffer_id == UINT32_MAX) {
+	po.packet = pkt.data;
+	po.packet_len = pkt.size;
+      } else {
+	po.packet = NULL;
+	po.packet_len = 0;
+      }
+      po.in_port = pi.fmd.in_port;
+      po.ofpacts = ofpacts.data;
+      po.ofpacts_len = ofpacts.size;
+
+      /* Send the packet with a new flow with the actions above*/
+      memset(&fm, 0, sizeof fm);
+      match_init_catchall(&fm.match);
+      match_set_in_port(&fm.match, pi.fmd.in_port);
+      match_set_dl_type(&fm.match, flow.dl_type);
+      match_set_nw_src(&fm.match, flow.nw_src);
+      match_set_nw_dst(&fm.match, flow.nw_dst);
+
+      fm.priority = 65535;
+      fm.table_id = 0xff;
+      fm.command = OFPFC_ADD;
+      fm.hard_timeout = fm.idle_timeout = 0;
+      fm.buffer_id = pi.buffer_id;
+      fm.out_port = OFPP_NONE;
+      fm.ofpacts = ofpacts.data;
+      fm.ofpacts_len = ofpacts.size;
+      buffer = ofputil_encode_flow_mod(&fm, sw->protocol);
+
+      queue_tx(sw, buffer);
+
+      /* If the switch didn't buffer the packet, we need to send a copy. */
+      if (pi.buffer_id == UINT32_MAX) {
+	queue_tx(sw, ofputil_encode_packet_out(&po, sw->protocol));
+      }
+      
+      return true;
+    }
+
     // 1. if not done yet for this key, QUERY DPS
     // 2. proceed with code below after policy arrives
 
@@ -704,7 +765,7 @@ forward_pkt(struct dove_switch *sw,
 	    const DC_Policy * policy)
 {
   uint16_t out_port = OFPP_NONE;
-  uint64_t ofpacts_stub[64 / 8];
+  uint64_t ofpacts_stub[256];
   struct ofpbuf ofpacts;
   struct flow flow;
   const struct ofp_header *oh = msg->data;
@@ -717,6 +778,7 @@ forward_pkt(struct dove_switch *sw,
   uint32_t domainID, groupID;
   bool fromDove;
   union flow_in_port in_port_;
+  char next_h_mac[ETH_ADDR_LEN] = {0x0, 0x18, 0xb1, 0xaa, 0xaa, 0x00};
 
   error = ofputil_decode_packet_in(&pi, oh);
   if (error) {
@@ -786,21 +848,21 @@ forward_pkt(struct dove_switch *sw,
   /* Make actions. */
   ofpbuf_use_stack(&ofpacts, ofpacts_stub, sizeof ofpacts_stub);
 
+  /* when we have next hop MAC in local forwarding we overwrite MAC */
+  if(memcmp(flow.dl_dst, next_h_mac,ETH_ADDR_LEN) == 0) {
+    
+    printf("Replace MAC "ETH_ADDR_FMT" with MAC "ETH_ADDR_FMT" \n", 
+	   ETH_ADDR_ARGS(flow.dl_dst), ETH_ADDR_ARGS(policy->vMAC));
+    
+    memcpy(ofpact_put_SET_ETH_DST(&ofpacts)->mac,
+	   policy->vMAC, ETH_ADDR_LEN);
+  }
+  
   // Set the correct action according to dst host address
   if(sw->host.addr.ipv4.s_addr == policy->host.addr.ipv4.s_addr) {
     // Forward pkt on local switch by resubmit to table 1
     struct ofpact_resubmit *resubmit;
-    char next_h_mac[ETH_ADDR_LEN] = {0x0, 0x18, 0xb1, 0xaa, 0xaa, 0x00};
-
-    /* when we have next hop MAC in local forwarding we overwrite MAC */
-    if(memcmp(flow.dl_dst, next_h_mac,ETH_ADDR_LEN) == 0) {
-      printf("Replace MAC "ETH_ADDR_FMT" with MAC "ETH_ADDR_FMT" \n", 
-	     ETH_ADDR_ARGS(flow.dl_dst), ETH_ADDR_ARGS(policy->vMAC));
-      
-      memcpy(ofpact_put_SET_ETH_DST(&ofpacts)->mac,
-	     policy->vMAC, ETH_ADDR_LEN);
-    }
-
+    
     printf("Fwd to local switch\n");
     resubmit = ofpact_put_RESUBMIT(&ofpacts);
     resubmit->ofpact.compat = OFPUTIL_NXAST_RESUBMIT_TABLE;
@@ -822,8 +884,10 @@ forward_pkt(struct dove_switch *sw,
 
     tunnel = ofpact_put_SET_TUNNEL(&ofpacts);
     tunnel->ofpact.compat = OFPUTIL_NXAST_SET_TUNNEL;
-    tunnel->tun_id =groupID;
-    
+    //tunnel->tun_id =groupID;
+   
+    tunnel->tun_id = policy->vnid;
+
     printf("Fwd pkt via DOVE tunnel through port %d tun_id %Ld\n",
 	   sw->dove_port, (long long int) tunnel->tun_id);
 

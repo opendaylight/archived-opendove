@@ -632,7 +632,8 @@ static int dpsa_response(void* rsp)
                     memcpy(policy.vMAC, p_loc_reply->mac, 6);
                     policy.host.addr.ipv4.s_addr = ntohl(p_loc_reply->tunnel_info.tunnel_list[0].ip4);
 		    policy.ttl = policy_reply->dps_policy_info.ttl;
-                    dove_policy_cb(&key, &policy, 0, p_context);
+                    policy.vnid = p_loc_reply->vnid;
+		    dove_policy_cb(&key, &policy, 0, p_context);
                 }
                 else
                 {
